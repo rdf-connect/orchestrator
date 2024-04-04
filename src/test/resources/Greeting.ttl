@@ -10,7 +10,6 @@ jvm:Greeting a jvm:Processor;
   jvm:class "Greeting";
   jvm:method "greet";
   jvm:language "java";
-  jvm:location <./>;
   jvm:mapping [
     a fno:Mapping;
     fno:parameterMapping [

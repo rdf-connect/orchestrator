@@ -1,25 +1,41 @@
 package technology.idlab
 
+import org.apache.jena.graph.Graph
 import javax.tools.*
 import java.io.File
 import java.lang.reflect.Method
 import kotlin.system.exitProcess
 
-class Processor(configPath: String) {
+class Processor(graph: Graph, name: String) {
     // Configuration.
-    private val sourcePath = "./Greeting.java"
-    private val targetClass = "Greeting"
-    private val targetMethod = "greet"
-    private val arguments: Array<Any> = arrayOf("JVM Runner")
+    private val filePath: String
+    private val targetClass: String
+    private val targetMethod: String
+    private val language: String
     private val argumentTypes: Array<String> = arrayOf("java.lang.String")
+
+    // Runtime arguments.
+    private val arguments: Array<Any> = arrayOf("JVM Runner")
 
     // Runtime objects.
     private val instance: Any
     private val method: Method
 
     init {
+        val query = Query(graph)
+        val rawFilePath = query.predicate(name, "file")
+        filePath = rawFilePath.slice(7..<rawFilePath.length)
+        targetClass = query.predicate(name, "class").drop(1).dropLast(1)
+        targetMethod = query.predicate(name, "method").drop(1).dropLast(1)
+        language = query.predicate(name, "language").drop(1).dropLast(1)
+
+        if (language != "java") {
+            println("ERROR: Unsupported language : \"${language}\".")
+            exitProcess(-1)
+        }
+
         // Parse the source code.
-        val file = File(configPath).resolve(sourcePath)
+        val file = File(filePath)
 
         // Initialize the compiler.
         val compiler = ToolProvider.getSystemJavaCompiler()

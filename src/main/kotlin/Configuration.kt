@@ -1,18 +1,28 @@
 package technology.idlab
 
-import java.io.File
 import kotlinx.coroutines.*
+import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.rdf.model.ResourceFactory
 
 class Configuration(configPath: String) {
     /** Processors described in the config. */
-    private val processors: Array<Processor>
+    private val processors: MutableList<Processor> = mutableListOf()
 
     init {
-        val searchPath = File(configPath).parent
-        processors = Array(2) {
-            Processor(searchPath)
-            Processor(searchPath)
-        }
+        // Initialize the RDF model.
+        val model = ModelFactory.createDefaultModel()
+        model.read(configPath, "TURTLE")
+
+        // A processor must be of the following type.
+        val objectResource = ResourceFactory.createResource("https://w3id.org/conn/jvm#Processor")
+
+        // Delegate initialization to the individual processors.
+        model.graph
+            .find(null, null, objectResource.asNode())
+            .toList()
+            .forEach {
+                processors.add(Processor(model.graph, it.subject.toString()))
+            }
     }
 
     /**
