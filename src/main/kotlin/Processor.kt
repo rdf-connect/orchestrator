@@ -47,7 +47,10 @@ class Processor(configPath: String) {
         this.method = compiledClass.getMethod(this.targetMethod, *this.argumentTypes)
     }
 
-    fun execute() {
+    /**
+     * Execute the processor synchronously. May not return.
+     */
+    fun executeSync() {
         method.invoke(instance, *this.arguments)
     }
 }

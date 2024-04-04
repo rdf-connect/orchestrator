@@ -15,5 +15,5 @@ fun main(args: Array<String>) {
     val config = Configuration(path)
 
     // Execute all functions.
-    config.executeAll()
+    config.executeSync()
 }
