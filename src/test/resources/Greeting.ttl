@@ -1,0 +1,31 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix fno: <https://w3id.org/function/ontology#>.
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <https://w3id.org/conn#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+
+jvm:Greeting a jvm:Processor;
+  jvm:file <./Greeting.java>;
+  jvm:class "Greeting";
+  jvm:method "greet";
+  jvm:language "java";
+  jvm:location <./>;
+  jvm:mapping [
+    a fno:Mapping;
+    fno:parameterMapping [
+      a fnom:PositionParameterMapping;
+      fnom:functionParameter "Name";
+      fnom:implementationParameterPosition "0"^^xsd:int;
+    ];
+  ].
+
+[ ] a sh:NodeShape;
+  sh:targetClass jvm:Greeting;
+  sh:property [
+    sh:path jvm:name;
+    sh:name "name";
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+    sh:minCount 1;
+  ].
