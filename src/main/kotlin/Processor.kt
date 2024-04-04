@@ -11,7 +11,7 @@ class Processor(configPath: String) {
     private val targetClass = "Greeting"
     private val targetMethod = "greet"
     private val arguments: Array<Any> = arrayOf("JVM Runner")
-    private val argumentTypes: Array<Class<*>> = arrayOf(String::class.java)
+    private val argumentTypes: Array<String> = arrayOf("java.lang.String")
 
     // Runtime objects.
     private val instance: Any
@@ -40,11 +40,14 @@ class Processor(configPath: String) {
             exitProcess(-1)
         }
 
-        // Retrieve actual functions.
+        // Load the compiled class, call the constructor to create a new object.
         val compiledClass = Class.forName(this.targetClass)
         val constructor = compiledClass.getConstructor()
         this.instance = constructor.newInstance()
-        this.method = compiledClass.getMethod(this.targetMethod, *this.argumentTypes)
+
+        // Retrieve the method based on the argument types.
+        val argumentTypes: Array<Class<*>> = argumentTypes.map { Class.forName(it) }.toTypedArray()
+        this.method = compiledClass.getMethod(this.targetMethod, *argumentTypes)
     }
 
     /**
