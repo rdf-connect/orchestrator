@@ -12,10 +12,7 @@ class Processor(graph: Graph, name: String) {
     private val targetClass: String
     private val targetMethod: String
     private val language: String
-    private val argumentTypes: Array<String> = arrayOf("java.lang.String")
-
-    // Runtime arguments.
-    private val arguments: Array<Any> = arrayOf("JVM Runner")
+    private val argumentTypes: List<String> = listOf("java.lang.String")
 
     // Runtime objects.
     private val instance: Any
@@ -69,7 +66,7 @@ class Processor(graph: Graph, name: String) {
     /**
      * Execute the processor synchronously. May not return.
      */
-    fun executeSync() {
-        method.invoke(instance, *this.arguments)
+    fun executeSync(arguments: List<Any>) {
+        method.invoke(instance, *arguments.toTypedArray())
     }
 }

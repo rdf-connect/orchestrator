@@ -5,8 +5,14 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.ResourceFactory
 
 class Configuration(configPath: String) {
+    /** A step is simply a concrete execution of a function. */
+    data class Step(val processor: Processor, val arguments: List<Any>)
+
     /** Processors described in the config. */
-    private val processors: MutableList<Processor> = mutableListOf()
+    private val processors: MutableMap<String, Processor> = mutableMapOf()
+
+    /** Concrete functions in the pipeline, also known as steps. */
+    private val steps: MutableList<Step> = mutableListOf()
 
     init {
         // Initialize the RDF model.
@@ -21,7 +27,13 @@ class Configuration(configPath: String) {
             .find(null, null, objectResource.asNode())
             .toList()
             .forEach {
-                processors.add(Processor(model.graph, it.subject.toString()))
+                val name = it.subject.toString()
+                val processor = Processor(model.graph, name)
+                processors[name] = processor
+
+                // Dummy execution.
+                val arguments = listOf("JVM Runner")
+                steps.add(Step(processor, arguments))
             }
     }
 
@@ -30,6 +42,6 @@ class Configuration(configPath: String) {
      * all are done.
      */
     fun executeSync() = runBlocking {
-        processors.map { async { it.executeSync() } }.map { it.await() }
+        steps.map { async { it.processor.executeSync(it.arguments) } }.map { it.await() }
     }
 }
