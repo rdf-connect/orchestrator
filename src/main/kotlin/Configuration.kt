@@ -3,6 +3,12 @@ package technology.idlab
 import kotlinx.coroutines.*
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.ResourceFactory
+import org.apache.jena.riot.Lang
+import org.apache.jena.riot.RDFDataMgr
+import org.apache.jena.shacl.ShaclValidator
+import org.apache.jena.shacl.ValidationReport
+import kotlin.system.exitProcess
+
 
 class Configuration(configPath: String) {
     /** A step is simply a concrete execution of a function. */
@@ -18,6 +24,15 @@ class Configuration(configPath: String) {
         // Initialize the RDF model.
         val model = ModelFactory.createDefaultModel()
         model.read(configPath, "TURTLE")
+        val graph = model.graph
+
+        // Parse correctness using SHACL.
+        val report: ValidationReport = ShaclValidator.get().validate(graph, graph)
+        if (!report.conforms()) {
+            println("ERROR: Configuration does not conform to SHACL rules.")
+            RDFDataMgr.write(System.out, report.model, Lang.TTL);
+            exitProcess(-1)
+        }
 
         // A processor must be of the following type.
         val objectResource = ResourceFactory.createResource("https://w3id.org/conn/jvm#Processor")
