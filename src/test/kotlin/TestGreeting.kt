@@ -22,7 +22,8 @@ class TestGreeting {
 
     @Test
     fun testGreeting() {
-        val config = Configuration("/Users/jens/Developer/technology.idlab.jvm-runner/src/test/resources/Greeting.ttl")
+        val path = TestGreeting::class.java.getResource("/Greeting.ttl")?.path
+        val config = Configuration(path.toString())
         config.executeSync()
         assertTrue(outputStreamCaptor.toString().contains("Hello, JVM Runner!"))
     }
