@@ -4,9 +4,9 @@ import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.query.QuerySolution
 import org.apache.jena.rdf.model.Model
-import javax.tools.*
 import java.io.File
 import java.lang.reflect.Method
+import javax.tools.ToolProvider
 import kotlin.system.exitProcess
 
 class Processor(
@@ -30,10 +30,12 @@ class Processor(
             val resource = object {}.javaClass.getResource("/processors.sparql")
             val data = resource?.readText()
             if (data == null) {
-                println("ERROR: Could not read SPARQL query from processors.sparql.")
+                println(
+                    "ERROR: Could not read ${resource?.path}",
+                )
                 exitProcess(-1)
             }
-            return data;
+            return data
         }
 
         /**
@@ -54,13 +56,23 @@ class Processor(
 
             // Parse the argument types.
             val argumentNamesShuffled = sol["names"].toString().split(";")
-            val argumentIndices = sol["indices"].toString().split(";").map { it.toInt() }
+            val argumentIndices =
+                sol["indices"].toString().split(
+                    ";",
+                ).map { it.toInt() }
             val argumentNames = MutableList(argumentNamesShuffled.size) { "" }
             for (i in argumentIndices.indices) {
                 argumentNames[argumentIndices[i]] = argumentNamesShuffled[i]
             }
 
-            return Processor(name, file, targetClass, targetMethod, language, argumentNames)
+            return Processor(
+                name,
+                file,
+                targetClass,
+                targetMethod,
+                language,
+                argumentNames,
+            )
         }
 
         /**
@@ -93,16 +105,27 @@ class Processor(
         val compiler = ToolProvider.getSystemJavaCompiler()
         if (compiler == null) {
             println("ERROR: No Java compiler found.")
-            exitProcess(-1);
+            exitProcess(-1)
         }
 
         // Configure the compiler.
         val fileManager = compiler.getStandardFileManager(null, null, null)
-        val compilationUnits = fileManager.getJavaFileObjectsFromFiles(listOf(file))
-        val task = compiler.getTask(null, fileManager, null, null, null, compilationUnits)
+        val compilationUnits =
+            fileManager.getJavaFileObjectsFromFiles(
+                listOf(file),
+            )
+        val task =
+            compiler.getTask(
+                null,
+                fileManager,
+                null,
+                null,
+                null,
+                compilationUnits,
+            )
 
         // Execute compilation.
-        val success = task.call();
+        val success = task.call()
         if (!success) {
             println("ERROR: Compilation failed.")
             exitProcess(-1)
@@ -114,7 +137,10 @@ class Processor(
         this.instance = constructor.newInstance()
 
         // Retrieve the method based on the argument types.
-        val argumentTypes: Array<Class<*>> = argumentTypes.map { Class.forName(it) }.toTypedArray()
+        val argumentTypes: Array<Class<*>> =
+            argumentTypes.map {
+                Class.forName(it)
+            }.toTypedArray()
         this.method = compiledClass.getMethod(this.targetMethod, *argumentTypes)
     }
 

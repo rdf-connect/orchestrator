@@ -1,13 +1,13 @@
 package technology.idlab
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.shacl.ShaclValidator
 import org.apache.jena.shacl.ValidationReport
 import kotlin.system.exitProcess
-
 
 class Configuration(configPath: String) {
     /** A step is simply a concrete execution of a function. */
@@ -26,10 +26,14 @@ class Configuration(configPath: String) {
         val graph = model.graph
 
         // Parse correctness using SHACL.
-        val report: ValidationReport = ShaclValidator.get().validate(graph, graph)
+        val report: ValidationReport =
+            ShaclValidator.get().validate(
+                graph,
+                graph,
+            )
         if (!report.conforms()) {
             println("ERROR: Configuration does not conform to SHACL rules.")
-            RDFDataMgr.write(System.out, report.model, Lang.TTL);
+            RDFDataMgr.write(System.out, report.model, Lang.TTL)
             exitProcess(-1)
         }
 
@@ -44,7 +48,10 @@ class Configuration(configPath: String) {
      * Execute all processors in the configuration in parallel, and block until
      * all are done.
      */
-    fun executeSync() = runBlocking {
-        steps.map { async { it.processor.executeSync(it.arguments) } }.map { it.await() }
-    }
+    fun executeSync() =
+        runBlocking {
+            steps.map {
+                async { it.processor.executeSync(it.arguments) }
+            }.map { it.await() }
+        }
 }
