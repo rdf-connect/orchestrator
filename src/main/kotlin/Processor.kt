@@ -4,9 +4,10 @@ import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.query.QuerySolution
 import org.apache.jena.rdf.model.Model
+import technology.idlab.compiler.JavaCodeHandler
+import technology.idlab.logging.createLogger
 import java.io.File
 import java.lang.reflect.Method
-import javax.tools.ToolProvider
 import kotlin.system.exitProcess
 
 class Processor(
@@ -19,6 +20,7 @@ class Processor(
     private val argumentTypes: List<String> = listOf("java.lang.String"),
 ) {
     // Runtime objects.
+    private val logger = createLogger();
     private val instance: Any
     private val method: Method
 
@@ -100,48 +102,13 @@ class Processor(
     init {
         // Parse the source code.
         val file = File(path)
+        JavaCodeHandler().compile(file)
 
-        // Initialize the compiler.
-        val compiler = ToolProvider.getSystemJavaCompiler()
-        if (compiler == null) {
-            println("ERROR: No Java compiler found.")
-            exitProcess(-1)
-        }
-
-        // Configure the compiler.
-        val fileManager = compiler.getStandardFileManager(null, null, null)
-        val compilationUnits =
-            fileManager.getJavaFileObjectsFromFiles(
-                listOf(file),
-            )
-        val task =
-            compiler.getTask(
-                null,
-                fileManager,
-                null,
-                null,
-                null,
-                compilationUnits,
-            )
-
-        // Execute compilation.
-        val success = task.call()
-        if (!success) {
-            println("ERROR: Compilation failed.")
-            exitProcess(-1)
-        }
-
-        // Load the compiled class, call the constructor to create a new object.
-        val compiledClass = Class.forName(this.targetClass)
-        val constructor = compiledClass.getConstructor()
-        this.instance = constructor.newInstance()
-
-        // Retrieve the method based on the argument types.
-        val argumentTypes: Array<Class<*>> =
-            argumentTypes.map {
-                Class.forName(it)
-            }.toTypedArray()
-        this.method = compiledClass.getMethod(this.targetMethod, *argumentTypes)
+        // Read the resulting compiled class.
+        val clazz = JavaCodeHandler().load(targetClass)
+        val arguments = JavaCodeHandler().mapToType(argumentTypes)
+        this.instance = JavaCodeHandler().createInstance(clazz)
+        this.method = clazz.getMethod(this.targetMethod, *arguments)
     }
 
     /**
