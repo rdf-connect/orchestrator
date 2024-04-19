@@ -4,6 +4,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix : <https://w3id.org/conn#>.
 @prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
 jvm:Greeting a jvm:Processor;
   jvm:file <./Greeting.java>;
@@ -14,12 +15,12 @@ jvm:Greeting a jvm:Processor;
     a fno:Mapping;
     fno:parameterMapping [
       a fnom:PositionParameterMapping;
-      fnom:functionParameter "Name";
+      fnom:functionParameter "name";
       fnom:implementationParameterPosition "0"^^xsd:int;
     ];
   ].
 
-[ ] a sh:NodeShape;
+[] a sh:NodeShape;
   sh:targetClass jvm:Greeting;
   sh:property [
     sh:path jvm:name;
@@ -27,4 +28,9 @@ jvm:Greeting a jvm:Processor;
     sh:datatype xsd:string;
     sh:maxCount 1;
     sh:minCount 1;
-  ].
+  ];
+  sh:closed true;
+  sh:ignoredProperties (rdf:type).
+
+[] a jvm:Greeting;
+  jvm:name "Greeting".

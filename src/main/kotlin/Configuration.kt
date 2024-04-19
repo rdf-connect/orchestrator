@@ -2,7 +2,6 @@ package technology.idlab
 
 import kotlinx.coroutines.*
 import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.rdf.model.ResourceFactory
 import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.shacl.ShaclValidator
@@ -34,22 +33,11 @@ class Configuration(configPath: String) {
             exitProcess(-1)
         }
 
-        // A processor must be of the following type.
-        val objectResource = ResourceFactory.createResource("https://w3id.org/conn/jvm#Processor")
-
-        // Delegate initialization to the individual processors.
-        model.graph
-            .find(null, null, objectResource.asNode())
-            .toList()
-            .forEach {
-                val name = it.subject.toString()
-                val processor = Processor(model.graph, name)
-                processors[name] = processor
-
-                // Dummy execution.
-                val arguments = listOf("JVM Runner")
-                steps.add(Step(processor, arguments))
-            }
+        // Parse processors from the model and initialize steps.
+        Processor.fromModel(model).forEach {
+            processors[it.name] = it
+            steps.add(Step(it, listOf("JVM Runner")))
+        }
     }
 
     /**
