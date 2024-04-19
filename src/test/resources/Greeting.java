@@ -1,5 +1,5 @@
-public class Greeting {
+public class Greeting extends Template {
     public void greet(String name) {
-        System.out.println("Hello, " + name + "!");
+        logger.info("Hello, " + name + "!");
     }
 }

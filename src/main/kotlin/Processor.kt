@@ -6,6 +6,7 @@ import org.apache.jena.query.QuerySolution
 import org.apache.jena.rdf.model.Model
 import technology.idlab.compiler.JavaCodeHandler
 import technology.idlab.logging.createLogger
+import technology.idlab.logging.fatal
 import java.io.File
 import java.lang.reflect.Method
 import kotlin.system.exitProcess
@@ -20,24 +21,21 @@ class Processor(
     private val argumentTypes: List<String> = listOf("java.lang.String"),
 ) {
     // Runtime objects.
-    private val logger = createLogger();
     private val instance: Any
     private val method: Method
 
     companion object {
+        private val logger = createLogger()
+
         /**
          * Read the SPARQL query from the resources folder and return it as a string.
          */
         private fun readQuery(): String {
             val resource = object {}.javaClass.getResource("/processors.sparql")
-            val data = resource?.readText()
-            if (data == null) {
-                println(
-                    "ERROR: Could not read ${resource?.path}",
-                )
-                exitProcess(-1)
-            }
-            return data
+            logger.info("Reading SPARQL query from ${resource?.path}")
+
+            return resource?.readText()
+                ?: logger.fatal("Could not read ${resource?.path}")
         }
 
         /**
@@ -87,6 +85,7 @@ class Processor(
 
             // Go over the resulting solutions and initialize a processor
             // object.
+            logger.info("Executing SPARQL query against model")
             QueryExecutionFactory.create(query, model).use {
                 val results = it.execSelect()
                 while (results.hasNext()) {

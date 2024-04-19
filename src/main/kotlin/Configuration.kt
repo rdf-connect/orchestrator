@@ -13,7 +13,7 @@ class Configuration(configPath: String) {
     data class Step(val processor: Processor, val arguments: List<Any>)
 
     /** Shared logger object. */
-    private val logger = createLogger();
+    private val logger = createLogger()
 
     /** Processors described in the config. */
     private val processors: MutableMap<String, Processor> = mutableMapOf()

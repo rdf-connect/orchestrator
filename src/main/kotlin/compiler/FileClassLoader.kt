@@ -9,7 +9,8 @@ class FileClassLoader(private val directory: String) : ClassLoader() {
 
     override fun findClass(name: String): Class<*> {
         // Define the path to the class file.
-        val path = "$directory/${name.replace('.', File.separatorChar)}.class"
+        var path = "$directory/${name.replace('.', File.separatorChar)}.class"
+        path = File(path).absolutePath
 
         // Open file pointer.
         val file = File(path)

@@ -6,7 +6,7 @@ import java.io.File
 
 abstract class CodeHandler {
     protected val outputDirectory = "out"
-    protected open val logger = createLogger()
+    protected val logger = createLogger()
     private val classLoader: ClassLoader = FileClassLoader(outputDirectory)
 
     /**
@@ -26,11 +26,12 @@ abstract class CodeHandler {
      * Initialize a class using its default constructor.
      */
     fun createInstance(clazz: Class<*>): Any {
-        val constructor = try {
-            clazz.getConstructor()
-        } catch (e: NoSuchMethodException) {
-            logger.fatal("Could not find constructor for ${clazz.name}")
-        }
+        val constructor =
+            try {
+                clazz.getConstructor()
+            } catch (e: NoSuchMethodException) {
+                logger.fatal("Could not find constructor for ${clazz.name}")
+            }
 
         return try {
             constructor.newInstance()
@@ -48,4 +49,3 @@ abstract class CodeHandler {
         }.toTypedArray()
     }
 }
-
