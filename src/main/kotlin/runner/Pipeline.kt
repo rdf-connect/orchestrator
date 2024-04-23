@@ -19,7 +19,7 @@ class Pipeline(config: File) {
         val processors = parser.getProcessors()
 
         this.processors.putAll(processors.map { it.name to it })
-        this.stages = parser.getStages()
+        this.stages = parser.getStages(processors)
     }
 
     /**

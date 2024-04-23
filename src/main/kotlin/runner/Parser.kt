@@ -89,8 +89,7 @@ class Parser(file: File) {
         return processors
     }
 
-    fun getStages(): List<Stage> {
-        val processors = getProcessors()
+    fun getStages(processors: List<Processor>): List<Stage> {
         return listOf(Stage(processors[0], listOf("JVM Runner")))
     }
 }

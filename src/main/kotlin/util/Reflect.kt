@@ -68,7 +68,9 @@ class Reflect {
             }.toTypedArray()
 
         logger.info(
-            "Retrieving method $name with arguments ${args.joinToString()}",
+            "Retrieving method $name with arguments [${args.joinToString(
+                ", ",
+            )}]",
         )
 
         return try {
