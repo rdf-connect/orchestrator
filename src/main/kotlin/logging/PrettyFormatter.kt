@@ -2,7 +2,19 @@ import java.util.Date
 import java.util.TimeZone
 import java.util.logging.Formatter
 
-class BasicFormatter() : Formatter() {
+/**
+ * Pretty humanized formatting for use with the JVM logging framework.
+ *
+ * Included fields are:
+ * - Time in ISO 8601 format.
+ * - Thread ID.
+ * - Log level.
+ * - Class and method.
+ * - Message
+ *
+ * Example: `2021-09-30T12:00:00.000Z [1] INFO  Main::main Hello, world!`
+ */
+class PrettyFormatter : Formatter() {
     override fun format(record: java.util.logging.LogRecord): String {
         // Parse date and time.
         val instant = Date(record.millis).toInstant()

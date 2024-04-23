@@ -1,5 +1,6 @@
 package technology.idlab
 
+import technology.idlab.runner.Pipeline
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -11,10 +12,10 @@ fun main(args: Array<String>) {
     }
 
     // Parse and load the configuration.
-    val relativePath = args[0]
-    val absolutePath = File(relativePath).absoluteFile
-    val config = Configuration(absolutePath.toString())
+    val configPath = args[0]
+    val config = File(configPath)
+    val pipeline = Pipeline(config)
 
     // Execute all functions.
-    config.executeSync()
+    pipeline.executeSync()
 }
