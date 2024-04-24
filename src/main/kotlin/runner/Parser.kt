@@ -9,7 +9,9 @@ import org.apache.jena.shacl.ShaclValidator
 import org.apache.jena.shacl.ValidationReport
 import technology.idlab.logging.createLogger
 import technology.idlab.logging.fatal
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.OutputStream
 
 /**
  * Parse a solution to a Processor instance.
@@ -48,20 +50,44 @@ class Parser(file: File) {
     private val graph: Graph
 
     init {
+        // Load the constraints file.
+        val constraints = this.javaClass.getResource("/pipeline.ttl")
+        val constraintsPath = constraints?.path ?: logger.fatal(
+            "Could not read ${constraints?.path}",
+        )
+
+        logger.info("Reading pipeline constraints from $constraintsPath")
+
+        try {
+            model.read(constraintsPath, "TURTLE")
+        } catch (e: Exception) {
+            logger.fatal("Error parsing $constraintsPath", e)
+        }
+
         // Parse the Turtle file as a model.
-        model.read(file.absolutePath, "TURTLE")
-        graph = model.graph
+        try {
+            model.read(file.absolutePath, "TURTLE")
+        } catch (e: Exception) {
+            logger.fatal("Error parsing ${file.absolutePath}", e)
+        }
 
         // Validate it using SHACL.
         logger.info("Validating configuration using SHACL")
+        graph = model.graph
         val report: ValidationReport =
             ShaclValidator.get().validate(
                 graph,
                 graph,
             )
 
+        // Write the resulting model to the console.
+        val out: OutputStream = ByteArrayOutputStream()
+        report.model.write(out, "TURTLE")
+        logger.info("Validation completed\n$out")
+
+        // Exit if the validation failed.
         if (!report.conforms()) {
-            logger.fatal("Configuration does not conform to SHACL rules")
+            logger.fatal("Validation failed")
         }
     }
 

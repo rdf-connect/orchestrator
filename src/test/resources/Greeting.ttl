@@ -7,10 +7,10 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
 jvm:Greeting a jvm:Processor;
-  jvm:file <./Greeting.java>;
+  jvm:file <./Greeting.javga>;
   jvm:class "Greeting";
   jvm:method "greet";
-  jvm:language "java";
+  jvm:language "Java";
   jvm:mapping [
     a fno:Mapping;
     fno:parameterMapping [

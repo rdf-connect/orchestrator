@@ -1,0 +1,21 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix fno: <https://w3id.org/function/ontology#>.
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <https://w3id.org/conn#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+[] a sh:NodeShape;
+  sh:targetClass jvm:Processor;
+  sh:property [
+    sh:path jvm:file;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:language;
+    sh:in( "Java" "Kotlin" );
+    sh:datatype xsd:string;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ].
