@@ -16,6 +16,9 @@ dependencies {
     implementation("org.apache.jena:apache-jena-libs:5.0.0")
     implementation("org.apache.jena:jena-arq:5.0.0")
 
+    // Add reactive support.
+    implementation("io.reactivex.rxjava3:rxjava:3.1.8")
+
     // Initialize testing.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
