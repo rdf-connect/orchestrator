@@ -42,7 +42,11 @@ class PrettyFormatter : Formatter() {
                 .padEnd(30, ' ')
 
         // Move the message to the most right column.
-        val message = record.message.replace("\n", "\n>" + " ".repeat(58))
+        val message = if (record.message.contains("\n")) {
+            "\n> " + record.message.replace("\n", "\n> ")
+        } else {
+            record.message
+        }
 
         // Output the result as a single string.
         return "$time $thread $level $location $message\n"
