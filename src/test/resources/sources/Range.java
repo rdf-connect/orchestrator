@@ -25,18 +25,18 @@ public class Range extends Processor {
     }
 
     public void setup() {
-        logger.info("Binding to outgoing channel.");
+        log.info("Binding to outgoing channel.");
     }
 
     public void exec() {
-        logger.info("Initializing emitting loop.");
+        log.info("Initializing emitting loop.");
 
         for (int i = start; i < end; i += step) {
-            logger.info("Emitting " + i);
+            log.info("Emitting " + i);
             outgoing.onNext(Integer.toString(i));
         }
 
-        logger.info("Closing outgoing channel.");
+        log.info("Closing outgoing channel.");
         outgoing.onComplete();
     }
 }

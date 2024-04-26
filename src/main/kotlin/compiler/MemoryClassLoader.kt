@@ -1,18 +1,15 @@
 package technology.idlab.compiler
 
-import technology.idlab.logging.createLogger
-import technology.idlab.logging.fatal
+import technology.idlab.logging.Log
 
 class MemoryClassLoader : ClassLoader() {
-    private val logger = createLogger()
-
     fun fromBytes(bytes: ByteArray, name: String): Class<*> {
-        logger.info("Loading class $name")
+        Log.shared.info("Loading class $name")
 
         return try {
             defineClass(name, bytes, 0, bytes.size)
         } catch (e: ClassFormatError) {
-            logger.fatal("Failed to load class $name")
+            Log.shared.fatal("Failed to load class $name")
         }
     }
 }

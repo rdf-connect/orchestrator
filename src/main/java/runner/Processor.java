@@ -1,11 +1,10 @@
 package runner;
 
+import technology.idlab.logging.Log;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
-
-import static technology.idlab.logging.LoggerKt.createLogger;
 
 public abstract class Processor {
     /**
@@ -13,7 +12,7 @@ public abstract class Processor {
      * the template class. This logger is created with the name of the class
      * which extends the template.
      */
-    protected final Logger logger = createLogger();
+    protected final Log log = Log.Companion.getShared();
 
     /**
      * The arguments of a processor are stored in a map and can be accessed by
@@ -40,10 +39,10 @@ public abstract class Processor {
     }
 
     public void setup() {
-        logger.info("Setting up processor");
+        log.info("Setting up processor");
     }
 
     public void exec() {
-        logger.info("Executing processor");
+        log.info("Executing processor");
     }
 }

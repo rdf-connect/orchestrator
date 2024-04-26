@@ -2,13 +2,11 @@ package technology.idlab.runner
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import technology.idlab.logging.createLogger
 import runner.Processor
+import technology.idlab.logging.Log
 import java.io.File
 
 class Pipeline(config: File) {
-    private val logger = createLogger()
-
     /** Processors described in the config. */
     private val processors: List<Processor> = Parser(config).getStages()
 
@@ -18,7 +16,7 @@ class Pipeline(config: File) {
      */
     fun executeSync() {
         // Run setup phase.
-        logger.info("Running setup phase")
+        Log.shared.info("Running setup phase")
         runBlocking {
             processors.map {
                 async { it.setup() }
@@ -28,7 +26,7 @@ class Pipeline(config: File) {
         }
 
         // Run execution phase.
-        logger.info("Running execution phase")
+        Log.shared.info("Running execution phase")
         runBlocking {
             processors.map {
                 async { it.exec() }
@@ -37,6 +35,6 @@ class Pipeline(config: File) {
             }
         }
 
-        logger.info("Pipeline executed successfully")
+        Log.shared.info("Pipeline executed successfully")
     }
 }

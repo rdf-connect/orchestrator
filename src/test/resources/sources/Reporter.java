@@ -17,9 +17,9 @@ public class Reporter extends Processor {
     public void setup() {
         // Local variables
         Disposable disposable = incoming.subscribe(
-            item -> logger.info("Received item: " + item),
-            error -> logger.severe("Error: " + error),
-            () -> logger.info("Channel closed.")
+            item -> log.info("Received item: " + item),
+            error -> log.severe("Error: " + error),
+            () -> log.info("Channel closed.")
         );
     }
 }

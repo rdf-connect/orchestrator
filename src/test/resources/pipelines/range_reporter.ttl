@@ -9,7 +9,7 @@
 
 # Include processor definitions.
 <> owl:imports
-  <../../../main/resources/pipeline.ttl>,
+  <../pipeline.ttl>,
   <../processors/range.ttl>,
   <../processors/reporter.ttl>.
 

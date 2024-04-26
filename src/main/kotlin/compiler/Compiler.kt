@@ -1,7 +1,6 @@
 package technology.idlab.compiler
 
-import technology.idlab.logging.createLogger
-import technology.idlab.logging.fatal
+import technology.idlab.logging.Log
 import java.io.File
 import java.io.PrintWriter
 import javax.tools.DiagnosticCollector
@@ -9,14 +8,13 @@ import javax.tools.JavaFileObject
 import javax.tools.ToolProvider
 
 class Compiler {
-    private val logger = createLogger()
     private val compiler =
-        ToolProvider.getSystemJavaCompiler() ?: logger.fatal(
+        ToolProvider.getSystemJavaCompiler() ?: Log.shared.fatal(
             "No Java compiler found.",
         )
 
     fun compile(file: File): ByteArray {
-        logger.info("Compiling file://${file.absolutePath}")
+        Log.shared.info("Compiling file://${file.absolutePath}")
 
         // Prepare compilation.
         val files = listOf(file)
@@ -40,11 +38,11 @@ class Compiler {
 
         // Write diagnostics to logger.
         diagnosticCollector.diagnostics.forEach {
-            logger.info(it.toString())
+            Log.shared.info(it.toString())
         }
 
         if (!success) {
-            logger.fatal("ERROR: compilation failed")
+            Log.shared.fatal("ERROR: compilation failed")
         }
 
         return results.get(file.nameWithoutExtension)

@@ -1,7 +1,6 @@
 package technology.idlab.compiler
 
-import technology.idlab.logging.createLogger
-import technology.idlab.logging.fatal
+import technology.idlab.logging.Log
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.net.URI
@@ -19,7 +18,6 @@ class MemoryFileManager(
     fileManager: JavaFileManager,
 ) : ForwardingJavaFileManager<JavaFileManager>(fileManager) {
     private val results: MutableMap<String, ByteArray> = HashMap()
-    private val logger = createLogger()
 
     override fun getJavaFileForOutput(
         location: JavaFileManager.Location?,
@@ -46,6 +44,6 @@ class MemoryFileManager(
     }
 
     fun get(className: String): ByteArray {
-        return results[className] ?: logger.fatal("Class $className not found")
+        return results[className] ?: Log.shared.fatal("Class $className not found")
     }
 }

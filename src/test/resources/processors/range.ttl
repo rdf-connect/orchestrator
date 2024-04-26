@@ -7,7 +7,7 @@
 @prefix sh: <http://www.w3.org/ns/shacl#>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 
-<> owl:imports <../../../main/resources/pipeline.ttl>.
+<> owl:imports <../pipeline.ttl>.
 
 jvm:Range a jvm:runner.Processor;
   jvm:file <../sources/Range.java>;

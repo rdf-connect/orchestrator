@@ -9,13 +9,12 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.ShaclValidator
 import org.apache.jena.vocabulary.OWL
-import technology.idlab.logging.createLogger
-import technology.idlab.logging.fatal
 import runner.Processor
 import java.io.ByteArrayOutputStream
 import java.io.File
 import technology.idlab.compiler.Compiler
 import technology.idlab.compiler.MemoryClassLoader
+import technology.idlab.logging.Log
 
 /**
  * Parse a solution to a runner.Processor instance.
@@ -40,7 +39,6 @@ private fun QuerySolution.toProcessor(): Class<Processor> {
 }
 
 class Parser(file: File) {
-    private val logger = createLogger()
     private val model = ModelFactory.createDefaultModel()
 
     init {
@@ -60,11 +58,11 @@ class Parser(file: File) {
             }
 
             // Attempt importing the dataset.
-            logger.info("Importing $uri")
+            Log.shared.info("Importing $uri")
             try {
                 model.read(uri)
             } catch (e: Exception) {
-                logger.fatal("ERROR", e)
+                Log.shared.fatal(e)
             }
 
             imported.add(uri)
@@ -77,12 +75,12 @@ class Parser(file: File) {
         if (!report.conforms()) {
             val out = ByteArrayOutputStream()
             report.model.write(out, "TURTLE")
-            logger.fatal("Validation failed\n$out")
+            Log.shared.fatal("Validation failed\n$out")
         }
     }
 
     private fun getProcessors(): List<Class<Processor>> {
-        logger.info("Parsing processors")
+        Log.shared.info("Parsing processors")
         val processors = mutableListOf<Class<Processor>>()
         val query = this.javaClass.getResource("/queries/processors.sparql")
             ?.readText()
@@ -94,13 +92,13 @@ class Parser(file: File) {
             .execSelect()
 
         if (!iter.hasNext()) {
-            logger.fatal("No processors found in the configuration")
+            Log.shared.fatal("No processors found in the configuration")
         }
 
         while (iter.hasNext()) {
             val solution = iter.nextSolution()
             val processor = solution.toProcessor()
-            logger.info("Class ${processor.name} initialised successfully")
+            Log.shared.info("Class ${processor.name} initialised successfully")
             processors.add(processor)
         }
 
@@ -109,7 +107,7 @@ class Parser(file: File) {
 
     fun getStages(): List<Processor> {
         val processors = getProcessors()
-        logger.info("Parsing stages")
+        Log.shared.info("Parsing stages")
 
         // Initialize the channel.
         val channel = PublishSubject.create<String>()

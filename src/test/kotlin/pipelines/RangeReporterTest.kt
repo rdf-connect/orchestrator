@@ -10,5 +10,6 @@ class RangeReporterTest {
         val config = this.javaClass.getResource("/pipelines/range_reporter.ttl")
         val file = File(config!!.path)
         val pipeline = Pipeline(file)
+        pipeline.executeSync()
     }
 }
