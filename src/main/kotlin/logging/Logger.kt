@@ -47,19 +47,21 @@ fun Logger.fatal(
     message: String,
     exception: Exception? = null,
 ): Nothing {
+    // Construct message
+    val completeMessage = if (message != "" && exception != null) {
+        "$message\n${exception.message}"
+    } else if (message != "") {
+        message
+    } else if (exception != null) {
+        exception.message
+    } else {
+        "An unknown error has occurred."
+    }
+
     // Log the message.
     val caller = Throwable().stackTrace[1]
-    logp(Level.SEVERE, caller.className, caller.methodName, message)
+    logp(Level.SEVERE, caller.className, caller.methodName, completeMessage)
 
-    // Log the exception if it exists.
-    if (exception != null) {
-        logp(
-            Level.SEVERE,
-            caller.className,
-            caller.methodName,
-            exception.message,
-        )
-    }
 
     // Exit the program.
     exitProcess(-1)

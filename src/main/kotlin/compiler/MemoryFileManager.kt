@@ -27,16 +27,17 @@ class MemoryFileManager(
         kind: JavaFileObject.Kind,
         sibling: FileObject?,
     ): JavaFileObject {
-        val uri =
-            URI.create(
-                "string:///" + className.replace('.', '/') + kind.extension,
-            )
+        val uriString = "string:///" +
+            className.replace('.', '/') +
+            kind.extension
+        val uri = URI.create(uriString)
 
         return object : SimpleJavaFileObject(uri, kind) {
             override fun openOutputStream(): OutputStream {
                 return object : ByteArrayOutputStream() {
                     override fun close() {
-                        results[className] = this.toByteArray()
+                        val name = className.substringAfterLast('.')
+                        results[name] = this.toByteArray()
                         super.close()
                     }
                 }
@@ -45,7 +46,6 @@ class MemoryFileManager(
     }
 
     fun get(className: String): ByteArray {
-        logger.info("Retrieving $className")
         return results[className] ?: logger.fatal("Class $className not found")
     }
 }

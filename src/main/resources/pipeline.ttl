@@ -4,10 +4,13 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix : <https://w3id.org/conn#>.
 @prefix sh: <http://www.w3.org/ns/shacl#>.
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 
-[] a sh:NodeShape;
-  sh:targetClass jvm:Processor;
+# Definition of a runner.Processor.
+[]
+  a sh:NodeShape;
+  sh:targetClass jvm:runner.Processor;
   sh:property [
     sh:path jvm:file;
     sh:minCount 1;
@@ -19,3 +22,56 @@
     sh:minCount 1;
     sh:maxCount 1;
   ].
+
+# A channel takes in a reader and writer.
+[]
+  a sh:NodeShape;
+  sh:targetClass jvm:Channel;
+  sh:properties [
+    sh:path jvm:reader;
+    sh:node jvm:ChannelReader;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:writer;
+    sh:node jvm:ChannelWriter;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ].
+
+# Memory channels are specific channels.
+jvm:MemoryChannel rdfs:subClassOf jvm:Channel.
+jvm:MemoryChannelWriter rdfs:subClassOf jvm:ChannelWriter.
+jvm:MemoryChannelReader rdfs:subClassOf jvm:ChannelReader.
+
+# Define a memory channel reader.
+[]
+  a sh:NodeShape;
+  sh:targetClass jvm:MemoryChannelReader;
+  sh:closed true;
+  sh:ignoredProperties ( rdf:type ).
+
+# Define a memory channel writer.
+[]
+  a sh:NodeShape;
+  sh:targetClass jvm:MemoryChannelWriter;
+  sh:closed true;
+  sh:ignoredProperties ( rdf:type ).
+
+# A memory channel takes in a single reader and writer.
+[]
+  a sh:NodeShape;
+  sh:targetClass jvm:MemoryChannel;
+  sh:property [
+    sh:path jvm:reader;
+    sh:node jvm:MemoryChannelReader;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:writer;
+    sh:node jvm:MemoryChannelWriter;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:closed true;
+  sh:ignoredProperties ( rdf:type ).

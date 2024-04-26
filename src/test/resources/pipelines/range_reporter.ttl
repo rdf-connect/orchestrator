@@ -1,0 +1,36 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix fno: <https://w3id.org/function/ontology#>.
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix : <https://w3id.org/conn#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+
+# Include processor definitions.
+<> owl:imports
+  <../../../main/resources/pipeline.ttl>,
+  <../processors/range.ttl>,
+  <../processors/reporter.ttl>.
+
+# Define a memory channel.
+<reader> a jvm:MemoryChannelReader.
+<writer> a jvm:MemoryChannelWriter.
+
+<channel>
+  a jvm:MemoryChannel;
+  jvm:reader <reader>;
+  jvm:writer <writer>.
+
+# Define a range processor.
+[]
+  a jvm:Range;
+  jvm:start "0"^^xsd:integer;
+  jvm:end "100"^^xsd:integer;
+  jvm:step "1"^^xsd:integer;
+  jvm:outgoing <writer>.
+
+# Define a reporter.
+[]
+  a jvm:Reporter;
+  jvm:incoming <reader>.

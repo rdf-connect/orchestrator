@@ -16,7 +16,7 @@ class Compiler {
         )
 
     fun compile(file: File): ByteArray {
-        logger.info(file.absolutePath)
+        logger.info("Compiling file://${file.absolutePath}")
 
         // Prepare compilation.
         val files = listOf(file)
@@ -26,15 +26,14 @@ class Compiler {
         val diagnosticCollector = DiagnosticCollector<JavaFileObject>()
 
         // Create a compilation task.
-        val task =
-            compiler.getTask(
-                PrintWriter(System.out),
-                results,
-                diagnosticCollector,
-                listOf("-d", ""),
-                null,
-                compilationUnits,
-            )
+        val task = compiler.getTask(
+            PrintWriter(System.out),
+            results,
+            diagnosticCollector,
+            listOf("-d", ""),
+            null,
+            compilationUnits,
+        )
 
         // Execute compilation.
         val success = task.call()
@@ -45,7 +44,7 @@ class Compiler {
         }
 
         if (!success) {
-            logger.fatal("Failure when compiling $file")
+            logger.fatal("ERROR: compilation failed")
         }
 
         return results.get(file.nameWithoutExtension)

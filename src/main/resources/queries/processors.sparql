@@ -1,0 +1,16 @@
+PREFIX jvm: <https://w3id.org/conn/jvm#>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+PREFIX fno: <https://w3id.org/function/ontology#>
+PREFIX fnom: <https://w3id.org/function/vocabulary/mapping#>
+
+SELECT
+  ?processor
+  ?file
+  ?language
+
+WHERE {
+  ?processor
+    a jvm:runner.Processor ;
+    jvm:file ?file ;
+    jvm:language ?language .
+}

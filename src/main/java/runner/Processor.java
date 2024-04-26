@@ -1,4 +1,4 @@
-package util;
+package runner;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import static technology.idlab.logging.LoggerKt.createLogger;
 
-public abstract class Template {
+public abstract class Processor {
     /**
      * Processors which wish to log messages should use the logger provided by
      * the template class. This logger is created with the name of the class
@@ -20,13 +20,15 @@ public abstract class Template {
      * name. At the time of writing, the user must manually cast the arguments
      * to the correct type.
      */
-    private final Map<String, Object> arguments = new HashMap<>();
+    private final Map<String, Object> arguments;
 
-    public Template(Map<String, Object> arguments) {
-        this.arguments.putAll(arguments);
+    public Processor(Map<String, Object> arguments) {
+        this.arguments = arguments;
     }
 
-    public Template() {}
+    public Processor() {
+        this.arguments = new HashMap<>();
+    }
 
     protected <T> T getArgument(String name) {
         Object result = arguments.get(name);

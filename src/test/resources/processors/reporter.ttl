@@ -1,0 +1,26 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix fno: <https://w3id.org/function/ontology#>.
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix : <https://w3id.org/conn#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+
+<> owl:imports <../../../main/resources/pipeline.ttl>.
+
+jvm:Reporter a jvm:runner.Processor;
+  jvm:file <../sources/Reporter.java>;
+  jvm:language "Java".
+
+[] a sh:NodeShape;
+  sh:targetClass jvm:Reporter;
+  sh:property [
+    sh:path jvm:incoming;
+    sh:name "incoming";
+    sh:class jvm:ReaderChannel;;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:closed true;
+  sh:ignoredProperties (rdf:type).
