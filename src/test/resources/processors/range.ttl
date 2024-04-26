@@ -9,7 +9,7 @@
 
 <> owl:imports <../pipeline.ttl>.
 
-jvm:Range a jvm:runner.Processor;
+jvm:Range a jvm:Processor;
   jvm:file <../sources/Range.java>;
   jvm:language "Java".
 

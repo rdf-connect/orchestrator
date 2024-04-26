@@ -9,7 +9,7 @@
 
 <> owl:imports <../pipeline.ttl>.
 
-jvm:Reporter a jvm:runner.Processor;
+jvm:Reporter a jvm:Processor;
   jvm:file <../sources/Reporter.java>;
   jvm:language "Java".
 

@@ -10,7 +10,7 @@ SELECT
 
 WHERE {
   ?processor
-    a jvm:runner.Processor ;
+    a jvm:Processor ;
     jvm:file ?file ;
     jvm:language ?language .
 }
