@@ -12,7 +12,7 @@ class Log {
             "TIME".padEnd(12, ' '),
             "THREAD".padEnd(6, ' '),
             "LEVEL".padEnd(7, ' '),
-            "LOCATION".padEnd(30, ' '),
+            "LOCATION".padEnd(50, ' '),
             "MESSAGE",
         ).joinToString(" ")
         println(header)
@@ -21,7 +21,7 @@ class Log {
             "----".padEnd(12, ' '),
             "------".padEnd(6, ' '),
             "-----".padEnd(7, ' '),
-            "--------".padEnd(30, ' '),
+            "--------".padEnd(50, ' '),
             "-------",
         ).joinToString(" ")
         println(separator)
@@ -40,7 +40,7 @@ class Log {
             time.padEnd(12, '0'),
             "[${Thread.currentThread().id}]".padEnd(6, ' '),
             level.padEnd(7, ' '),
-            name.padEnd(30, ' '),
+            name.padEnd(50, ' '),
             message,
         ).joinToString(" ")
 
@@ -68,6 +68,10 @@ class Log {
     fun fatal(message: String, exception: Exception) {
         print("$message - ${exception.message}")
         exitProcess(1)
+    }
+
+    fun debug(message: String) {
+        print(message, "DEBUG")
     }
 
     companion object {

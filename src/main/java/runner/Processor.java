@@ -30,19 +30,23 @@ public abstract class Processor {
     }
 
     protected <T> T getArgument(String name) {
+        Log.Companion.getShared().debug(name);
+
         Object result = arguments.get(name);
+
+        if (result == null) {
+            Log.Companion.getShared().fatal("Argument " + name + " is missing.");
+        }
+
         return (T) result;
     }
 
     protected <T> Optional<T> getOptionalArgument(String name) {
+        Log.Companion.getShared().debug(name + " (optional)");
         return Optional.ofNullable(getArgument(name));
     }
 
-    public void setup() {
-        log.info("Setting up processor");
-    }
+    public void setup() {}
 
-    public void exec() {
-        log.info("Executing processor");
-    }
+    public void exec() {}
 }

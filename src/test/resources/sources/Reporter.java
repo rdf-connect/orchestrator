@@ -1,25 +1,27 @@
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.disposables.Disposable;
+import bridge.Reader;
 import java.util.Map;
 import runner.Processor;
 
 public class Reporter extends Processor {
-    private final Observable<String> incoming;
+    private final Reader reader;
 
     public Reporter(Map<String, Object> args) {
         // Call super constructor.
         super(args);
 
         // Parameters
-        this.incoming = this.getArgument("incoming");
+        this.reader = this.getArgument("reader");
     }
 
-    public void setup() {
-        // Local variables
-        Disposable disposable = incoming.subscribe(
-            item -> log.info("Received item: " + item),
-            error -> log.severe("Error: " + error),
-            () -> log.info("Channel closed.")
-        );
+    public void exec() {
+        while (!reader.isClosed()) {
+            Reader.Result result = reader.readSync();
+
+            if (result.isClosed()) {
+                break;
+            }
+
+            log.info("Received item: " + new String(result.getValue()));
+        }
     }
 }

@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import runner.Processor
 import technology.idlab.logging.Log
 import java.io.File
+import kotlin.concurrent.thread
 
 class Pipeline(config: File) {
     /** Processors described in the config. */
@@ -27,12 +28,10 @@ class Pipeline(config: File) {
 
         // Run execution phase.
         Log.shared.info("Running execution phase")
-        runBlocking {
-            processors.map {
-                async { it.exec() }
-            }.map {
-                it.await()
-            }
+        processors.map {
+            thread { it.exec() }
+        }.map {
+            it.join()
         }
 
         Log.shared.info("Pipeline executed successfully")

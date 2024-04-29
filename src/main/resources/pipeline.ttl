@@ -23,7 +23,7 @@
     sh:maxCount 1;
   ].
 
-# A channel takes in a reader and writer.
+# A bridge takes in a reader and writer.
 []
   a sh:NodeShape;
   sh:targetClass jvm:Channel;
@@ -44,21 +44,21 @@ jvm:MemoryChannel rdfs:subClassOf jvm:Channel.
 jvm:MemoryChannelWriter rdfs:subClassOf jvm:ChannelWriter.
 jvm:MemoryChannelReader rdfs:subClassOf jvm:ChannelReader.
 
-# Define a memory channel reader.
+# Define a memory bridge reader.
 []
   a sh:NodeShape;
   sh:targetClass jvm:MemoryChannelReader;
   sh:closed true;
   sh:ignoredProperties ( rdf:type ).
 
-# Define a memory channel writer.
+# Define a memory bridge writer.
 []
   a sh:NodeShape;
   sh:targetClass jvm:MemoryChannelWriter;
   sh:closed true;
   sh:ignoredProperties ( rdf:type ).
 
-# A memory channel takes in a single reader and writer.
+# A memory bridge takes in a single reader and writer.
 []
   a sh:NodeShape;
   sh:targetClass jvm:MemoryChannel;

@@ -1,5 +1,6 @@
 package technology.idlab.runner
 
+import MemoryBridge
 import io.reactivex.rxjava3.subjects.PublishSubject
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.query.QueryExecutionFactory
@@ -110,7 +111,7 @@ class Parser(file: File) {
         Log.shared.info("Parsing stages")
 
         // Initialize the channel.
-        val channel = PublishSubject.create<String>()
+        val bridge = MemoryBridge()
 
         // Initialize the producer.
         val producerClass = processors[0]
@@ -118,14 +119,14 @@ class Parser(file: File) {
         producerArgs["start"] = 0
         producerArgs["end"] = 5
         producerArgs["step"] = 1
-        producerArgs["outgoing"] = channel
+        producerArgs["writer"] = bridge
         val producerConstructor = producerClass.getConstructor(Map::class.java)
         val producer = producerConstructor.newInstance(producerArgs)
 
         // Initialize the consumer.
         val consumerClass = processors[1]
         val consumerArgs: MutableMap<String, Any> = mutableMapOf()
-        consumerArgs["incoming"] = channel
+        consumerArgs["reader"] = bridge
         val consumerConstructor = consumerClass.getConstructor(Map::class.java)
         val consumer = consumerConstructor.newInstance(consumerArgs)
 

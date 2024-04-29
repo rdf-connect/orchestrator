@@ -1,4 +1,4 @@
-import io.reactivex.rxjava3.subjects.PublishSubject;
+import bridge.Writer;
 import java.util.Map;
 import runner.Processor;
 
@@ -9,7 +9,7 @@ public class Range extends Processor {
     private final int step;
 
     // Channels
-    private final PublishSubject<String> outgoing;
+    private final Writer writer;
 
     public Range(Map<String, Object> args) {
         // Call super constructor.
@@ -21,11 +21,7 @@ public class Range extends Processor {
         this.step = this.getArgument("step");
 
         // Channels
-        this.outgoing = this.getArgument("outgoing");
-    }
-
-    public void setup() {
-        log.info("Binding to outgoing channel.");
+        this.writer = this.getArgument("writer");
     }
 
     public void exec() {
@@ -33,10 +29,10 @@ public class Range extends Processor {
 
         for (int i = start; i < end; i += step) {
             log.info("Emitting " + i);
-            outgoing.onNext(Integer.toString(i));
+            writer.pushSync(Integer.toString(i).getBytes());
         }
 
         log.info("Closing outgoing channel.");
-        outgoing.onComplete();
+        writer.close();
     }
 }

@@ -13,11 +13,11 @@
   <../processors/range.ttl>,
   <../processors/reporter.ttl>.
 
-# Define a memory channel.
+# Define a memory bridge.
 <reader> a jvm:MemoryChannelReader.
 <writer> a jvm:MemoryChannelWriter.
 
-<channel>
+<bridge>
   a jvm:MemoryChannel;
   jvm:reader <reader>;
   jvm:writer <writer>.
