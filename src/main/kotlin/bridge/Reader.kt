@@ -37,6 +37,7 @@ interface Reader {
         }
     }
 
+    suspend fun read(): Result
     fun readSync(): Result
     fun isClosed(): Boolean
 }
