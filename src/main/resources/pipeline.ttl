@@ -75,3 +75,21 @@ jvm:MemoryChannelReader rdfs:subClassOf jvm:ChannelReader.
   ];
   sh:closed true;
   sh:ignoredProperties ( rdf:type ).
+
+# HTTP Channels are specific channels.
+jvm:HttpChannelReader rdfs:subClassOf jvm:ChannelReader.
+jvm:HttpChannelWriter rdfs:subClassOf jvm:ChannelWriter.
+
+# Define a HTTP reader.
+[]
+  a sh:NodeShape;
+  sh:targetClass jvm:HttpChannelReader;
+  sh:closed true;
+  sh:ignoredProperties ( rdf:type ).
+
+# Define a HTTP writer.
+[]
+  a sh:NodeShape;
+  sh:targetClass jvm:HttpChannelWriter;
+  sh:closed true;
+  sh:ignoredProperties ( rdf:type ).
