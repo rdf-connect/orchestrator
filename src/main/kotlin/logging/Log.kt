@@ -6,7 +6,7 @@ import java.util.TimeZone
 import kotlin.Exception
 import kotlin.system.exitProcess
 
-class Log {
+class Log private constructor() {
     init {
         val header = listOf(
             "TIME".padEnd(12, ' '),

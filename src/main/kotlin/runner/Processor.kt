@@ -9,7 +9,7 @@ abstract class Processor {
      * the template class. This logger is created with the name of the class
      * which extends the template.
      */
-    @JvmField protected val log = Log()
+    @JvmField protected val log = Log.shared
 
     /**
      * The arguments of a processor are stored in a map and can be accessed by
