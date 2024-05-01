@@ -2,7 +2,6 @@ package technology.idlab.runner
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import runner.Processor
 import technology.idlab.logging.Log
 import java.io.File
 import kotlin.concurrent.thread

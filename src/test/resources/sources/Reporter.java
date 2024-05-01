@@ -1,6 +1,6 @@
 import bridge.Reader;
 import java.util.Map;
-import runner.Processor;
+import technology.idlab.runner.Processor;
 
 public class Reporter extends Processor {
     private final Reader reader;

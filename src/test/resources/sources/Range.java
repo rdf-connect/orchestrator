@@ -1,6 +1,6 @@
 import bridge.Writer;
 import java.util.Map;
-import runner.Processor;
+import technology.idlab.runner.Processor;
 
 public class Range extends Processor {
     // Parameters

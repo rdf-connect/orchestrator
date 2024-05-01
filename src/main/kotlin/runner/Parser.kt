@@ -1,7 +1,6 @@
 package technology.idlab.runner
 
 import MemoryBridge
-import io.reactivex.rxjava3.subjects.PublishSubject
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
@@ -10,7 +9,6 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.ShaclValidator
 import org.apache.jena.vocabulary.OWL
-import runner.Processor
 import java.io.ByteArrayOutputStream
 import java.io.File
 import technology.idlab.compiler.Compiler
