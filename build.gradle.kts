@@ -1,9 +1,22 @@
 plugins {
+    application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     kotlin("jvm") version "1.9.22"
 }
 
 group = "technology.idlab"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClass.set("technology.idlab.MainKt")
+}
+
+tasks.shadowJar {
+    manifest.attributes.apply {
+        put("Main-Class", "technology.idlab.MainKt")
+    }
+    mergeServiceFiles()
+}
 
 repositories {
     mavenCentral()
@@ -21,9 +34,6 @@ dependencies {
     // RDF dependencies.
     implementation("org.apache.jena:apache-jena-libs:5.0.0")
     implementation("org.apache.jena:jena-arq:5.0.0")
-
-    // Add reactive support.
-    implementation("io.reactivex.rxjava3:rxjava:3.1.8")
 
     // Initialize testing.
     testImplementation("org.jetbrains.kotlin:kotlin-test")

@@ -8,7 +8,7 @@ fun main(args: Array<String>) {
     // Parse arguments.
     if (args.size != 1) {
         println("Usage: jvm-runner <config>")
-        exitProcess(-1)
+        exitProcess(0)
     }
 
     // Parse and load the configuration.
