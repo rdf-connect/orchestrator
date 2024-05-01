@@ -37,6 +37,52 @@ private fun QuerySolution.toProcessor(): Class<Processor> {
         .let { it as Class<Processor> }
 }
 
+private fun QuerySolution.toStage(processors: List<Class<Processor>>): Processor {
+    val byName = processors.associateBy { it.simpleName }
+
+    // Extract the list of arguments.
+    val name = this["processor"]
+        .toString()
+        .substringAfterLast("#")
+
+    val values = this["values"].toString().split(";")
+
+    val keys = this["keys"]
+        .toString()
+        .split(";")
+        .map { it.substringAfterLast("#") }
+
+    val kinds = this["kinds"]
+        .toString()
+        .split(";")
+        .map { it.substringAfterLast("#") }
+
+    // Retrieve a class instance of the Processor.
+    val processor = byName[name] ?: Log.shared.fatal("Processor $name not found")
+    val args = mutableMapOf<String, Any>()
+
+    for (i in keys.indices) {
+        val key = keys[i]
+        val value = values[i]
+        val kind = kinds[i]
+
+        Log.shared.debug("$key: $kind = $value")
+
+        args[key] = when (kind) {
+            "integer" -> value.toInt()
+            "ChannelWriter" -> bridge
+            "ChannelReader" -> bridge
+            else -> Log.shared.fatal("Unknown kind $kind")
+        }
+    }
+
+    val constructor = processor.getConstructor(Map::class.java)
+    return constructor.newInstance(args)
+}
+
+// TODO: Create some sort of a factory.
+val bridge = MemoryBridge()
+
 class Parser(file: File) {
     private val model = ModelFactory.createDefaultModel()
 
@@ -66,6 +112,9 @@ class Parser(file: File) {
 
             imported.add(uri)
         }
+
+        // Import original onthology into the model.
+        model.add(onthology)
 
         // Validate using SHACL.
         val report = ShaclValidator.get().validate(model.graph, model.graph)
@@ -108,26 +157,29 @@ class Parser(file: File) {
         val processors = getProcessors()
         Log.shared.info("Parsing stages")
 
-        // Initialize the channel.
-        val bridge = MemoryBridge()
+        // Execute the stages query.
+        val query = this.javaClass.getResource("/queries/stages.sparql")
+            ?.readText()
+            ?.let { QueryFactory.create(it) }
 
-        // Initialize the producer.
-        val producerClass = processors[0]
-        val producerArgs: MutableMap<String, Any> = mutableMapOf()
-        producerArgs["start"] = 0
-        producerArgs["end"] = 5
-        producerArgs["step"] = 1
-        producerArgs["writer"] = bridge
-        val producerConstructor = producerClass.getConstructor(Map::class.java)
-        val producer = producerConstructor.newInstance(producerArgs)
+        // Execute the query.
+        val iter = QueryExecutionFactory
+            .create(query, model)
+            .execSelect()
 
-        // Initialize the consumer.
-        val consumerClass = processors[1]
-        val consumerArgs: MutableMap<String, Any> = mutableMapOf()
-        consumerArgs["reader"] = bridge
-        val consumerConstructor = consumerClass.getConstructor(Map::class.java)
-        val consumer = consumerConstructor.newInstance(consumerArgs)
+        if (!iter.hasNext()) {
+            Log.shared.fatal("No processors found in the configuration")
+        }
 
-        return listOf(producer, consumer)
+        val result = mutableListOf<Processor>()
+
+        while (iter.hasNext()) {
+            val solution = iter.nextSolution()
+            val stage = solution.toStage(processors)
+            Log.shared.info("Stage ${stage.javaClass.name} initialised successfully")
+            result.add(stage)
+        }
+
+        return result
     }
 }

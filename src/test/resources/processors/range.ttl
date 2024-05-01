@@ -18,25 +18,25 @@ jvm:Range a jvm:Processor;
   sh:property [
     sh:path jvm:start;
     sh:name "start";
-    sh:datatype xsd:int;
+    sh:datatype xsd:integer;
     sh:minCount 1;
     sh:maxCount 1;
   ], [
     sh:path jvm:end;
     sh:name "end";
-    sh:datatype xsd:int;
+    sh:datatype xsd:integer;
     sh:minCount 1;
     sh:maxCount 1;
   ], [
     sh:path jvm:step;
     sh:name "step";
-    sh:datatype xsd:int;
+    sh:datatype xsd:integer;
     sh:minCount 1;
     sh:maxCount 1;
   ], [
-    sh:path jvm:outgoing;
-    sh:name "outgoing";
-    sh:class jvm:WriterChannel;
+    sh:path jvm:output;
+    sh:name "output";
+    sh:class jvm:ChannelWriter;
     sh:minCount 1;
     sh:maxCount 1;
   ];

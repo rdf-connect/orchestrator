@@ -10,7 +10,7 @@ public class Reporter extends Processor {
         super(args);
 
         // Parameters
-        this.reader = this.getArgument("reader");
+        this.reader = this.getArgument("input");
     }
 
     public void exec() {

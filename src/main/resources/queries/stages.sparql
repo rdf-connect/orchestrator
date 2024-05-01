@@ -8,11 +8,19 @@ SELECT
   ?processor
   (group_concat(?key;separator=";") as ?keys)
   (group_concat(?value;separator=";") as ?values)
+  (group_concat(?kind;separator=";") as ?kinds)
 
 WHERE {
     ?processor a jvm:Processor.
     ?stage a ?processor.
     ?stage ?key ?value.
+    ?shape sh:property ?property.
+    ?property sh:path ?key.
+
+    OPTIONAL { ?property sh:datatype ?type. }
+    OPTIONAL { ?property sh:class ?class. }
+    BIND(COALESCE(?type, ?class) as ?kind )
+
     FILTER (?key != "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 }
 

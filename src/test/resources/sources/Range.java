@@ -21,7 +21,7 @@ public class Range extends Processor {
         this.step = this.getArgument("step");
 
         // Channels
-        this.writer = this.getArgument("writer");
+        this.writer = this.getArgument("output");
     }
 
     public void exec() {

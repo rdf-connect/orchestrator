@@ -16,9 +16,9 @@ jvm:Reporter a jvm:Processor;
 [] a sh:NodeShape;
   sh:targetClass jvm:Reporter;
   sh:property [
-    sh:path jvm:incoming;
-    sh:name "incoming";
-    sh:class jvm:ReaderChannel;;
+    sh:path jvm:input;
+    sh:name "input";
+    sh:class jvm:ChannelReader;
     sh:minCount 1;
     sh:maxCount 1;
   ];

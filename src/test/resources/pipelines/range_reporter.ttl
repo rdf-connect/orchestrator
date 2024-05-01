@@ -26,11 +26,11 @@
 []
   a jvm:Range;
   jvm:start "0"^^xsd:integer;
-  jvm:end "100"^^xsd:integer;
+  jvm:end "10"^^xsd:integer;
   jvm:step "1"^^xsd:integer;
-  jvm:outgoing <writer>.
+  jvm:output <writer>.
 
 # Define a reporter.
 []
   a jvm:Reporter;
-  jvm:incoming <reader>.
+  jvm:input <reader>.
