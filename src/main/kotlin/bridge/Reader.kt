@@ -41,4 +41,3 @@ interface Reader {
     fun readSync(): Result
     fun isClosed(): Boolean
 }
-

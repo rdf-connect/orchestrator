@@ -34,7 +34,7 @@ class Log private constructor() {
         val time = tz.format(iso)
 
         val caller = Throwable().stackTrace[2]
-        val name = "${caller.className.substringAfterLast(".")}::${caller.methodName}"
+        val name = "${caller.className.substringAfterLast(".")}::${caller.methodName}::${caller.lineNumber}"
 
         val line = listOf(
             time.padEnd(12, '0'),

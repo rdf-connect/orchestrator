@@ -2,7 +2,7 @@ PREFIX jvm: <https://w3id.org/conn/jvm#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT ?channel ?subclass ?writer ?reader
+SELECT ?channel ?writer ?reader
 {
     ?channel a ?subclass.
     ?subclass rdfs:subClassOf jvm:Channel.

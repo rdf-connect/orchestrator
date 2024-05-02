@@ -1,6 +1,9 @@
 package technology.idlab.runner
 
-import MemoryBridge
+import bridge.HttpReader
+import bridge.Reader
+import bridge.Writer
+import kotlinx.coroutines.channels.Channel
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
@@ -10,6 +13,9 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.ShaclValidator
 import org.apache.jena.vocabulary.OWL
+import technology.idlab.bridge.HttpWriter
+import technology.idlab.bridge.MemoryReader
+import technology.idlab.bridge.MemoryWriter
 import java.io.ByteArrayOutputStream
 import java.io.File
 import technology.idlab.compiler.Compiler
@@ -94,9 +100,6 @@ private fun Model.validate(): Model {
     return this
 }
 
-// TODO: Create some sort of a factory.
-val bridge = MemoryBridge()
-
 class Parser(file: File) {
     /**
      * An RDF model of the configuration file.
@@ -107,6 +110,10 @@ class Parser(file: File) {
      * Class references to the different processors.
      */
     private val processors: List<Class<Processor>>
+
+    private val readers: Map<String, Reader>
+
+    private val writers: Map<String, Writer>
 
     /**
      * The stages of the pipeline.
@@ -141,6 +148,121 @@ class Parser(file: File) {
         }
 
         this.processors = processors
+    }
+
+    /**
+     * Parse the model for readers.
+     */
+    init {
+        Log.shared.info("Parsing readers")
+        val readers = mutableMapOf<String, Reader>()
+
+        val query = this.javaClass.getResource("/queries/readers.sparql")
+            .let { it ?: Log.shared.fatal("Failed to read readers.sparql") }
+            .readText()
+            .let { QueryFactory.create(it) }
+
+        val iter = QueryExecutionFactory
+            .create(query, model)
+            .execSelect()
+
+        while (iter.hasNext()) {
+            val solution = iter.nextSolution()
+
+            val subClass = solution["subClass"]
+                .toString()
+                .substringAfterLast("#")
+
+            val identifier = solution["reader"]
+                .toString()
+
+            val reader = when (subClass) {
+                "MemoryChannelReader" -> MemoryReader()
+                "HttpChannelReader" -> HttpReader()
+                else -> Log.shared.fatal("Reader $subClass not found")
+            }
+
+            readers[identifier] = reader
+        }
+
+        this.readers = readers
+    }
+
+    /**
+     * Parse the model for writers.
+     */
+    init {
+        Log.shared.info("Parsing writers")
+        val writers = mutableMapOf<String, Writer>()
+
+        val query = this.javaClass.getResource("/queries/writers.sparql")
+            .let { it ?: Log.shared.fatal("Failed to read writers.sparql") }
+            .readText()
+            .let { QueryFactory.create(it) }
+
+        val iter = QueryExecutionFactory
+            .create(query, model)
+            .execSelect()
+
+        while (iter.hasNext()) {
+            val solution = iter.nextSolution()
+
+            val subClass = solution["subClass"]
+                .toString()
+                .substringAfterLast("#")
+
+            val identifier = solution["writer"]
+                .toString()
+
+            val reader = when (subClass) {
+                "MemoryChannelWriter" -> MemoryWriter()
+                "HttpChannelWriter" -> HttpWriter("http://localhost:8080")
+                else -> Log.shared.fatal("Reader $subClass not found")
+            }
+
+            writers[identifier] = reader
+        }
+
+        this.writers = writers
+    }
+
+    /**
+     * Parse the model for bridges. Readers and writers that may be bridges in
+     * a single runner instance will be bound to each other here.
+     */
+    init {
+        Log.shared.info("Parsing bridges")
+
+        val query = this.javaClass.getResource("/queries/bridges.sparql")
+            ?.readText()
+            ?.let { QueryFactory.create(it) }
+
+        val iter = QueryExecutionFactory
+            .create(query, model)
+            .execSelect()
+
+        while (iter.hasNext()) {
+            val solution = iter.nextSolution()
+
+            val readerId = solution["reader"].toString()
+            val writerId = solution["writer"].toString()
+
+            val reader = readers[readerId] ?: Log.shared.fatal("Reader $readerId not found")
+            val writer = writers[writerId] ?: Log.shared.fatal("Writer $writerId not found")
+            val channel = Channel<ByteArray>(1)
+
+            if (reader is MemoryReader) {
+                reader.setChannel(channel)
+            } else {
+                Log.shared.fatal("Reader $readerId is not a MemoryReader")
+            }
+
+            if (writer is MemoryWriter) {
+                writer.setChannel(channel)
+            } else {
+                Log.shared.fatal("Writer $writerId is not a MemoryWriter")
+            }
+        }
     }
 
     /**
@@ -188,12 +310,12 @@ class Parser(file: File) {
 
         val values = querySolution["values"].toString().split(";")
 
-        val keys = querySolution["keys"]
+        val argumentNames = querySolution["keys"]
             .toString()
             .split(";")
             .map { it.substringAfterLast("#") }
 
-        val kinds = querySolution["kinds"]
+        val types = querySolution["kinds"]
             .toString()
             .split(";")
             .map { it.substringAfterLast("#") }
@@ -202,18 +324,18 @@ class Parser(file: File) {
         val processor = byName[name] ?: Log.shared.fatal("Processor $name not found")
         val args = mutableMapOf<String, Any>()
 
-        for (i in keys.indices) {
-            val key = keys[i]
+        for (i in argumentNames.indices) {
+            val argumentName = argumentNames[i]
             val value = values[i]
-            val kind = kinds[i]
+            val type = types[i]
 
-            Log.shared.debug("$key: $kind = $value")
+            Log.shared.debug("$argumentName: $type = $value")
 
-            args[key] = when (kind) {
+            args[argumentName] = when (type) {
                 "integer" -> value.toInt()
-                "ChannelWriter" -> bridge
-                "ChannelReader" -> bridge
-                else -> Log.shared.fatal("Unknown kind $kind")
+                "ChannelWriter" -> writers[value] ?: Log.shared.fatal("Writer $argumentName not found")
+                "ChannelReader" -> readers[value] ?: Log.shared.fatal("Reader $argumentName not found")
+                else -> Log.shared.fatal("Unknown type $type")
             }
         }
 

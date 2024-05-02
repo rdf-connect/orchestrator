@@ -1,29 +1,26 @@
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
-import bridge.Bridge
+package technology.idlab.bridge
+
 import bridge.Reader
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.runBlocking
 import technology.idlab.logging.Log
 
-class MemoryBridge : Bridge {
-    private var channel = Channel<ByteArray>(10)
+class MemoryReader: Reader {
+    private var channel: Channel<ByteArray>? = null
 
-    override fun pushSync(value: ByteArray) {
-        Log.shared.debug("Pushing ${value.size} bytes")
-        runBlocking { channel.send(value) }
-        Log.shared.debug("Done")
-    }
-
-    override suspend fun push(value: ByteArray) {
-        try {
-            channel.trySend(value)
-        } catch (e: Exception) {
-            Log.shared.fatal(e)
+    fun setChannel(channel: Channel<ByteArray>) {
+        if (this.channel != null) {
+            Log.shared.fatal("Channel already set")
         }
+
+        this.channel = channel
     }
 
     override fun readSync(): Reader.Result {
         Log.shared.debug("Reading bytes")
+        val channel = this.channel ?: Log.shared.fatal("Channel not set")
+
         val result = runBlocking { channel.receiveCatching() }
 
         // Check if the channel got closed.
@@ -41,21 +38,21 @@ class MemoryBridge : Bridge {
     }
 
     override suspend fun read(): Reader.Result {
-        try {
+        Log.shared.debug("Reading bytes")
+        val channel = this.channel ?: Log.shared.fatal("Channel not set")
+
+        return try {
             val result = channel.receive()
-            return Reader.Result.success(result)
+            Reader.Result.success(result)
         } catch (e: ClosedReceiveChannelException) {
-            return Reader.Result.closed()
+            Reader.Result.closed()
         } catch (e: Exception) {
             Log.shared.fatal(e)
         }
     }
 
     override fun isClosed(): Boolean {
+        val channel = this.channel ?: Log.shared.fatal("Channel not set")
         return channel.isClosedForSend
-    }
-
-    override fun close() {
-        channel.close()
     }
 }
