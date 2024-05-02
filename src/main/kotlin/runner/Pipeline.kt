@@ -8,7 +8,7 @@ import kotlin.concurrent.thread
 
 class Pipeline(config: File) {
     /** Processors described in the config. */
-    private val processors: List<Processor> = Parser(config).getStages()
+    private val processors: List<Processor> = Parser(config).stages
 
     /**
      * Execute all processors in the configuration in parallel, and block until
