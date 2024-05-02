@@ -6,7 +6,7 @@ import technology.idlab.logging.Log
 
 class Pipeline(config: File) {
   /** Processors described in the config. */
-  private val processors: List<Processor> = Parser(config).stages
+  private val processors: List<Processor> = Parser(config).getStages()
 
   /** Execute all processors in the configuration in parallel, and block until all are done. */
   fun executeSync() {
