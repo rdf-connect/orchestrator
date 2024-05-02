@@ -6,51 +6,51 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.runBlocking
 import technology.idlab.logging.Log
 
-class MemoryReader: Reader {
-    private var channel: Channel<ByteArray>? = null
+class MemoryReader : Reader {
+  private var channel: Channel<ByteArray>? = null
 
-    fun setChannel(channel: Channel<ByteArray>) {
-        if (this.channel != null) {
-            Log.shared.fatal("Channel already set")
-        }
-
-        this.channel = channel
+  fun setChannel(channel: Channel<ByteArray>) {
+    if (this.channel != null) {
+      Log.shared.fatal("Channel already set")
     }
 
-    override fun readSync(): Reader.Result {
-        val channel = this.channel ?: Log.shared.fatal("Channel not set")
+    this.channel = channel
+  }
 
-        val result = runBlocking { channel.receiveCatching() }
+  override fun readSync(): Reader.Result {
+    val channel = this.channel ?: Log.shared.fatal("Channel not set")
 
-        // Check if the channel got closed.
-        if (result.isClosed) {
-            return Reader.Result.closed()
-        }
+    val result = runBlocking { channel.receiveCatching() }
 
-        // If an error occurred, the runner must handle it itself.
-        if (result.isFailure) {
-            Log.shared.fatal("Failed to read bytes")
-        }
-
-        val bytes = result.getOrThrow()
-        return Reader.Result.success(bytes)
+    // Check if the channel got closed.
+    if (result.isClosed) {
+      return Reader.Result.closed()
     }
 
-    override suspend fun read(): Reader.Result {
-        val channel = this.channel ?: Log.shared.fatal("Channel not set")
-
-        return try {
-            val result = channel.receive()
-            Reader.Result.success(result)
-        } catch (e: ClosedReceiveChannelException) {
-            Reader.Result.closed()
-        } catch (e: Exception) {
-            Log.shared.fatal(e)
-        }
+    // If an error occurred, the runner must handle it itself.
+    if (result.isFailure) {
+      Log.shared.fatal("Failed to read bytes")
     }
 
-    override fun isClosed(): Boolean {
-        val channel = this.channel ?: Log.shared.fatal("Channel not set")
-        return channel.isClosedForSend
+    val bytes = result.getOrThrow()
+    return Reader.Result.success(bytes)
+  }
+
+  override suspend fun read(): Reader.Result {
+    val channel = this.channel ?: Log.shared.fatal("Channel not set")
+
+    return try {
+      val result = channel.receive()
+      Reader.Result.success(result)
+    } catch (e: ClosedReceiveChannelException) {
+      Reader.Result.closed()
+    } catch (e: Exception) {
+      Log.shared.fatal(e)
     }
+  }
+
+  override fun isClosed(): Boolean {
+    val channel = this.channel ?: Log.shared.fatal("Channel not set")
+    return channel.isClosedForSend
+  }
 }
