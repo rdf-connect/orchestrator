@@ -39,7 +39,5 @@ abstract class Processor {
         return Optional.ofNullable(result) as Optional<T>
     }
 
-    open fun setup() {}
-
-    open fun exec() {}
+    abstract fun exec()
 }

@@ -18,10 +18,7 @@ class MemoryWriter: Writer {
 
     override fun pushSync(value: ByteArray) {
         val channel = this.channel ?: Log.shared.fatal("Channel not set")
-
-        Log.shared.debug("Pushing ${value.size} bytes")
         runBlocking { channel.send(value) }
-        Log.shared.debug("Done")
     }
 
     override suspend fun push(value: ByteArray) {

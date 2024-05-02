@@ -21,7 +21,7 @@ public class Reporter extends Processor {
                 break;
             }
 
-            log.info("Received item: " + new String(result.getValue()));
+            log.info(new String(result.getValue()));
         }
     }
 }

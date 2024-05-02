@@ -18,7 +18,6 @@ class MemoryReader: Reader {
     }
 
     override fun readSync(): Reader.Result {
-        Log.shared.debug("Reading bytes")
         val channel = this.channel ?: Log.shared.fatal("Channel not set")
 
         val result = runBlocking { channel.receiveCatching() }
@@ -38,7 +37,6 @@ class MemoryReader: Reader {
     }
 
     override suspend fun read(): Reader.Result {
-        Log.shared.debug("Reading bytes")
         val channel = this.channel ?: Log.shared.fatal("Channel not set")
 
         return try {

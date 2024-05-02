@@ -10,17 +10,27 @@
 # Include processor definitions.
 <> owl:imports
   <../pipeline.ttl>,
+  <../processors/square.ttl>,
   <../processors/range.ttl>,
   <../processors/reporter.ttl>.
 
-# Define a memory bridge.
-<reader> a jvm:MemoryChannelReader.
-<writer> a jvm:MemoryChannelWriter.
+# Range -> Square
+<reader1> a jvm:MemoryChannelReader.
+<writer1> a jvm:MemoryChannelWriter.
 
-<bridge>
+<bridge1>
   a jvm:MemoryChannel;
-  jvm:reader <reader>;
-  jvm:writer <writer>.
+  jvm:reader <reader1>;
+  jvm:writer <writer1>.
+
+<reader2> a jvm:MemoryChannelReader.
+<writer2> a jvm:MemoryChannelWriter.
+
+# Square -> Reporter
+<bridge2>
+  a jvm:MemoryChannel;
+  jvm:reader <reader2>;
+  jvm:writer <writer2>.
 
 # Define a range processor.
 []
@@ -28,9 +38,16 @@
   jvm:start "0"^^xsd:integer;
   jvm:end "10"^^xsd:integer;
   jvm:step "1"^^xsd:integer;
-  jvm:output <writer>.
+  jvm:output <writer1>.
+
+# Define a square processor.
+[]
+  a jvm:Square;
+  jvm:input <reader1>;
+  jvm:output <writer2>.
 
 # Define a reporter.
 []
   a jvm:Reporter;
-  jvm:input <reader>.
+  jvm:input <reader2>.
+

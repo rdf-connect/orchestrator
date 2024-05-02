@@ -15,18 +15,8 @@ class Pipeline(config: File) {
      * all are done.
      */
     fun executeSync() {
-        // Run setup phase.
-        Log.shared.info("Running setup phase")
-        runBlocking {
-            processors.map {
-                async { it.setup() }
-            }.map {
-                it.await()
-            }
-        }
+        Log.shared.info("Executing pipeline.")
 
-        // Run execution phase.
-        Log.shared.info("Running execution phase")
         processors.map {
             thread { it.exec() }
         }.map {

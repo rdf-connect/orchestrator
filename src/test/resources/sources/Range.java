@@ -25,14 +25,10 @@ public class Range extends Processor {
     }
 
     public void exec() {
-        log.info("Initializing emitting loop.");
-
         for (int i = start; i < end; i += step) {
-            log.info("Emitting " + i);
+            log.info(Integer.toString(i));
             writer.pushSync(Integer.toString(i).getBytes());
         }
-
-        log.info("Closing outgoing channel.");
         writer.close();
     }
 }
