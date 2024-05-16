@@ -1,0 +1,24 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+
+# Include processor definitions.
+<> owl:imports
+  <../pipeline.ttl>,
+  <../processors/filter.ttl>.
+
+# Range -> Filter
+<reader> a jvm:MemoryChannelReader.
+<writer> a jvm:MemoryChannelWriter.
+
+# Define a filter processor.
+[]
+  a jvm:Filter;
+  jvm:input <reader>;
+  jvm:output <writer>;
+  jvm:whitelist
+    "0"^^xsd:integer,
+    "2"^^xsd:integer,
+    "4"^^xsd:integer,
+    "6"^^xsd:integer,
+    "8"^^xsd:integer.
