@@ -7,10 +7,28 @@ SELECT
   ?processor
   ?file
   ?language
+  (group_concat(?min;separator=";") as ?mins)
+  (group_concat(?max;separator=";") as ?maxs)
+  (group_concat(?path;separator=";") as ?paths)
 
 WHERE {
   ?processor
     a jvm:Processor ;
     jvm:file ?file ;
     jvm:language ?language .
+
+  ?shape
+    a sh:NodeShape ;
+    sh:targetClass ?processor ;
+    sh:property ?property .
+
+  ?property sh:path ?path .
+
+  OPTIONAL { ?property sh:minCount ?minCount. }
+  OPTIONAL { ?property sh:maxCount ?maxCount. }
+
+  BIND(COALESCE(?minCount, "") AS ?min)
+  BIND(COALESCE(?maxCount, "") AS ?max)
 }
+
+GROUP BY ?processor ?file ?language

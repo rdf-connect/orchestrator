@@ -22,14 +22,14 @@ abstract class Processor {
 
   constructor()
 
-  protected fun <T> getArgument(name: String): T {
+  fun <T> getArgument(name: String): T {
     log.debug(name)
 
     val result = arguments[name] as T ?: log.fatal("Argument $name is missing")
     return result
   }
 
-  protected fun <T> getOptionalArgument(name: String): Optional<T> {
+  fun <T> getOptionalArgument(name: String): Optional<T> {
     log.debug("$name (optional)")
 
     val result = arguments[name] as T?
