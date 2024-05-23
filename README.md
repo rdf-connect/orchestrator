@@ -29,7 +29,7 @@ Note that SHACL will validate your processor, so out-of-range or invalid values 
 
 ### Contributor Guide
 
-###### Pre-Commit Hooks
+#### Pre-Commit Hooks
 
 This repository supports `pre-commit` hooks. To install the hooks, run the following command.
 
@@ -37,7 +37,7 @@ This repository supports `pre-commit` hooks. To install the hooks, run the follo
 pre-commit install
 ```
 
-###### Formatting
+#### Formatting
 
 The code in this repository is formatted using Meta's `ktfmt` tool, mainly due to the following feature.
 
