@@ -1,4 +1,4 @@
-package technology.idlab.runner
+package technology.idlab.parser
 
 import bridge.HttpReader
 import bridge.Reader
@@ -15,6 +15,7 @@ import technology.idlab.extensions.query
 import technology.idlab.extensions.readModelRecursively
 import technology.idlab.extensions.validate
 import technology.idlab.logging.Log
+import technology.idlab.runner.Processor
 
 class Parser(file: File) {
   /** An RDF model of the configuration file. */

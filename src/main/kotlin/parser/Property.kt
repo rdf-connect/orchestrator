@@ -1,4 +1,4 @@
-package technology.idlab.runner
+package technology.idlab.parser
 
 class Property(val name: String, val type: String, min: Int?, max: Int?) {
   enum class Count {

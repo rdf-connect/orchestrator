@@ -3,6 +3,7 @@ package technology.idlab.runner
 import java.io.File
 import kotlin.concurrent.thread
 import technology.idlab.logging.Log
+import technology.idlab.parser.Parser
 
 class Pipeline(config: File) {
   /** Processors described in the config. */

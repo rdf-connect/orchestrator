@@ -1,4 +1,4 @@
-package technology.idlab.runner
+package technology.idlab.parser
 
 import technology.idlab.logging.Log
 

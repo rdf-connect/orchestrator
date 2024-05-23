@@ -1,4 +1,4 @@
-package technology.idlab.runner
+package technology.idlab.parser
 
 import org.apache.jena.rdf.model.RDFNode
 
