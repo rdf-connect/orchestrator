@@ -3,164 +3,18 @@ package technology.idlab.runner
 import bridge.HttpReader
 import bridge.Reader
 import bridge.Writer
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.time.Instant
-import java.util.Date
 import kotlinx.coroutines.channels.Channel
-import org.apache.jena.ontology.OntModelSpec
-import org.apache.jena.query.ParameterizedSparqlString
-import org.apache.jena.query.QueryExecutionFactory
-import org.apache.jena.query.QuerySolution
-import org.apache.jena.rdf.model.Model
-import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.RDFNode
-import org.apache.jena.rdf.model.Resource
-import org.apache.jena.shacl.ShaclValidator
-import org.apache.jena.vocabulary.OWL
 import technology.idlab.bridge.HttpWriter
 import technology.idlab.bridge.MemoryReader
 import technology.idlab.bridge.MemoryWriter
-import technology.idlab.compiler.Compiler
-import technology.idlab.compiler.MemoryClassLoader
+import technology.idlab.extensions.*
+import technology.idlab.extensions.loadIntoJVM
+import technology.idlab.extensions.query
+import technology.idlab.extensions.readModelRecursively
+import technology.idlab.extensions.validate
 import technology.idlab.logging.Log
-
-/**
- * Read a model from a file and recursively import all referenced ontologies based on <owl:import>
- * statements.
- */
-private fun File.readModelRecursively(): Model {
-  val result = ModelFactory.createDefaultModel()
-
-  val onthology = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
-  Log.shared.info("Importing file://${this.absolutePath}")
-  onthology.read(this.toURI().toString(), "TURTLE")
-
-  // Import any referenced ontologies.
-  val imported: MutableSet<String> = mutableSetOf()
-  val iter = onthology.listStatements(null, OWL.imports, null as Resource?)
-  while (iter.hasNext()) {
-    val statement = iter.nextStatement()
-    val uri = statement.getObject().toString()
-
-    // Check if we still need to import the referenced ontology.
-    if (imported.contains(uri)) {
-      continue
-    }
-
-    // Attempt importing the dataset.
-    Log.shared.info("Importing $uri")
-    try {
-      result.read(uri)
-    } catch (e: Exception) {
-      Log.shared.fatal(e)
-    }
-
-    imported.add(uri)
-  }
-
-  // Import original onthology into the model.
-  result.add(onthology)
-
-  return result
-}
-
-/**
- * Parse a file as a JVM processor by loading the class file from disk or compiling the source code.
- */
-private fun File.loadIntoJVM(): Class<*> {
-  val bytes =
-      when (extension) {
-        "java" -> {
-          Compiler.compile(this)
-        }
-        "class" -> {
-          readBytes()
-        }
-        else -> {
-          Log.shared.fatal("Unsupported file extension: $extension")
-        }
-      }
-
-  return MemoryClassLoader().fromBytes(bytes, nameWithoutExtension)
-}
-
-private fun RDFNode.narrowedLiteral(): Any {
-  val literal = asLiteral()
-  return when (literal.datatype.javaClass) {
-    java.lang.Boolean::class.java -> literal.boolean
-    java.lang.Byte::class.java -> literal.byte
-    org.apache.jena.datatypes.xsd.XSDDateTime::class.java -> {
-      val value = literal.string
-      val instant = Instant.parse(value)
-      Date.from(instant)
-    }
-    java.lang.Double::class.java -> literal.double
-    java.lang.Float::class.java -> literal.float
-    java.lang.Long::class.java -> literal.long
-    java.lang.Integer::class.java -> literal.int
-    java.lang.String::class.java -> literal.string
-    else -> Log.shared.info("Unsupported data type: ${literal.datatype}")
-  }
-}
-
-/** Execute a query as and apply a function to each solution. */
-private fun Model.query(
-    resource: String,
-    bindings: Map<String, String> = mutableMapOf(),
-    func: (QuerySolution) -> Unit
-) {
-  val file =
-      object {}.javaClass.getResource(resource) ?: Log.shared.fatal("Failed to read $resource")
-
-  Log.shared.info("Executing SPARQL query file://${file.path}")
-
-  val rawQuery = file.readText()
-
-  // Apply bindings
-  val pss = ParameterizedSparqlString()
-  pss.commandText = rawQuery
-  bindings.forEach {
-    Log.shared.debug("Binding ${it.key} to ${it.value}")
-    pss.setIri(it.key, it.value)
-  }
-
-  // Create new query and execute it.
-  val iter = QueryExecutionFactory.create(pss.asQuery(), this).execSelect()
-
-  // Execute the function for each solution.
-  while (iter.hasNext()) {
-    val solution = iter.nextSolution()
-    func(solution)
-  }
-}
-
-/** Validates a model against the SHACL schema defined inside the model itself. */
-private fun Model.validate(): Model {
-  val graph = this.graph
-  val report = ShaclValidator.get().validate(graph, graph)
-
-  // Exit if the validation failed.
-  if (!report.conforms()) {
-    val out = ByteArrayOutputStream()
-    report.model.write(out, "TURTLE")
-    Log.shared.fatal("Validation failed\n$out")
-  }
-
-  return this
-}
-
-/**
- * Get an optional value from a query solution. If the key is not found, return null instead of
- * throwing an exception.
- */
-private fun QuerySolution.getOptional(key: String): RDFNode? {
-  return try {
-    this[key]
-  } catch (e: Exception) {
-    null
-  }
-}
 
 class Parser(file: File) {
   /** An RDF model of the configuration file. */
@@ -183,8 +37,6 @@ class Parser(file: File) {
 
   /** Parse the model for processor declarations and save results as a field. */
   init {
-    Log.shared.info("Parsing processors")
-
     model.query("/queries/processors.sparql") {
       val uri = it["processor"].toString()
       val path = it["file"].toString().drop(7)
@@ -214,8 +66,6 @@ class Parser(file: File) {
 
   /** Parse the model for readers. */
   init {
-    Log.shared.info("Parsing readers")
-
     model.query("/queries/readers.sparql") {
       val subClass = it["subClass"]
       val identifier = it["reader"]
@@ -234,8 +84,6 @@ class Parser(file: File) {
 
   /** Parse the model for writers. */
   init {
-    Log.shared.info("Parsing writers")
-
     model.query("/queries/writers.sparql") {
       val subClass = it["subClass"]
       val identifier = it["writer"]
@@ -257,8 +105,6 @@ class Parser(file: File) {
    * instance will be bound to each other here.
    */
   init {
-    Log.shared.info("Parsing bridges")
-
     model.query("/queries/bridges.sparql") {
       val readerId = it["reader"]
       val writerId = it["writer"]
@@ -286,8 +132,6 @@ class Parser(file: File) {
    * result to a field.
    */
   init {
-    Log.shared.info("Parsing stages")
-
     model.query("/queries/stages.sparql") { query ->
       val processor = query["processor"].toString()
       val stage = query["stage"].toString()
