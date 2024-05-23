@@ -22,8 +22,13 @@ abstract class Processor(
   }
 
   fun <T> getOptionalArgument(name: String): Optional<T> {
-    val result = arguments[name] as T?
-    return Optional.ofNullable(result) as Optional<T>
+    val result = arguments[name] ?: log.fatal("Argument $name is missing")
+
+    if (result is Optional<*>) {
+      return result as Optional<T>
+    }
+
+    log.fatal("Argument $name is not optional")
   }
 
   abstract fun exec()

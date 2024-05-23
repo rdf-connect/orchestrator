@@ -1,0 +1,14 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+
+# Include processor definitions.
+<> owl:imports
+  <../pipeline.ttl>,
+  <../processors/optionals.ttl>.
+
+# Define a filter processor.
+[]
+  a jvm:Optionals;
+  jvm:required "A Required String"^^xsd:string;
+  jvm:present "An Optional String"^^xsd:string.

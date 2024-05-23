@@ -40,6 +40,7 @@ class Arguments(private val shape: Shape) {
 
     // Mark the not set optionals explicitly.
     this.shape.getProperties().forEach {
+      // Check if is optional.
       if (it.value.count != Property.Count.OPTIONAL) {
         return@forEach
       }
