@@ -9,34 +9,50 @@
 
 <> owl:imports <../pipeline.ttl>.
 
-jvm:Range a jvm:Processor;
-  jvm:file <../sources/Range.java>;
+jvm:Literals a jvm:Processor;
+  jvm:file <../sources/Literals.java>;
   jvm:language "Java".
 
 [] a sh:NodeShape;
-  sh:targetClass jvm:Range;
+  sh:targetClass jvm:Literals;
   sh:property [
-    sh:path jvm:start;
-    sh:name "start";
+    sh:path jvm:_bool;
+    sh:datatype xsd:boolean;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:_byte;
+    sh:datatype xsd:byte;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:_dateTime;
+    sh:datatype xsd:dateTime;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:_double;
+    sh:datatype xsd:double;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:_float;
+    sh:datatype xsd:float;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:_int;
     sh:datatype xsd:int;
     sh:minCount 1;
     sh:maxCount 1;
   ], [
-    sh:path jvm:end;
-    sh:name "end";
-    sh:datatype xsd:int;
+    sh:path jvm:_long;
+    sh:datatype xsd:long;
     sh:minCount 1;
     sh:maxCount 1;
   ], [
-    sh:path jvm:step;
-    sh:name "step";
-    sh:datatype xsd:int;
-    sh:minCount 1;
-    sh:maxCount 1;
-  ], [
-    sh:path jvm:output;
-    sh:name "output";
-    sh:class jvm:ChannelWriter;
+    sh:path jvm:_string;
+    sh:datatype xsd:string;
     sh:minCount 1;
     sh:maxCount 1;
   ];

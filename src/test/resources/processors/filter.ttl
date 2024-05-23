@@ -18,7 +18,7 @@ jvm:Filter a jvm:Processor;
   sh:property [
     sh:path jvm:whitelist;
     sh:name "whitelist";
-    sh:datatype xsd:integer;
+    sh:datatype xsd:int;
   ], [
     sh:path jvm:input;
     sh:name "input";

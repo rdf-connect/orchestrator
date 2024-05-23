@@ -17,8 +17,8 @@
   jvm:input <reader>;
   jvm:output <writer>;
   jvm:whitelist
-    "0"^^xsd:integer,
-    "2"^^xsd:integer,
-    "4"^^xsd:integer,
-    "6"^^xsd:integer,
-    "8"^^xsd:integer.
+    "0"^^xsd:int,
+    "2"^^xsd:int,
+    "4"^^xsd:int,
+    "6"^^xsd:int,
+    "8"^^xsd:int.

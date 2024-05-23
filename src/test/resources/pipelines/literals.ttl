@@ -1,0 +1,20 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+
+# Include processor definitions.
+<> owl:imports
+  <../pipeline.ttl>,
+  <../processors/literals.ttl>.
+
+# Define a filter processor.
+[]
+  a jvm:Literals;
+  jvm:_bool "true"^^xsd:boolean;
+  jvm:_byte "24"^^xsd:byte;
+  jvm:_dateTime "2024-05-23T10:20:30Z"^^xsd:dateTime;
+  jvm:_double "3.1415"^^xsd:double;
+  jvm:_float "3.14"^^xsd:float;
+  jvm:_int "242424"^^xsd:int;
+  jvm:_long "242424242424"^^xsd:long;
+  jvm:_string "Hello, World!"^^xsd:string.

@@ -35,9 +35,9 @@
 # Define a range processor.
 []
   a jvm:Range;
-  jvm:start "0"^^xsd:integer;
-  jvm:end "10"^^xsd:integer;
-  jvm:step "1"^^xsd:integer;
+  jvm:start "0"^^xsd:int;
+  jvm:end "10"^^xsd:int;
+  jvm:step "1"^^xsd:int;
   jvm:output <writer1>.
 
 # Define a square processor.

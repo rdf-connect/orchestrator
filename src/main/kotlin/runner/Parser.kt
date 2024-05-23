@@ -5,6 +5,8 @@ import bridge.Reader
 import bridge.Writer
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.time.Instant
+import java.util.Date
 import kotlinx.coroutines.channels.Channel
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.query.ParameterizedSparqlString
@@ -12,6 +14,7 @@ import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QuerySolution
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.ShaclValidator
 import org.apache.jena.vocabulary.OWL
@@ -21,14 +24,6 @@ import technology.idlab.bridge.MemoryWriter
 import technology.idlab.compiler.Compiler
 import technology.idlab.compiler.MemoryClassLoader
 import technology.idlab.logging.Log
-
-private fun parseXsdInteger(value: String): Int {
-  val match =
-      Regex("^\"([0-9]+)\"\\^\\^xsd:integer$").find(value)
-          ?: Log.shared.fatal("Failed to parse XSD integer: $value")
-
-  return match.groupValues[1].toInt()
-}
 
 /**
  * Read a model from a file and recursively import all referenced ontologies based on <owl:import>
@@ -70,6 +65,46 @@ private fun File.readModelRecursively(): Model {
   return result
 }
 
+/**
+ * Parse a file as a JVM processor by loading the class file from disk or compiling the source code.
+ */
+private fun File.loadIntoJVM(): Class<*> {
+  val bytes =
+      when (extension) {
+        "java" -> {
+          Compiler.compile(this)
+        }
+        "class" -> {
+          readBytes()
+        }
+        else -> {
+          Log.shared.fatal("Unsupported file extension: $extension")
+        }
+      }
+
+  return MemoryClassLoader().fromBytes(bytes, nameWithoutExtension)
+}
+
+private fun RDFNode.narrowedLiteral(): Any {
+  val literal = asLiteral()
+  return when (literal.datatype.javaClass) {
+    java.lang.Boolean::class.java -> literal.boolean
+    java.lang.Byte::class.java -> literal.byte
+    org.apache.jena.datatypes.xsd.XSDDateTime::class.java -> {
+      val value = literal.string
+      val instant = Instant.parse(value)
+      Date.from(instant)
+    }
+    java.lang.Double::class.java -> literal.double
+    java.lang.Float::class.java -> literal.float
+    java.lang.Long::class.java -> literal.long
+    java.lang.Integer::class.java -> literal.int
+    java.lang.String::class.java -> literal.string
+    else -> Log.shared.info("Unsupported data type: ${literal.datatype}")
+  }
+}
+
+/** Execute a query as and apply a function to each solution. */
 private fun Model.query(
     resource: String,
     bindings: Map<String, String> = mutableMapOf(),
@@ -115,18 +150,30 @@ private fun Model.validate(): Model {
   return this
 }
 
+/**
+ * Get an optional value from a query solution. If the key is not found, return null instead of
+ * throwing an exception.
+ */
+private fun QuerySolution.getOptional(key: String): RDFNode? {
+  return try {
+    this[key]
+  } catch (e: Exception) {
+    null
+  }
+}
+
 class Parser(file: File) {
   /** An RDF model of the configuration file. */
   private val model = file.readModelRecursively().validate()
 
   /** Class references to the different processors. */
-  private val processors: MutableMap<String, Class<Processor>> = mutableMapOf()
+  private val processors: MutableMap<String, Class<*>> = mutableMapOf()
 
   /** A list of all the readers in the model. */
-  private val readers: MutableMap<String, Reader> = mutableMapOf()
+  private val readers: MutableMap<RDFNode, Reader> = mutableMapOf()
 
   /** A list of all the writers in the model. */
-  private val writers: MutableMap<String, Writer> = mutableMapOf()
+  private val writers: MutableMap<RDFNode, Writer> = mutableMapOf()
 
   /** The stages of the pipeline. */
   private val stages: MutableList<Processor> = mutableListOf()
@@ -142,17 +189,7 @@ class Parser(file: File) {
       val uri = it["processor"].toString()
       val path = it["file"].toString().drop(7)
       val sourceFile = File(path)
-
-      val bytes =
-          if (sourceFile.absolutePath.endsWith(".java")) {
-            Compiler.compile(sourceFile)
-          } else {
-            sourceFile.readBytes()
-          }
-
-      val processor =
-          MemoryClassLoader().fromBytes(bytes, sourceFile.nameWithoutExtension) as Class<Processor>
-      processors[uri] = processor
+      processors[uri] = sourceFile.loadIntoJVM()
     }
   }
 
@@ -165,24 +202,9 @@ class Parser(file: File) {
 
       model.query("/queries/shacl.sparql", bindings) {
         val name = it["path"].toString().substringAfterLast("#")
-        val type = it["kind"].toString().substringAfterLast("#")
-
-        val min: Int? =
-            try {
-              val xsdExpression = it["minCount"].toString()
-              parseXsdInteger(xsdExpression)
-            } catch (e: Exception) {
-              null
-            }
-
-        val max: Int? =
-            try {
-              val xsdExpression = it["maxCount"].toString()
-              parseXsdInteger(xsdExpression)
-            } catch (e: Exception) {
-              null
-            }
-
+        val type = it["kind"].toString()
+        val min: Int? = it.getOptional("minCount")?.asLiteral()?.int
+        val max: Int? = it.getOptional("maxCount")?.asLiteral()?.int
         shape.addProperty(name, type, min, max)
       }
 
@@ -195,13 +217,14 @@ class Parser(file: File) {
     Log.shared.info("Parsing readers")
 
     model.query("/queries/readers.sparql") {
-      val subClass = it["subClass"].toString().substringAfterLast("#")
-      val identifier = it["reader"].toString()
+      val subClass = it["subClass"]
+      val identifier = it["reader"]
+      val type = Ontology.get(subClass)
 
       val reader =
-          when (subClass) {
-            "MemoryChannelReader" -> MemoryReader()
-            "HttpChannelReader" -> HttpReader()
+          when (type) {
+            Ontology.MEMORY_READER -> MemoryReader()
+            Ontology.HTTP_READER -> HttpReader()
             else -> Log.shared.fatal("Reader $subClass not found")
           }
 
@@ -214,14 +237,15 @@ class Parser(file: File) {
     Log.shared.info("Parsing writers")
 
     model.query("/queries/writers.sparql") {
-      val subClass = it["subClass"].toString().substringAfterLast("#")
-      val identifier = it["writer"].toString()
+      val subClass = it["subClass"]
+      val identifier = it["writer"]
+      val type = Ontology.get(subClass)
 
       val writer =
-          when (subClass) {
-            "MemoryChannelWriter" -> MemoryWriter()
-            "HttpChannelWriter" -> HttpWriter("http://localhost:8080")
-            else -> Log.shared.fatal("Reader $subClass not found")
+          when (type) {
+            Ontology.MEMORY_WRITER -> MemoryWriter()
+            Ontology.HTTP_WRITER -> HttpWriter("http://localhost:8080")
+            else -> Log.shared.fatal("Writer $subClass not found")
           }
 
       writers[identifier] = writer
@@ -236,8 +260,8 @@ class Parser(file: File) {
     Log.shared.info("Parsing bridges")
 
     model.query("/queries/bridges.sparql") {
-      val readerId = it["reader"].toString()
-      val writerId = it["writer"].toString()
+      val readerId = it["reader"]
+      val writerId = it["writer"]
 
       val reader = readers[readerId] ?: Log.shared.fatal("Reader $readerId not found")
       val writer = writers[writerId] ?: Log.shared.fatal("Writer $writerId not found")
@@ -271,33 +295,37 @@ class Parser(file: File) {
       // Set the name of the stage before executing the query.
       val bindings = mutableMapOf("?stage" to stage)
       val shape = shapes[processor] ?: Log.shared.fatal("Shape not found")
-      val argBuilder = ArgumentBuilder(shape)
+      val builder = shape.getBuilder()
 
       // Retrieve the arguments of the processor.
       model.query("/queries/arguments.sparql", bindings) {
         val key = it["key"].toString().substringAfterLast("#")
-        val value = it["value"].toString()
+        val value = it["value"]
 
-        val property = shape.getProperty(key)
-        val parsed: Any =
-            when (property.type) {
-              "integer" -> parseXsdInteger(value)
-              "string" -> value
-              "boolean" -> value.toBoolean()
-              "ChannelWriter" -> writers[value] ?: Log.shared.fatal("Writer $key not found")
-              "ChannelReader" -> readers[value] ?: Log.shared.fatal("Reader $key not found")
-              else -> Log.shared.fatal("Unknown type ${property.type}")
+        val parsed =
+            if (value.isLiteral) {
+              value.narrowedLiteral()
+            } else if (value.isURIResource) {
+              val uri = shape.getProperty(key).type
+              val runner = Ontology.get(uri)
+              when (runner) {
+                Ontology.READER -> readers[value] ?: Log.shared.fatal("Reader $key not found")
+                Ontology.WRITER -> writers[value] ?: Log.shared.fatal("Writer $key not found")
+                else -> TODO()
+              }
+            } else {
+              Log.shared.fatal("Unsupported argument type")
             }
 
-        argBuilder.add(key, parsed)
+        builder.add(key, parsed)
       }
 
       val implementation =
-          processors[processor] ?: Log.shared.fatal("Processor ${processor} not found")
+          processors[processor] ?: Log.shared.fatal("Processor $processor not found")
       val constructor = implementation.getConstructor(Map::class.java)
-      val args = argBuilder.build()
+      val args = builder.toMap()
       val instance = constructor.newInstance(args)
-      this.stages.add(instance)
+      this.stages.add(instance as Processor)
     }
   }
 
