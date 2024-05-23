@@ -1,0 +1,25 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+PREFIX jvm: <https://w3id.org/conn/jvm#>
+
+SELECT DISTINCT
+  ?path
+  ?kind
+  ?minCount
+  ?maxCount
+
+WHERE {
+    []
+      sh:targetClass ?target ;
+      a sh:NodeShape ;
+      sh:property ?property .
+
+    OPTIONAL { ?property sh:path ?path }
+    OPTIONAL { ?property sh:datatype ?datatype }
+    OPTIONAL { ?property sh:class ?class }
+    OPTIONAL { ?property sh:minCount ?minCount }
+    OPTIONAL { ?property sh:maxCount ?maxCount }
+
+    BIND(COALESCE(?datatype, ?class) as ?kind )
+}

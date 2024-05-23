@@ -81,6 +81,12 @@ class Log private constructor() {
     print(message, "DEBUG")
   }
 
+  fun assert(condition: Boolean, message: String) {
+    if (!condition) {
+      fatal(message)
+    }
+  }
+
   companion object {
     val shared = Log()
   }

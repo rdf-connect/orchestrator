@@ -7,8 +7,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlinx.coroutines.channels.Channel
 import org.apache.jena.ontology.OntModelSpec
+import org.apache.jena.query.ParameterizedSparqlString
 import org.apache.jena.query.QueryExecutionFactory
-import org.apache.jena.query.QueryFactory
 import org.apache.jena.query.QuerySolution
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
@@ -22,6 +22,14 @@ import technology.idlab.compiler.Compiler
 import technology.idlab.compiler.MemoryClassLoader
 import technology.idlab.logging.Log
 
+private fun parseXsdInteger(value: String): Int {
+  val match =
+      Regex("^\"([0-9]+)\"\\^\\^xsd:integer$").find(value)
+          ?: Log.shared.fatal("Failed to parse XSD integer: $value")
+
+  return match.groupValues[1].toInt()
+}
+
 /**
  * Read a model from a file and recursively import all referenced ontologies based on <owl:import>
  * statements.
@@ -30,6 +38,7 @@ private fun File.readModelRecursively(): Model {
   val result = ModelFactory.createDefaultModel()
 
   val onthology = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
+  Log.shared.info("Importing file://${this.absolutePath}")
   onthology.read(this.toURI().toString(), "TURTLE")
 
   // Import any referenced ontologies.
@@ -61,17 +70,30 @@ private fun File.readModelRecursively(): Model {
   return result
 }
 
-private fun Model.query(resource: String, func: (QuerySolution) -> Unit) {
-  val query =
-      object {}
-          .javaClass
-          .getResource(resource)
-          .let { it ?: Log.shared.fatal("Failed to read $resource") }
-          .readText()
-          .let { QueryFactory.create(it) }
+private fun Model.query(
+    resource: String,
+    bindings: Map<String, String> = mutableMapOf(),
+    func: (QuerySolution) -> Unit
+) {
+  val file =
+      object {}.javaClass.getResource(resource) ?: Log.shared.fatal("Failed to read $resource")
 
-  val iter = QueryExecutionFactory.create(query, this).execSelect()
+  Log.shared.info("Executing SPARQL query file://${file.path}")
 
+  val rawQuery = file.readText()
+
+  // Apply bindings
+  val pss = ParameterizedSparqlString()
+  pss.commandText = rawQuery
+  bindings.forEach {
+    Log.shared.debug("Binding ${it.key} to ${it.value}")
+    pss.setIri(it.key, it.value)
+  }
+
+  // Create new query and execute it.
+  val iter = QueryExecutionFactory.create(pss.asQuery(), this).execSelect()
+
+  // Execute the function for each solution.
   while (iter.hasNext()) {
     val solution = iter.nextSolution()
     func(solution)
@@ -109,11 +131,15 @@ class Parser(file: File) {
   /** The stages of the pipeline. */
   private val stages: MutableList<Processor> = mutableListOf()
 
+  /** The argument shapes of each processor. */
+  private val shapes: MutableMap<String, Shape> = mutableMapOf()
+
   /** Parse the model for processor declarations and save results as a field. */
   init {
     Log.shared.info("Parsing processors")
 
     model.query("/queries/processors.sparql") {
+      val uri = it["processor"].toString()
       val path = it["file"].toString().drop(7)
       val sourceFile = File(path)
 
@@ -126,7 +152,41 @@ class Parser(file: File) {
 
       val processor =
           MemoryClassLoader().fromBytes(bytes, sourceFile.nameWithoutExtension) as Class<Processor>
-      processors[processor.simpleName] = processor
+      processors[uri] = processor
+    }
+  }
+
+  /** Parse the shape for each processor. */
+  init {
+    processors.forEach { processor ->
+      Log.shared.info("Processor: ${processor.key}")
+      val bindings = mutableMapOf("?target" to processor.key)
+      val shape = Shape()
+
+      model.query("/queries/shacl.sparql", bindings) {
+        val name = it["path"].toString().substringAfterLast("#")
+        val type = it["kind"].toString().substringAfterLast("#")
+
+        val min: Int? =
+            try {
+              val xsdExpression = it["minCount"].toString()
+              parseXsdInteger(xsdExpression)
+            } catch (e: Exception) {
+              null
+            }
+
+        val max: Int? =
+            try {
+              val xsdExpression = it["maxCount"].toString()
+              parseXsdInteger(xsdExpression)
+            } catch (e: Exception) {
+              null
+            }
+
+        shape.addProperty(name, type, min, max)
+      }
+
+      shapes[processor.key] = shape
     }
   }
 
@@ -204,38 +264,38 @@ class Parser(file: File) {
   init {
     Log.shared.info("Parsing stages")
 
-    model.query("/queries/stages.sparql") {
-      val name = it["processor"].toString().substringAfterLast("#")
+    model.query("/queries/stages.sparql") { query ->
+      val processor = query["processor"].toString()
+      val stage = query["stage"].toString()
 
-      val values = it["values"].toString().split(";")
+      // Set the name of the stage before executing the query.
+      val bindings = mutableMapOf("?stage" to stage)
+      val shape = shapes[processor] ?: Log.shared.fatal("Shape not found")
+      val argBuilder = ArgumentBuilder(shape)
 
-      val argumentNames = it["keys"].toString().split(";").map { it.substringAfterLast("#") }
+      // Retrieve the arguments of the processor.
+      model.query("/queries/arguments.sparql", bindings) {
+        val key = it["key"].toString().substringAfterLast("#")
+        val value = it["value"].toString()
 
-      val types = it["kinds"].toString().split(";").map { it.substringAfterLast("#") }
-
-      // Retrieve a class instance of the Processor.
-      val processor = processors[name] ?: Log.shared.fatal("Processor $name not found")
-      val args = mutableMapOf<String, Any>()
-
-      for (i in argumentNames.indices) {
-        val argumentName = argumentNames[i]
-        val value = values[i]
-        val type = types[i]
-
-        Log.shared.debug("$argumentName: $type = $value")
-
-        args[argumentName] =
-            when (type) {
-              "integer" -> value.toInt()
-              "ChannelWriter" ->
-                  writers[value] ?: Log.shared.fatal("Writer $argumentName not found")
-              "ChannelReader" ->
-                  readers[value] ?: Log.shared.fatal("Reader $argumentName not found")
-              else -> Log.shared.fatal("Unknown type $type")
+        val property = shape.getProperty(key)
+        val parsed: Any =
+            when (property.type) {
+              "integer" -> parseXsdInteger(value)
+              "string" -> value
+              "boolean" -> value.toBoolean()
+              "ChannelWriter" -> writers[value] ?: Log.shared.fatal("Writer $key not found")
+              "ChannelReader" -> readers[value] ?: Log.shared.fatal("Reader $key not found")
+              else -> Log.shared.fatal("Unknown type ${property.type}")
             }
+
+        argBuilder.add(key, parsed)
       }
 
-      val constructor = processor.getConstructor(Map::class.java)
+      val implementation =
+          processors[processor] ?: Log.shared.fatal("Processor ${processor} not found")
+      val constructor = implementation.getConstructor(Map::class.java)
+      val args = argBuilder.build()
       val instance = constructor.newInstance(args)
       this.stages.add(instance)
     }

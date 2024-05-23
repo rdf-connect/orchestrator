@@ -3,13 +3,14 @@ import bridge.Writer;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
 
 import technology.idlab.logging.Log;
 import technology.idlab.runner.Processor;
 
 public class Filter extends Processor {
     // Parameters
-    private final Set<Integer> whitelist = new HashSet<>();
+    private final List<Integer> whitelist;
 
     // Channels
     private final Reader reader;
@@ -20,11 +21,7 @@ public class Filter extends Processor {
         super(args);
 
         // Parameters
-        int[] whitelist = this.getArgument("whitelist");
-        for (int i = 0; i < whitelist.length; i++) {
-            log.info("Adding " + whitelist[i] + " to whitelist");
-            this.whitelist.add(i);
-        }
+        this.whitelist = this.getArgument("whitelist");
 
         // Channels
         this.reader = this.getArgument("input");
