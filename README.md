@@ -4,7 +4,30 @@
 
 A proof-of-concept implementation of a Kotlin-based JVM runner.
 
-#### Notes
+### Features
+
+#### Datatypes
+
+At the time of writing, the JVM Runner supports a limit set of datatypes and classes. You may use either wrapper classes or the primitive types directly. 
+
+| URI                       | Java Mapping       |
+|---------------------------|--------------------|
+| `jvm:HttpChannelReader`   | `bridge.Reader`    |
+| `jvm:HttpChannelWriter`   | `bridge.Writer`    |
+| `jvm:MemoryChannelReader` | `bridge.Reader`    |
+| `jvm:MemoryChannelWriter` | `bridge.Writer`    |
+| `xsd:boolean`             | `boolean`          |
+| `xsd:byte`                | `byte`             |
+| `xsd:dateTime`            | `java.util.Date`   |
+| `xsd:double`              | `double`           |
+| `xsd:float`               | `float`            |
+| `xsd:int`                 | `int`              |
+| `xsd:long`                | `long`             |
+| `xsd:string`              | `java.lang.String` |
+
+Note that SHACL will validate your processor, so out-of-range or invalid values will be caught.
+
+### Contributor Guide
 
 ###### Pre-Commit Hooks
 
