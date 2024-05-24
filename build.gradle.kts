@@ -21,6 +21,9 @@ repositories { mavenCentral() }
 dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
+  // Guava
+  implementation("com.google.guava:guava:33.2.0-jre")
+
   // K2JVM Compiler.
   implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
   implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")

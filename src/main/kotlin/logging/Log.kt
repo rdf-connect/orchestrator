@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.TimeZone
 import kotlin.Exception
-import kotlin.system.exitProcess
+import technology.idlab.exception.RunnerException
 
 class Log private constructor() {
   init {
@@ -64,20 +64,17 @@ class Log private constructor() {
 
   fun fatal(message: String): Nothing {
     print(message, "FATAL")
-    print(Throwable().stackTraceToString())
-    exitProcess(1)
+    throw RunnerException()
   }
 
   fun fatal(exception: Exception): Nothing {
     print(exception.message.toString(), "FATAL")
-    print(Throwable().stackTraceToString())
-    exitProcess(1)
+    throw RunnerException()
   }
 
   fun fatal(message: String, exception: Exception) {
     print("$message - ${exception.message}")
-    print(Throwable().stackTraceToString())
-    exitProcess(1)
+    throw RunnerException()
   }
 
   fun debug(message: String) {

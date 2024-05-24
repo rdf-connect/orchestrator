@@ -1,11 +1,16 @@
 package technology.idlab.extensions
 
+import com.google.common.reflect.ClassPath
 import java.io.File
+import java.net.URLClassLoader
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.vocabulary.OWL
+import org.jetbrains.kotlin.incremental.isClassFile
+import org.jetbrains.kotlin.incremental.isJavaFile
+import org.jetbrains.kotlin.incremental.isKotlinFile
 import technology.idlab.compiler.Compiler
 import technology.idlab.compiler.MemoryClassLoader
 import technology.idlab.logging.Log
@@ -54,13 +59,32 @@ internal fun File.readModelRecursively(): Model {
  * Parse a file as a JVM processor by loading the class file from disk or compiling the source code.
  */
 internal fun File.loadIntoJVM(): Class<*> {
-  val bytes =
-      when (extension) {
-        "kt" -> Compiler.compileKotlin(this)
-        "java" -> Compiler.compileJava(this)
-        "class" -> readBytes()
-        else -> Log.shared.fatal("Unsupported file extension: $extension")
-      }
+  if (this.isClassFile()) {
+    // Load the class file using a custom class loader.
+    val loader = URLClassLoader(arrayOf(toURI().toURL()))
+    val classPath = ClassPath.from(loader)
+    val classes = classPath.allClasses
 
-  return MemoryClassLoader().fromBytes(bytes, nameWithoutExtension)
+    // Find the class which corresponds to this file.
+    for (clazz in classes) {
+      // TODO: this is a hack, we should use a better way to find the class.
+      if (clazz.name.endsWith(this.nameWithoutExtension)) {
+        return clazz.load()
+      }
+    }
+
+    Log.shared.fatal("Failed to load class ${this.nameWithoutExtension}")
+  }
+
+  if (this.isKotlinFile(listOf("kt"))) {
+    val bytes = Compiler.compileKotlin(this)
+    return MemoryClassLoader().fromBytes(bytes, nameWithoutExtension)
+  }
+
+  if (this.isJavaFile()) {
+    val bytes = Compiler.compileJava(this)
+    return MemoryClassLoader().fromBytes(bytes, nameWithoutExtension)
+  }
+
+  Log.shared.fatal("Unsupported file type: $extension")
 }

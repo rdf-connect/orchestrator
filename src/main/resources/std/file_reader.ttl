@@ -2,11 +2,12 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
 @prefix sh: <http://www.w3.org/ns/shacl#>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 
 <> owl:imports <../pipeline.ttl>.
 
 jvm:FileReader a jvm:Processor;
-  jvm:file <../../kotlin/std/FileReader.kt>;
+  jvm:file <../../../classes/kotlin/main/technology/idlab/std/FileReader.class>;
   jvm:language "Kotlin".
 
 [] a sh:NodeShape;
