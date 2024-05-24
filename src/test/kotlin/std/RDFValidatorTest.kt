@@ -95,7 +95,30 @@ private val pipeline =
   jvm:print_report true.
 """
 
+/** Simple pipeline containing the processor using default values. */
+private val pipelineDefaults =
+    """
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+
+<> owl:imports <${ontology.absolutePath}>.
+
+# Range -> Filter
+<reader> a jvm:MemoryChannelReader.
+<writer> a jvm:MemoryChannelWriter.
+
+# Define a filter processor.
+[]
+  a jvm:RDFValidator;
+  jvm:input <reader>;
+  jvm:output <writer>;
+  jvm:shapes "${shapeFile.absolutePath}".
+"""
+
 private val pipelineFile = File.createTempFile("pipeline", "ttl").apply { writeText(pipeline) }
+private val pipelineDefaultsFile =
+    File.createTempFile("pipeline", "ttl").apply { writeText(pipelineDefaults) }
 
 class RDFValidatorTest {
   @Test
@@ -111,7 +134,23 @@ class RDFValidatorTest {
     // Check arguments.
     assertEquals(shapeFile.absolutePath, validator.getArgument("shapes"))
     assertEquals(Optional.of(true), validator.getArgument("error_is_fatal"))
-    assertEquals(Optional.of(true), validator.getArgument("error_is_fatal"))
+    assertEquals(Optional.of(true), validator.getArgument("print_report"))
+  }
+
+  @Test
+  fun definitionDefaults() {
+    // Initialize pipeline.
+    val pipeline = Pipeline(pipelineDefaultsFile)
+
+    // Extract processor.
+    val processors = pipeline.processors
+    assertEquals(1, processors.size)
+    val validator = processors[0] as RDFValidator
+
+    // Check arguments.
+    assertEquals(shapeFile.absolutePath, validator.getArgument("shapes"))
+    assertEquals(Optional.empty<Boolean>(), validator.getArgument("error_is_fatal"))
+    assertEquals(Optional.empty<Boolean>(), validator.getArgument("print_report"))
   }
 
   @Test
