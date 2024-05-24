@@ -18,7 +18,6 @@ Interact with RDF data.
 |-------------------------------------------------------------|--------------------------------|
 | [`jvm:RDFValidator`](./src/main/kotlin/std/RDFValidator.kt) | Validate RDF data using SHACL. |
 
-
 ##### Network Utilities
 
 These processors interact with the network.
@@ -38,7 +37,7 @@ Fetch and write data from and to the local file system.
 
 #### Datatypes
 
-At the time of writing, the JVM Runner supports a limit set of datatypes and classes. You may use either wrapper classes or the primitive types directly. 
+At the time of writing, the JVM Runner supports a limit set of datatypes and classes. You may use either wrapper classes or the primitive types directly.
 
 | URI                       | Java Mapping       |
 |---------------------------|--------------------|
