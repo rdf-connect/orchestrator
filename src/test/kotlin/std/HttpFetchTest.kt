@@ -1,6 +1,6 @@
 package std
 
-import bridge.DummyWriter
+import DummyWriter
 import io.ktor.client.engine.mock.*
 import io.ktor.http.*
 import io.ktor.utils.io.*

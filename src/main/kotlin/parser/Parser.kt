@@ -1,14 +1,9 @@
 package technology.idlab.parser
 
-import bridge.HttpReader
-import bridge.Reader
-import bridge.Writer
 import java.io.File
 import kotlinx.coroutines.channels.Channel
 import org.apache.jena.rdf.model.RDFNode
-import technology.idlab.bridge.HttpWriter
-import technology.idlab.bridge.MemoryReader
-import technology.idlab.bridge.MemoryWriter
+import technology.idlab.bridge.*
 import technology.idlab.extensions.*
 import technology.idlab.extensions.loadIntoJVM
 import technology.idlab.extensions.query

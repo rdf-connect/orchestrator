@@ -1,13 +1,13 @@
 package technology.idlab.std
 
-import bridge.Reader
-import bridge.Writer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import org.apache.jena.graph.Graph
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.RiotException
 import org.apache.jena.shacl.ShaclValidator
+import technology.idlab.bridge.Reader
+import technology.idlab.bridge.Writer
 import technology.idlab.extensions.readModelRecursively
 import technology.idlab.logging.Log
 import technology.idlab.runner.Processor

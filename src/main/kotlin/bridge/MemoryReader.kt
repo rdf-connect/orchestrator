@@ -1,6 +1,5 @@
 package technology.idlab.bridge
 
-import bridge.Reader
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.runBlocking

@@ -1,4 +1,4 @@
-package bridge
+package technology.idlab.bridge
 
 interface Writer {
   suspend fun push(value: ByteArray)

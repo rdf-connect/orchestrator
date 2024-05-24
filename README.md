@@ -73,7 +73,9 @@ pre-commit install
 
 #### Formatting
 
-The code in this repository is formatted using Meta's `ktfmt` tool, mainly due to the following feature.
+##### Kotlin
+
+The Kotlin code in this repository is formatted using Meta's `ktfmt` tool, mainly due to the following feature.
 
 > `ktfmt` ignores most existing formatting. It respects existing newlines in some places, but in general, its output is deterministic and is independent of the input code.
 
@@ -81,4 +83,12 @@ No feature flags are used. Invoke using the following command.
 
 ```shell
 ktfmt ./**/*.kt
+```
+
+##### Java
+
+Due to `ktfmt`'s relation with `google-java-format`, we use the later for Java code formatting. Invoke using the following command.
+
+```shell
+google-java-format -r ./**/*.java
 ```

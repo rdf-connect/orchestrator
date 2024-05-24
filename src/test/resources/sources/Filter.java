@@ -1,52 +1,47 @@
-import bridge.Reader;
-import bridge.Writer;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.List;
-
-import technology.idlab.logging.Log;
+import java.util.Map;
+import technology.idlab.bridge.*;
 import technology.idlab.runner.Processor;
 
 public class Filter extends Processor {
+  // Parameters
+  private final List<Integer> whitelist;
+
+  // Channels
+  private final Reader reader;
+  private final Writer writer;
+
+  public Filter(Map<String, Object> args) {
+    // Call super constructor.
+    super(args);
+
     // Parameters
-    private final List<Integer> whitelist;
+    this.whitelist = this.getArgument("whitelist");
 
     // Channels
-    private final Reader reader;
-    private final Writer writer;
+    this.reader = this.getArgument("input");
+    this.writer = this.getArgument("output");
+  }
 
-    public Filter(Map<String, Object> args) {
-        // Call super constructor.
-        super(args);
+  public void exec() {
+    while (true) {
+      Reader.Result data = reader.readSync();
 
-        // Parameters
-        this.whitelist = this.getArgument("whitelist");
+      if (data.isClosed()) {
+        break;
+      }
 
-        // Channels
-        this.reader = this.getArgument("input");
-        this.writer = this.getArgument("output");
+      byte[] input = data.getValue();
+      Integer as_int = Integer.parseInt(new String(input));
+
+      if (!whitelist.contains(as_int)) {
+        log.info("Blocked value " + as_int);
+        continue;
+      }
+
+      log.info("Allowed value " + as_int);
+      writer.pushSync(input);
     }
-
-    public void exec() {
-        while (true) {
-            Reader.Result data = reader.readSync();
-
-            if (data.isClosed()) {
-                break;
-            }
-
-            byte[] input = data.getValue();
-            Integer as_int = Integer.parseInt(new String(input));
-
-            if (!whitelist.contains(as_int)) {
-                log.info("Blocked value " + as_int);
-                continue;
-            }
-
-            log.info("Allowed value " + as_int);
-            writer.pushSync(input);
-        }
-        writer.close();
-    }
+    writer.close();
+  }
 }

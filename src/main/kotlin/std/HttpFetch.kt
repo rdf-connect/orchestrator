@@ -1,6 +1,5 @@
 package technology.idlab.std
 
-import bridge.Writer
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
@@ -8,6 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import technology.idlab.bridge.Writer
 import technology.idlab.runner.Processor
 
 class HttpFetch(args: Map<String, Any>) : Processor(args) {

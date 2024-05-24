@@ -1,7 +1,7 @@
 package technology.idlab.std
 
-import bridge.Writer
 import java.io.File
+import technology.idlab.bridge.Writer
 import technology.idlab.runner.Processor
 
 class FileReader(args: Map<String, Any>) : Processor(args) {

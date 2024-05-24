@@ -1,4 +1,4 @@
-package bridge
+package technology.idlab.bridge
 
 import technology.idlab.logging.Log
 

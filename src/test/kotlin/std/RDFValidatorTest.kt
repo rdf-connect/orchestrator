@@ -1,7 +1,7 @@
 package std
 
-import bridge.DummyReader
-import bridge.DummyWriter
+import DummyReader
+import DummyWriter
 import java.io.File
 import java.util.Optional
 import kotlin.test.Test

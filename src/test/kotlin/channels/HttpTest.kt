@@ -1,8 +1,8 @@
 package channels
 
-import bridge.HttpReader
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import technology.idlab.bridge.HttpReader
 import technology.idlab.bridge.HttpWriter
 
 class HttpTest {

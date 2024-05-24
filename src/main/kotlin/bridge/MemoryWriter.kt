@@ -1,6 +1,5 @@
 package technology.idlab.bridge
 
-import bridge.Writer
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import technology.idlab.logging.Log

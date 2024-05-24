@@ -1,4 +1,4 @@
-package bridge
+import technology.idlab.bridge.Reader
 
 class DummyReader(private val contents: Array<ByteArray>) : Reader {
   private var index = 0

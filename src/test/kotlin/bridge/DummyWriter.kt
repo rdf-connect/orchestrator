@@ -1,4 +1,4 @@
-package bridge
+import technology.idlab.bridge.Writer
 
 class DummyWriter : Writer {
   private val values = mutableListOf<ByteArray>()

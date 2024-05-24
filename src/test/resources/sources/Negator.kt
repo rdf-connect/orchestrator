@@ -1,5 +1,4 @@
-import bridge.Reader
-import bridge.Writer
+import technology.idlab.bridge.*
 import technology.idlab.runner.Processor
 
 class Negator(args: Map<String, Any>) : Processor(args) {
