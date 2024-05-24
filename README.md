@@ -10,6 +10,23 @@ A proof-of-concept implementation of a Kotlin-based JVM runner. Currently, this 
 
 This runner includes a set of standard processors that can be used directly by the end user without the need for additional dependencies. These processors also serve as a reference for processor developers. The implementation can be found [here](src/main/kotlin/std).
 
+##### Network Utilities
+
+These processors interact with the network.
+
+| Processor                                             | Description                       |
+|-------------------------------------------------------|-----------------------------------|
+| [`jvm:HttpFetch`](./src/main/kotlin/std/HttpFetch.kt) | Reads data from an HTTP endpoint. |
+
+##### File Utilities
+
+These processors interact with the local file system.
+
+| Processor                       | Description                                                            |
+|---------------------------------|------------------------------------------------------------------------|
+| [`jvm:FileReader`](./src/main/kotlin/std/FileReader.kt) | Reads a file with a given `path` from the local file system.           |
+| [`jvm:FileWriter`](./src/main/kotlin/std/FileWriter.kt) | Overwrites/appends a file with a given `path` using the incoming data. |
+
 #### Datatypes
 
 At the time of writing, the JVM Runner supports a limit set of datatypes and classes. You may use either wrapper classes or the primitive types directly. 
