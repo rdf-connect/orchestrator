@@ -6,6 +6,10 @@ A proof-of-concept implementation of a Kotlin-based JVM runner. Currently, this 
 
 ### Features
 
+#### Standard Processor Library
+
+This runner includes a set of standard processors that can be used directly by the end user without the need for additional dependencies. These processors also serve as a reference for processor developers. The implementation can be found [here](src/main/kotlin/std).
+
 #### Datatypes
 
 At the time of writing, the JVM Runner supports a limit set of datatypes and classes. You may use either wrapper classes or the primitive types directly. 
