@@ -10,6 +10,15 @@ A proof-of-concept implementation of a Kotlin-based JVM runner. Currently, this 
 
 This runner includes a set of standard processors that can be used directly by the end user without the need for additional dependencies. These processors also serve as a reference for processor developers. The implementation can be found [here](src/main/kotlin/std).
 
+##### RDF Utilities
+
+Interact with RDF data.
+
+| Processor                                                   | Description                    |
+|-------------------------------------------------------------|--------------------------------|
+| [`jvm:RDFValidator`](./src/main/kotlin/std/RDFValidator.kt) | Validate RDF data using SHACL. |
+
+
 ##### Network Utilities
 
 These processors interact with the network.
@@ -20,7 +29,7 @@ These processors interact with the network.
 
 ##### File Utilities
 
-These processors interact with the local file system.
+Fetch and write data from and to the local file system.
 
 | Processor                       | Description                                                            |
 |---------------------------------|------------------------------------------------------------------------|

@@ -1,0 +1,44 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+<> owl:imports <../pipeline.ttl>.
+
+jvm:RDFValidator a jvm:Processor;
+  jvm:file <../../kotlin/std/RDFValidator.kt>;
+  jvm:language "Kotlin".
+
+[] a sh:NodeShape;
+  sh:targetClass jvm:RDFValidator;
+  sh:property [
+    sh:path jvm:shapes;
+    sh:name "shapes";
+    sh:datatype xsd:string;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:error_is_fatal;
+    sh:name "error_is_fatal";
+    sh:datatype xsd:boolean;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:print_report;
+    sh:name "print_report";
+    sh:datatype xsd:boolean;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:input;
+    sh:name "input";
+    sh:class jvm:ChannelReader;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:path jvm:output;
+    sh:name "output";
+    sh:class jvm:ChannelWriter;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:closed true;
+  sh:ignoredProperties (rdf:type).
