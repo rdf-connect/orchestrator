@@ -1,0 +1,26 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+<> owl:imports <../pipeline.ttl>.
+
+jvm:FileReader a jvm:Processor;
+  jvm:file <../../kotlin/std/FileReader.kt>;
+  jvm:language "Kotlin".
+
+[] a sh:NodeShape;
+  sh:targetClass jvm:FileReader;
+  sh:property [
+    sh:path jvm:path;
+    sh:name "path";
+    sh:datatype xsd:string;
+  ], [
+    sh:path jvm:output;
+    sh:name "output";
+    sh:class jvm:ChannelWriter;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:closed true;
+  sh:ignoredProperties (rdf:type).

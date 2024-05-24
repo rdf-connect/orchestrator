@@ -64,16 +64,19 @@ class Log private constructor() {
 
   fun fatal(message: String): Nothing {
     print(message, "FATAL")
+    print(Throwable().stackTraceToString())
     exitProcess(1)
   }
 
   fun fatal(exception: Exception): Nothing {
     print(exception.message.toString(), "FATAL")
+    print(Throwable().stackTraceToString())
     exitProcess(1)
   }
 
   fun fatal(message: String, exception: Exception) {
     print("$message - ${exception.message}")
+    print(Throwable().stackTraceToString())
     exitProcess(1)
   }
 

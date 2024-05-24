@@ -21,6 +21,10 @@ abstract class Processor(
     return result
   }
 
+  fun <T> getNullableArgument(name: String): T? {
+    return arguments[name] as T?
+  }
+
   fun <T> getOptionalArgument(name: String): Optional<T> {
     val result = arguments[name] ?: log.fatal("Argument $name is missing")
 
