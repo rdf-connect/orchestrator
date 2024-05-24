@@ -56,15 +56,10 @@ internal fun File.readModelRecursively(): Model {
 internal fun File.loadIntoJVM(): Class<*> {
   val bytes =
       when (extension) {
-        "java" -> {
-          Compiler.compile(this)
-        }
-        "class" -> {
-          readBytes()
-        }
-        else -> {
-          Log.shared.fatal("Unsupported file extension: $extension")
-        }
+        "kt" -> Compiler.compileKotlin(this)
+        "java" -> Compiler.compileJava(this)
+        "class" -> readBytes()
+        else -> Log.shared.fatal("Unsupported file extension: $extension")
       }
 
   return MemoryClassLoader().fromBytes(bytes, nameWithoutExtension)

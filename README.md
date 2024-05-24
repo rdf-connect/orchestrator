@@ -2,7 +2,7 @@
 
 [![Test Suite](https://github.com/rdf-connect/jvm-runner/actions/workflows/test.yml/badge.svg)](https://github.com/rdf-connect/jvm-runner/actions/workflows/test.yml)
 
-A proof-of-concept implementation of a Kotlin-based JVM runner.
+A proof-of-concept implementation of a Kotlin-based JVM runner. Currently, this runner supports Java and Kotlin based processors.
 
 ### Features
 
@@ -28,6 +28,10 @@ At the time of writing, the JVM Runner supports a limit set of datatypes and cla
 Note that SHACL will validate your processor, so out-of-range or invalid values will be caught.
 
 ### Contributor Guide
+
+#### Language Versions
+
+The only Kotlin version supported is `v1.9.22` for the time being, due to dependencies on the embedded compiler.
 
 #### Pre-Commit Hooks
 

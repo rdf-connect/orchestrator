@@ -21,6 +21,12 @@ repositories { mavenCentral() }
 dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
+  // K2JVM Compiler.
+  implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
+  implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")
+  implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.9.22")
+  implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
+
   // HTTP dependencies.
   implementation("io.ktor:ktor-client-core:2.3.10")
   implementation("io.ktor:ktor-client-cio:2.3.10")

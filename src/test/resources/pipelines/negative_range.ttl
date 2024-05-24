@@ -1,0 +1,52 @@
+@prefix jvm: <https://w3id.org/conn/jvm#>.
+@prefix fno: <https://w3id.org/function/ontology#>.
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix : <https://w3id.org/conn#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+
+# Include processor definitions.
+<> owl:imports
+  <../pipeline.ttl>,
+  <../processors/negator.ttl>,
+  <../processors/range.ttl>,
+  <../processors/reporter.ttl>.
+
+# Range -> Square
+<reader1> a jvm:MemoryChannelReader.
+<writer1> a jvm:MemoryChannelWriter.
+
+<bridge1>
+  a jvm:MemoryChannel;
+  jvm:reader <reader1>;
+  jvm:writer <writer1>.
+
+<reader2> a jvm:MemoryChannelReader.
+<writer2> a jvm:MemoryChannelWriter.
+
+# Negator -> Reporter
+<bridge2>
+  a jvm:MemoryChannel;
+  jvm:reader <reader2>;
+  jvm:writer <writer2>.
+
+# Define a range processor.
+[]
+  a jvm:Range;
+  jvm:start "0"^^xsd:int;
+  jvm:end "10"^^xsd:int;
+  jvm:step "1"^^xsd:int;
+  jvm:output <writer1>.
+
+# Define a negator processor.
+[]
+  a jvm:Negator;
+  jvm:input <reader1>;
+  jvm:output <writer2>.
+
+# Define a reporter.
+[]
+  a jvm:Reporter;
+  jvm:input <reader2>.
