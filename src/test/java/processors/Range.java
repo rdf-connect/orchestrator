@@ -1,7 +1,11 @@
+package processors;
+
 import java.util.Map;
 import technology.idlab.bridge.Writer;
 import technology.idlab.runner.Processor;
+import technology.idlab.runner.ProcessorDefinition;
 
+@ProcessorDefinition(resource = "/processors/range.ttl")
 public class Range extends Processor {
   // Parameters
   private final int start;

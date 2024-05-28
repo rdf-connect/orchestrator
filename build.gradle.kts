@@ -51,6 +51,9 @@ repositories {
 dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
+  // Reflections
+  implementation("org.reflections:reflections:0.10.2")
+
   // Guava
   implementation("com.google.guava:guava:33.2.0-jre")
 

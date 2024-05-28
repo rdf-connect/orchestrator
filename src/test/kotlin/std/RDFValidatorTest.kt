@@ -15,7 +15,7 @@ import technology.idlab.std.RDFValidator
 
 /** Ontology location. */
 private val ontology =
-    Thread.currentThread().contextClassLoader.getResource("pipeline.ttl")!!.let { File(it.file) }
+    File(Thread.currentThread().contextClassLoader.getResource("pipeline.ttl")!!.file)
 
 /** Textual representation of a valid SHACL file. */
 private const val validShape =
@@ -56,7 +56,7 @@ private const val validInput =
 @prefix ex: <http://example.org#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-ex:ValidPoint 
+ex:ValidPoint
   a ex:Point;
   ex:x "1"^^xsd:int;
   ex:y "2"^^xsd:int.

@@ -1,7 +1,11 @@
+package processors;
+
 import java.util.Map;
 import java.util.Optional;
 import technology.idlab.runner.Processor;
+import technology.idlab.runner.ProcessorDefinition;
 
+@ProcessorDefinition(resource = "/processors/optionals.ttl")
 public class Optionals extends Processor {
   // Parameters
   public final String required;

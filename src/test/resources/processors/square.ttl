@@ -9,9 +9,7 @@
 
 <> owl:imports <../pipeline.ttl>.
 
-jvm:Square a jvm:Processor;
-  jvm:file <../sources/Square.java>;
-  jvm:language "Java".
+jvm:Square a jvm:Processor.
 
 [] a sh:NodeShape;
   sh:targetClass jvm:Square;

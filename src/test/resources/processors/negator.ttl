@@ -9,9 +9,7 @@
 
 <> owl:imports <../pipeline.ttl>.
 
-jvm:Negator a jvm:Processor;
-  jvm:file <../sources/Negator.kt>;
-  jvm:language "Kotlin".
+jvm:Negator a jvm:Processor.
 
 [] a sh:NodeShape;
   sh:targetClass jvm:Negator;

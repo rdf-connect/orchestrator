@@ -1,6 +1,10 @@
+package processors
+
 import technology.idlab.bridge.*
 import technology.idlab.runner.Processor
+import technology.idlab.runner.ProcessorDefinition
 
+@ProcessorDefinition("/processors/negator.ttl")
 class Negator(args: Map<String, Any>) : Processor(args) {
   private val input: Reader = this.getArgument("input")
   private val output: Writer = this.getArgument("output")

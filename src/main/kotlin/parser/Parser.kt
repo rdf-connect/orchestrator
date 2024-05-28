@@ -5,16 +5,22 @@ import kotlinx.coroutines.channels.Channel
 import org.apache.jena.rdf.model.RDFNode
 import technology.idlab.bridge.*
 import technology.idlab.extensions.*
-import technology.idlab.extensions.loadIntoJVM
 import technology.idlab.extensions.query
 import technology.idlab.extensions.readModelRecursively
-import technology.idlab.extensions.validate
 import technology.idlab.logging.Log
 import technology.idlab.runner.Processor
+import technology.idlab.runner.ProcessorDefinition
 
 class Parser(file: File) {
-  /** An RDF model of the configuration file. */
-  private val model = file.readModelRecursively().validate()
+  /** RDF model which imports the base pipeline ontology. */
+  private val model =
+      this::class
+          .java
+          .getResource("/pipeline.ttl")
+          .let { it ?: Log.shared.fatal("Pipeline file not found") }
+          .toURI()
+          .let { File(it) }
+          .readModelRecursively()
 
   /** Class references to the different processors. */
   private val processors: MutableMap<String, Class<*>> = mutableMapOf()
@@ -33,12 +39,18 @@ class Parser(file: File) {
 
   /** Parse the model for processor declarations and save results as a field. */
   init {
-    model.query("/queries/processors.sparql") {
-      val uri = it["processor"].toString()
-      val path = it["file"].toString().drop(7)
-      val sourceFile = File(path)
-      processors[uri] = sourceFile.loadIntoJVM()
+    ProcessorDefinition.scan().forEach {
+      // Save the processor class and URI to the map.
+      processors[it.uri] = it.clazz
+
+      // Load the ontology file into the model.
+      model.read(it.ontology.inputStream(), null, "TTL")
     }
+  }
+
+  /** Parse the pipeline. */
+  init {
+    model.read(file.inputStream(), null, "TTL").validate()
   }
 
   /** Parse the shape for each processor. */

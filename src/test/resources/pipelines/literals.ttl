@@ -2,11 +2,6 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
 
-# Include processor definitions.
-<> owl:imports
-  <../pipeline.ttl>,
-  <../processors/literals.ttl>.
-
 # Define a filter processor.
 []
   a jvm:Literals;

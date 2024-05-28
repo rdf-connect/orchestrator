@@ -1,8 +1,12 @@
+package processors;
+
 import java.util.List;
 import java.util.Map;
 import technology.idlab.bridge.*;
 import technology.idlab.runner.Processor;
+import technology.idlab.runner.ProcessorDefinition;
 
+@ProcessorDefinition(resource = "/processors/filter.ttl")
 public class Filter extends Processor {
   // Parameters
   private final List<Integer> whitelist;

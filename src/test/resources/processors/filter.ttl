@@ -9,9 +9,7 @@
 
 <> owl:imports <../pipeline.ttl>.
 
-jvm:Filter a jvm:Processor;
-  jvm:file <../sources/Filter.java>;
-  jvm:language "Java".
+jvm:Filter a jvm:Processor.
 
 [] a sh:NodeShape;
   sh:targetClass jvm:Filter;

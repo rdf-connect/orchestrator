@@ -9,9 +9,7 @@
 
 <> owl:imports <../pipeline.ttl>.
 
-jvm:Optionals a jvm:Processor;
-  jvm:file <../sources/Optionals.java>;
-  jvm:language "Java".
+jvm:Optionals a jvm:Processor.
 
 [] a sh:NodeShape;
   sh:targetClass jvm:Optionals;

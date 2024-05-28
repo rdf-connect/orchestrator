@@ -9,9 +9,7 @@
 
 <> owl:imports <../pipeline.ttl>.
 
-jvm:Literals a jvm:Processor;
-  jvm:file <../sources/Literals.java>;
-  jvm:language "Java".
+jvm:Literals a jvm:Processor.
 
 [] a sh:NodeShape;
   sh:targetClass jvm:Literals;

@@ -11,7 +11,9 @@ import technology.idlab.bridge.Writer
 import technology.idlab.extensions.readModelRecursively
 import technology.idlab.logging.Log
 import technology.idlab.runner.Processor
+import technology.idlab.runner.ProcessorDefinition
 
+@ProcessorDefinition("/std/rdf_validator.ttl")
 class RDFValidator(args: Map<String, Any>) : Processor(args) {
   /** Default values. */
   private val errorIsFatalDefault = false

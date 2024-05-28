@@ -1,8 +1,12 @@
+package processors;
+
 import java.util.Map;
 import technology.idlab.bridge.Reader;
 import technology.idlab.bridge.Writer;
 import technology.idlab.runner.Processor;
+import technology.idlab.runner.ProcessorDefinition;
 
+@ProcessorDefinition(resource = "/processors/square.ttl")
 public class Square extends Processor {
   // Channels
   private final Reader reader;

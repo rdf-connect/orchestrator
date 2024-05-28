@@ -1,8 +1,12 @@
+package processors;
+
 import java.util.Date;
 import java.util.Map;
 import technology.idlab.bridge.*;
 import technology.idlab.runner.Processor;
+import technology.idlab.runner.ProcessorDefinition;
 
+@ProcessorDefinition(resource = "/processors/literals.ttl")
 public class Literals extends Processor {
   // Parameters
   private final boolean _bool;

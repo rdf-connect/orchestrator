@@ -4,11 +4,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 
-<> owl:imports <../pipeline.ttl>.
-
-jvm:HttpFetch a jvm:Processor;
-  jvm:file <../../../classes/kotlin/main/technology/idlab/std//HttpFetch.class>;
-  jvm:language "Kotlin".
+jvm:HttpFetch a jvm:Processor.
 
 [] a sh:NodeShape;
   sh:targetClass jvm:HttpFetch;
