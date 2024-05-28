@@ -3,20 +3,50 @@ plugins {
   id("com.github.johnrengelman.shadow") version "8.1.1"
   kotlin("jvm") version "1.9.22"
   id("maven-publish")
+  id("co.uzzu.dotenv.gradle") version "4.0.0"
 }
 
+/** JVM Runner configuration. */
 group = "technology.idlab"
 
 version = "0.0.1"
 
+/** Set the Kotlin JVM version to 17. */
+kotlin { jvmToolchain(17) }
+
+/**
+ * Specify the entrypoint for the application. This is a simple CLI interface wrapper which
+ * initializes the parsers and the runner.
+ */
 application { mainClass.set("technology.idlab.MainKt") }
 
+/**
+ * Include all dependencies in a "fat jar". We use the shadowJar plugin to merge all dependencies
+ * into a single jar file.
+ */
 tasks.shadowJar {
   manifest.attributes.apply { put("Main-Class", "technology.idlab.MainKt") }
   mergeServiceFiles()
 }
 
-repositories { mavenCentral() }
+/** Use JUnit for testing. */
+tasks.test { useJUnitPlatform() }
+
+/**
+ * A list of all the repositories we use in the project. This includes the maven central repository
+ * and the GitHub package repository.
+ */
+repositories {
+  mavenCentral()
+
+  maven {
+    url = uri("https://maven.pkg.github.com/rdf-connect/jvm-runner")
+    credentials {
+      username = env.GITHUB_ACTOR.value
+      password = env.GITHUB_TOKEN.value
+    }
+  }
+}
 
 dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
@@ -45,19 +75,22 @@ dependencies {
   testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
-tasks.test { useJUnitPlatform() }
-
-kotlin { jvmToolchain(17) }
-
 publishing {
   repositories {
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/rdf-connect/jvm-runner")
       credentials {
-        username = System.getenv("GITHUB_ACTOR")
-        password = System.getenv("GITHUB_TOKEN")
+        username = env.GITHUB_ACTOR.value
+        password = env.GITHUB_TOKEN.value
       }
+    }
+  }
+
+  publications {
+    register<MavenPublication>("gpr") {
+      artifactId = "jvm-runner"
+      from(components["java"])
     }
   }
 }
