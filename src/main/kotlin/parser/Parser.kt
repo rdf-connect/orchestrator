@@ -16,14 +16,13 @@ class Parser(file: File) {
   private val model =
       this::class
           .java
-          .getResource("/pipeline.ttl")
-          .let { it ?: Log.shared.fatal("Pipeline file not found") }
+          .getResourceAsStream("/pipeline.ttl")
+          .let { it ?: Log.shared.fatal("Pipeline ontology not found") }
+          .readAllBytes()
           .let {
-            try {
-              File(it.path)
-            } catch (e: Exception) {
-              Log.shared.fatal("Pipeline ${it.path} not found")
-            }
+            val f = File.createTempFile("pipeline", ".ttl")
+            f.writeBytes(it)
+            return@let f
           }
           .readModelRecursively()
 
