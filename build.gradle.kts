@@ -9,7 +9,7 @@ plugins {
 /** JVM Runner configuration. */
 group = "technology.idlab"
 
-version = "0.0.1"
+version = "0.0.2"
 
 /** Set the Kotlin JVM version to 17. */
 kotlin { jvmToolchain(17) }
