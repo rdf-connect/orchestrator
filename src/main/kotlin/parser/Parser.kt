@@ -18,8 +18,13 @@ class Parser(file: File) {
           .java
           .getResource("/pipeline.ttl")
           .let { it ?: Log.shared.fatal("Pipeline file not found") }
-          .toURI()
-          .let { File(it) }
+          .let {
+            try {
+              File(it.path)
+            } catch (e: Exception) {
+              Log.shared.fatal("Pipeline ${it.path} not found")
+            }
+          }
           .readModelRecursively()
 
   /** Class references to the different processors. */
