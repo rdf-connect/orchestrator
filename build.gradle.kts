@@ -42,8 +42,8 @@ repositories {
   maven {
     url = uri("https://maven.pkg.github.com/rdf-connect/jvm-runner")
     credentials {
-      username = env.GITHUB_ACTOR.orElse(System.getenv("GITHUB_ACTOR"))
-      password = env.GITHUB_TOKEN.orElse(System.getenv("GITHUB_TOKEN"))
+      username = env.fetchOrNull("GITHUB_ACTOR") ?: System.getenv("GITHUB_ACTOR")
+      password = env.fetchOrNull("GITHUB_TOKEN") ?: System.getenv("GITHUB_TOKEN")
     }
   }
 }
@@ -84,8 +84,8 @@ publishing {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/rdf-connect/jvm-runner")
       credentials {
-        username = env.GITHUB_ACTOR.orElse(System.getenv("GITHUB_ACTOR"))
-        password = env.GITHUB_TOKEN.orElse(System.getenv("GITHUB_TOKEN"))
+        username = env.fetchOrNull("GITHUB_ACTOR") ?: System.getenv("GITHUB_ACTOR")
+        password = env.fetchOrNull("GITHUB_TOKEN") ?: System.getenv("GITHUB_TOKEN")
       }
     }
   }
