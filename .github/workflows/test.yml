@@ -24,9 +24,6 @@ jobs:
           java-version: '21'
           distribution: 'adopt'
           cache: 'gradle'
-          cache-dependency-path: | # optional
-            sub-project/*.gradle*
-            sub-project/**/gradle-wrapper.properties
 
       - name: Build with Gradle
         run: ./gradlew build
