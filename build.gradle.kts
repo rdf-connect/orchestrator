@@ -49,7 +49,7 @@ repositories {
 }
 
 dependencies {
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 
   // Reflections
   implementation("org.reflections:reflections:0.10.2")
