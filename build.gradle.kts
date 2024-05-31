@@ -68,7 +68,7 @@ dependencies {
   implementation("io.ktor:ktor-client-cio:2.3.10")
   implementation("io.ktor:ktor-server-core:2.3.10")
   implementation("io.ktor:ktor-server-netty:2.3.10")
-  testImplementation("io.ktor:ktor-client-mock:2.3.10")
+  testImplementation("io.ktor:ktor-client-mock:2.3.11")
 
   // RDF dependencies.
   implementation("org.apache.jena:apache-jena-libs:5.0.0")
