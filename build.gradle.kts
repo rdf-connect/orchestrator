@@ -58,7 +58,7 @@ dependencies {
   implementation("com.google.guava:guava:33.2.0-jre")
 
   // K2JVM Compiler.
-  implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
+  implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
   implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")
   implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.9.22")
   implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
