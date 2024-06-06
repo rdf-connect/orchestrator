@@ -1,3 +1,6 @@
+> [!CAUTION]
+> This software is not yet considered stable. Feel free to report any bugs or issues.
+
 # JVM Runner
 
 [![Test Suite](https://github.com/rdf-connect/jvm-runner/actions/workflows/test.yml/badge.svg)](https://github.com/rdf-connect/jvm-runner/actions/workflows/test.yml)
