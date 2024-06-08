@@ -1,0 +1,8 @@
+services:
+  jvm-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jvm-runner
+    environment:
+      - JAVA_OPTS=-Xmx512m

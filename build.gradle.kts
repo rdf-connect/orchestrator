@@ -97,3 +97,8 @@ publishing {
     }
   }
 }
+
+/** Set the maximum number of parallel forks to the number of available processors. */
+tasks.withType<Test>().configureEach {
+  maxParallelForks = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+}
