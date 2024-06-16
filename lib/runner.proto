@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+message Void {}
+
+enum ArgumentType {
+  STRING = 0;
+  INT = 1;
+  FLOAT = 2;
+  BOOL = 3;
+  WRITER = 4;
+  READER = 5;
+}
+
+message Argument {
+  ArgumentType type = 1;
+  bytes value = 2;
+}
+
+message Processor {
+  string uri = 1;
+  string class = 2;
+  map<string, ArgumentType> arguments = 3;
+}
+
+message Processors {
+  repeated Processor processors = 1;
+}
+
+message ProcessorDefinitions {
+  repeated string paths = 1;
+}
+
+message Stage {
+  string uri = 1;
+  string processor_uri = 2;
+  map<string, Argument> arguments = 3;
+}
+
+message Stages {
+  repeated Stage stages = 1;
+}
+
+message Payload {
+  string channel_uri = 1;
+  bytes data = 2;
+}
+
+service Runner {
+  // Retrieve the list of processor definition files.
+  rpc getProcessorDefinitions(Void) returns (ProcessorDefinitions);
+
+  // Load the required processors and setup the service.
+  rpc setup(Stages) returns (Void);
+
+  // Send a payload to a channel.
+  rpc channel(stream Payload) returns (stream Payload);
+}

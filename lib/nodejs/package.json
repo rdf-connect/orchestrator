@@ -1,0 +1,40 @@
+{
+  "name": "jvm-runner-ts",
+  "version": "0.0.1",
+  "description": "Bindings and utilities to create and run TypeScript processors in the JVM Runner.",
+  "scripts": {
+    "run": "ts-node src/runtime/index.ts",
+    "build": "tsc && tsc-alias",
+    "test": "vitest run --coverage --coverage.include src",
+    "format": "eslint --fix . && prettier --write ."
+  },
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "files": [
+    "./build/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rdf-connect/jvm-runner.git"
+  },
+  "author": "Jens Pots",
+  "license": "MIT",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.9",
+    "@grpc/proto-loader": "^0.7.13",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.2",
+    "ts-proto": "^1.180.0",
+    "tsc-alias": "^1.8.10",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^1.6.0"
+  }
+}
