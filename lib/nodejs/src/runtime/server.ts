@@ -110,5 +110,7 @@ export function initStage(stage: Stage): Processor {
   if (!processor) {
     throw JVMRunnerError.missingImplementation();
   }
+
+  // @ts-expect-error - Processors are instaniated with a map of arguments.
   return new processor(parsedArgs);
 }

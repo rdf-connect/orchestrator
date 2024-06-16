@@ -13,6 +13,9 @@
   "files": [
     "./build/**/*"
   ],
+  "bin": {
+    "client": "./build/runtime/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/rdf-connect/jvm-runner.git"
