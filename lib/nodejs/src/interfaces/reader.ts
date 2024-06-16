@@ -1,5 +1,5 @@
 import { firstValueFrom, Observable } from "rxjs";
-import { JVMRunnerError } from "../error";
+import { RunnerError } from "../error";
 
 export class Reader {
   private channel: Observable<Uint8Array>;
@@ -12,7 +12,7 @@ export class Reader {
     try {
       return firstValueFrom(this.channel.pipe());
     } catch (error) {
-      throw JVMRunnerError.channelError();
+      throw RunnerError.channelError();
     }
   }
 }

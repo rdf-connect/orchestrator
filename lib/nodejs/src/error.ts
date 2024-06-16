@@ -1,22 +1,22 @@
-export class JVMRunnerError extends Error {
+export class RunnerError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "JVMRunnerError";
   }
 
-  static missingArgument(key: string): JVMRunnerError {
-    return new JVMRunnerError(`Missing argument: ${key}`);
+  static missingArgument(key: string): RunnerError {
+    return new RunnerError(`Missing argument: ${key}`);
   }
 
-  static missingImplementation(): JVMRunnerError {
-    return new JVMRunnerError("Not implemented");
+  static missingImplementation(): RunnerError {
+    return new RunnerError("Not implemented");
   }
 
-  static channelError(): JVMRunnerError {
-    return new JVMRunnerError("Channel error");
+  static channelError(): RunnerError {
+    return new RunnerError("Channel error");
   }
 
-  static unexpectedBehaviour(): JVMRunnerError {
-    return new JVMRunnerError("Unexpected behaviour");
+  static unexpectedBehaviour(): RunnerError {
+    return new RunnerError("Unexpected behaviour");
   }
 }

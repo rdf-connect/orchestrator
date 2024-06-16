@@ -2,7 +2,7 @@
 // versions:
 //   protoc-gen-ts_proto  v1.180.0
 //   protoc               v5.27.0
-// source: runner.proto
+// source: proto/runner.proto
 
 /* eslint-disable */
 import {
@@ -82,15 +82,10 @@ export function argumentTypeToJSON(object: ArgumentType): string {
 
 export interface Void {}
 
-export interface Argument {
-  type: ArgumentType;
-  value: Uint8Array;
-}
-
 export interface Processor {
   uri: string;
-  class: string;
   arguments: { [key: string]: ArgumentType };
+  metadata: { [key: string]: string };
 }
 
 export interface Processor_ArgumentsEntry {
@@ -98,12 +93,14 @@ export interface Processor_ArgumentsEntry {
   value: ArgumentType;
 }
 
-export interface Processors {
-  processors: Processor[];
+export interface Processor_MetadataEntry {
+  key: string;
+  value: string;
 }
 
-export interface ProcessorDefinitions {
-  paths: string[];
+export interface Argument {
+  type: ArgumentType;
+  value: Uint8Array;
 }
 
 export interface Stage {
@@ -115,10 +112,6 @@ export interface Stage {
 export interface Stage_ArgumentsEntry {
   key: string;
   value: Argument | undefined;
-}
-
-export interface Stages {
-  stages: Stage[];
 }
 
 export interface Payload {
@@ -170,88 +163,8 @@ export const Void = {
   },
 };
 
-function createBaseArgument(): Argument {
-  return { type: 0, value: new Uint8Array(0) };
-}
-
-export const Argument = {
-  encode(
-    message: Argument,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    if (message.type !== 0) {
-      writer.uint32(8).int32(message.type);
-    }
-    if (message.value.length !== 0) {
-      writer.uint32(18).bytes(message.value);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): Argument {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseArgument();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 8) {
-            break;
-          }
-
-          message.type = reader.int32() as any;
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.value = reader.bytes();
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): Argument {
-    return {
-      type: isSet(object.type) ? argumentTypeFromJSON(object.type) : 0,
-      value: isSet(object.value)
-        ? bytesFromBase64(object.value)
-        : new Uint8Array(0),
-    };
-  },
-
-  toJSON(message: Argument): unknown {
-    const obj: any = {};
-    if (message.type !== 0) {
-      obj.type = argumentTypeToJSON(message.type);
-    }
-    if (message.value.length !== 0) {
-      obj.value = base64FromBytes(message.value);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Argument>, I>>(base?: I): Argument {
-    return Argument.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Argument>, I>>(object: I): Argument {
-    const message = createBaseArgument();
-    message.type = object.type ?? 0;
-    message.value = object.value ?? new Uint8Array(0);
-    return message;
-  },
-};
-
 function createBaseProcessor(): Processor {
-  return { uri: "", class: "", arguments: {} };
+  return { uri: "", arguments: {}, metadata: {} };
 }
 
 export const Processor = {
@@ -262,11 +175,14 @@ export const Processor = {
     if (message.uri !== "") {
       writer.uint32(10).string(message.uri);
     }
-    if (message.class !== "") {
-      writer.uint32(18).string(message.class);
-    }
     Object.entries(message.arguments).forEach(([key, value]) => {
       Processor_ArgumentsEntry.encode(
+        { key: key as any, value },
+        writer.uint32(18).fork(),
+      ).ldelim();
+    });
+    Object.entries(message.metadata).forEach(([key, value]) => {
+      Processor_MetadataEntry.encode(
         { key: key as any, value },
         writer.uint32(26).fork(),
       ).ldelim();
@@ -294,19 +210,25 @@ export const Processor = {
             break;
           }
 
-          message.class = reader.string();
+          const entry2 = Processor_ArgumentsEntry.decode(
+            reader,
+            reader.uint32(),
+          );
+          if (entry2.value !== undefined) {
+            message.arguments[entry2.key] = entry2.value;
+          }
           continue;
         case 3:
           if (tag !== 26) {
             break;
           }
 
-          const entry3 = Processor_ArgumentsEntry.decode(
+          const entry3 = Processor_MetadataEntry.decode(
             reader,
             reader.uint32(),
           );
           if (entry3.value !== undefined) {
-            message.arguments[entry3.key] = entry3.value;
+            message.metadata[entry3.key] = entry3.value;
           }
           continue;
       }
@@ -321,7 +243,6 @@ export const Processor = {
   fromJSON(object: any): Processor {
     return {
       uri: isSet(object.uri) ? globalThis.String(object.uri) : "",
-      class: isSet(object.class) ? globalThis.String(object.class) : "",
       arguments: isObject(object.arguments)
         ? Object.entries(object.arguments).reduce<{
             [key: string]: ArgumentType;
@@ -329,6 +250,15 @@ export const Processor = {
             acc[key] = argumentTypeFromJSON(value);
             return acc;
           }, {})
+        : {},
+      metadata: isObject(object.metadata)
+        ? Object.entries(object.metadata).reduce<{ [key: string]: string }>(
+            (acc, [key, value]) => {
+              acc[key] = String(value);
+              return acc;
+            },
+            {},
+          )
         : {},
     };
   },
@@ -338,15 +268,21 @@ export const Processor = {
     if (message.uri !== "") {
       obj.uri = message.uri;
     }
-    if (message.class !== "") {
-      obj.class = message.class;
-    }
     if (message.arguments) {
       const entries = Object.entries(message.arguments);
       if (entries.length > 0) {
         obj.arguments = {};
         entries.forEach(([k, v]) => {
           obj.arguments[k] = argumentTypeToJSON(v);
+        });
+      }
+    }
+    if (message.metadata) {
+      const entries = Object.entries(message.metadata);
+      if (entries.length > 0) {
+        obj.metadata = {};
+        entries.forEach(([k, v]) => {
+          obj.metadata[k] = v;
         });
       }
     }
@@ -361,12 +297,19 @@ export const Processor = {
   ): Processor {
     const message = createBaseProcessor();
     message.uri = object.uri ?? "";
-    message.class = object.class ?? "";
     message.arguments = Object.entries(object.arguments ?? {}).reduce<{
       [key: string]: ArgumentType;
     }>((acc, [key, value]) => {
       if (value !== undefined) {
         acc[key] = value as ArgumentType;
+      }
+      return acc;
+    }, {});
+    message.metadata = Object.entries(object.metadata ?? {}).reduce<{
+      [key: string]: string;
+    }>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = globalThis.String(value);
       }
       return acc;
     }, {});
@@ -459,85 +402,20 @@ export const Processor_ArgumentsEntry = {
   },
 };
 
-function createBaseProcessors(): Processors {
-  return { processors: [] };
+function createBaseProcessor_MetadataEntry(): Processor_MetadataEntry {
+  return { key: "", value: "" };
 }
 
-export const Processors = {
+export const Processor_MetadataEntry = {
   encode(
-    message: Processors,
+    message: Processor_MetadataEntry,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
-    for (const v of message.processors) {
-      Processor.encode(v!, writer.uint32(10).fork()).ldelim();
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
     }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): Processors {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseProcessors();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.processors.push(Processor.decode(reader, reader.uint32()));
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): Processors {
-    return {
-      processors: globalThis.Array.isArray(object?.processors)
-        ? object.processors.map((e: any) => Processor.fromJSON(e))
-        : [],
-    };
-  },
-
-  toJSON(message: Processors): unknown {
-    const obj: any = {};
-    if (message.processors?.length) {
-      obj.processors = message.processors.map((e) => Processor.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Processors>, I>>(base?: I): Processors {
-    return Processors.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Processors>, I>>(
-    object: I,
-  ): Processors {
-    const message = createBaseProcessors();
-    message.processors =
-      object.processors?.map((e) => Processor.fromPartial(e)) || [];
-    return message;
-  },
-};
-
-function createBaseProcessorDefinitions(): ProcessorDefinitions {
-  return { paths: [] };
-}
-
-export const ProcessorDefinitions = {
-  encode(
-    message: ProcessorDefinitions,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    for (const v of message.paths) {
-      writer.uint32(10).string(v!);
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
     }
     return writer;
   },
@@ -545,11 +423,11 @@ export const ProcessorDefinitions = {
   decode(
     input: _m0.Reader | Uint8Array,
     length?: number,
-  ): ProcessorDefinitions {
+  ): Processor_MetadataEntry {
     const reader =
       input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseProcessorDefinitions();
+    const message = createBaseProcessor_MetadataEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -558,7 +436,14 @@ export const ProcessorDefinitions = {
             break;
           }
 
-          message.paths.push(reader.string());
+          message.key = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -569,32 +454,115 @@ export const ProcessorDefinitions = {
     return message;
   },
 
-  fromJSON(object: any): ProcessorDefinitions {
+  fromJSON(object: any): Processor_MetadataEntry {
     return {
-      paths: globalThis.Array.isArray(object?.paths)
-        ? object.paths.map((e: any) => globalThis.String(e))
-        : [],
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
     };
   },
 
-  toJSON(message: ProcessorDefinitions): unknown {
+  toJSON(message: Processor_MetadataEntry): unknown {
     const obj: any = {};
-    if (message.paths?.length) {
-      obj.paths = message.paths;
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== "") {
+      obj.value = message.value;
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ProcessorDefinitions>, I>>(
+  create<I extends Exact<DeepPartial<Processor_MetadataEntry>, I>>(
     base?: I,
-  ): ProcessorDefinitions {
-    return ProcessorDefinitions.fromPartial(base ?? ({} as any));
+  ): Processor_MetadataEntry {
+    return Processor_MetadataEntry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<ProcessorDefinitions>, I>>(
+  fromPartial<I extends Exact<DeepPartial<Processor_MetadataEntry>, I>>(
     object: I,
-  ): ProcessorDefinitions {
-    const message = createBaseProcessorDefinitions();
-    message.paths = object.paths?.map((e) => e) || [];
+  ): Processor_MetadataEntry {
+    const message = createBaseProcessor_MetadataEntry();
+    message.key = object.key ?? "";
+    message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseArgument(): Argument {
+  return { type: 0, value: new Uint8Array(0) };
+}
+
+export const Argument = {
+  encode(
+    message: Argument,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    if (message.type !== 0) {
+      writer.uint32(8).int32(message.type);
+    }
+    if (message.value.length !== 0) {
+      writer.uint32(18).bytes(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Argument {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseArgument();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.type = reader.int32() as any;
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.bytes();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Argument {
+    return {
+      type: isSet(object.type) ? argumentTypeFromJSON(object.type) : 0,
+      value: isSet(object.value)
+        ? bytesFromBase64(object.value)
+        : new Uint8Array(0),
+    };
+  },
+
+  toJSON(message: Argument): unknown {
+    const obj: any = {};
+    if (message.type !== 0) {
+      obj.type = argumentTypeToJSON(message.type);
+    }
+    if (message.value.length !== 0) {
+      obj.value = base64FromBytes(message.value);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Argument>, I>>(base?: I): Argument {
+    return Argument.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Argument>, I>>(object: I): Argument {
+    const message = createBaseArgument();
+    message.type = object.type ?? 0;
+    message.value = object.value ?? new Uint8Array(0);
     return message;
   },
 };
@@ -806,71 +774,6 @@ export const Stage_ArgumentsEntry = {
   },
 };
 
-function createBaseStages(): Stages {
-  return { stages: [] };
-}
-
-export const Stages = {
-  encode(
-    message: Stages,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    for (const v of message.stages) {
-      Stage.encode(v!, writer.uint32(10).fork()).ldelim();
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): Stages {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseStages();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.stages.push(Stage.decode(reader, reader.uint32()));
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): Stages {
-    return {
-      stages: globalThis.Array.isArray(object?.stages)
-        ? object.stages.map((e: any) => Stage.fromJSON(e))
-        : [],
-    };
-  },
-
-  toJSON(message: Stages): unknown {
-    const obj: any = {};
-    if (message.stages?.length) {
-      obj.stages = message.stages.map((e) => Stage.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<Stages>, I>>(base?: I): Stages {
-    return Stages.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<Stages>, I>>(object: I): Stages {
-    const message = createBaseStages();
-    message.stages = object.stages?.map((e) => Stage.fromPartial(e)) || [];
-    return message;
-  },
-};
-
 function createBasePayload(): Payload {
   return { channelUri: "", data: new Uint8Array(0) };
 }
@@ -955,30 +858,38 @@ export const Payload = {
 
 export type RunnerService = typeof RunnerService;
 export const RunnerService = {
-  /** Retrieve the list of processor definition files. */
-  getProcessorDefinitions: {
-    path: "/Runner/getProcessorDefinitions",
+  prepareProcessor: {
+    path: "/Runner/prepareProcessor",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: Void) => Buffer.from(Void.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Void.decode(value),
-    responseSerialize: (value: ProcessorDefinitions) =>
-      Buffer.from(ProcessorDefinitions.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => ProcessorDefinitions.decode(value),
-  },
-  /** Load the required processors and setup the service. */
-  setup: {
-    path: "/Runner/setup",
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: Stages) =>
-      Buffer.from(Stages.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Stages.decode(value),
+    requestSerialize: (value: Processor) =>
+      Buffer.from(Processor.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Processor.decode(value),
     responseSerialize: (value: Void) =>
       Buffer.from(Void.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Void.decode(value),
   },
-  /** Send a payload to a channel. */
+  prepareStage: {
+    path: "/Runner/prepareStage",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Stage) =>
+      Buffer.from(Stage.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Stage.decode(value),
+    responseSerialize: (value: Void) =>
+      Buffer.from(Void.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Void.decode(value),
+  },
+  exec: {
+    path: "/Runner/exec",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Void) => Buffer.from(Void.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Void.decode(value),
+    responseSerialize: (value: Void) =>
+      Buffer.from(Void.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Void.decode(value),
+  },
   channel: {
     path: "/Runner/channel",
     requestStream: true,
@@ -993,57 +904,58 @@ export const RunnerService = {
 } as const;
 
 export interface RunnerServer extends UntypedServiceImplementation {
-  /** Retrieve the list of processor definition files. */
-  getProcessorDefinitions: handleUnaryCall<Void, ProcessorDefinitions>;
-  /** Load the required processors and setup the service. */
-  setup: handleUnaryCall<Stages, Void>;
-  /** Send a payload to a channel. */
+  prepareProcessor: handleUnaryCall<Processor, Void>;
+  prepareStage: handleUnaryCall<Stage, Void>;
+  exec: handleUnaryCall<Void, Void>;
   channel: handleBidiStreamingCall<Payload, Payload>;
 }
 
 export interface RunnerClient extends Client {
-  /** Retrieve the list of processor definition files. */
-  getProcessorDefinitions(
-    request: Void,
-    callback: (
-      error: ServiceError | null,
-      response: ProcessorDefinitions,
-    ) => void,
-  ): ClientUnaryCall;
-  getProcessorDefinitions(
-    request: Void,
-    metadata: Metadata,
-    callback: (
-      error: ServiceError | null,
-      response: ProcessorDefinitions,
-    ) => void,
-  ): ClientUnaryCall;
-  getProcessorDefinitions(
-    request: Void,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (
-      error: ServiceError | null,
-      response: ProcessorDefinitions,
-    ) => void,
-  ): ClientUnaryCall;
-  /** Load the required processors and setup the service. */
-  setup(
-    request: Stages,
+  prepareProcessor(
+    request: Processor,
     callback: (error: ServiceError | null, response: Void) => void,
   ): ClientUnaryCall;
-  setup(
-    request: Stages,
+  prepareProcessor(
+    request: Processor,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: Void) => void,
   ): ClientUnaryCall;
-  setup(
-    request: Stages,
+  prepareProcessor(
+    request: Processor,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Void) => void,
   ): ClientUnaryCall;
-  /** Send a payload to a channel. */
+  prepareStage(
+    request: Stage,
+    callback: (error: ServiceError | null, response: Void) => void,
+  ): ClientUnaryCall;
+  prepareStage(
+    request: Stage,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Void) => void,
+  ): ClientUnaryCall;
+  prepareStage(
+    request: Stage,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Void) => void,
+  ): ClientUnaryCall;
+  exec(
+    request: Void,
+    callback: (error: ServiceError | null, response: Void) => void,
+  ): ClientUnaryCall;
+  exec(
+    request: Void,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Void) => void,
+  ): ClientUnaryCall;
+  exec(
+    request: Void,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Void) => void,
+  ): ClientUnaryCall;
   channel(): ClientDuplexStream<Payload, Payload>;
   channel(options: Partial<CallOptions>): ClientDuplexStream<Payload, Payload>;
   channel(

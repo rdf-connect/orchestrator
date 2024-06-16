@@ -1,10 +1,9 @@
 import {
   ArgumentType,
   Payload,
-  ProcessorDefinitions,
+  Processor as AbstractProcessor,
   RunnerServer,
   Stage,
-  Stages,
   Void,
 } from "./runner";
 import {
@@ -13,13 +12,17 @@ import {
   ServerUnaryCall,
   UntypedHandleCall,
 } from "@grpc/grpc-js";
+
 import { Processor } from "../interfaces/processor";
 import { Observable, Subject } from "rxjs";
 import { Writer } from "../interfaces/writer";
-import { JVMRunnerError } from "../error";
+import { RunnerError } from "../error";
 import { Reader } from "../interfaces/reader";
+import { Constructor } from "./constructor";
+import { resolve } from "./resolve";
 
-/* Keep track of all writers and readers below. */
+const processors: Map<string, Constructor<Processor>> = new Map();
+const stages: Map<string, Processor> = new Map();
 const readers: Map<string, Subject<Uint8Array>> = new Map();
 const writers: Map<string, Observable<Uint8Array>> = new Map();
 
@@ -42,35 +45,42 @@ export class ServerImplementation implements RunnerServer {
 
     // On end, throw an error.
     call.on("end", function () {
-      throw JVMRunnerError.unexpectedBehaviour();
+      throw RunnerError.unexpectedBehaviour();
     });
   }
 
-  getProcessorDefinitions(
-    call: ServerUnaryCall<Void, ProcessorDefinitions>,
-    callback: sendUnaryData<ProcessorDefinitions>,
-  ): void {
-    callback(null, {
-      paths: [...Processor.getProcessors().keys()],
-    });
-  }
-
-  setup(
-    call: ServerUnaryCall<Stages, Void>,
+  prepareStage(
+    call: ServerUnaryCall<Stage, Void>,
     callback: sendUnaryData<Void>,
   ): void {
-    call.on("data", function (stages: Stages): void {
-      initStages(stages);
+    call.on("data", function (stage: Stage): void {
+      initStage(stage);
       callback(null, {});
     });
   }
+
+  prepareProcessor(
+    call: ServerUnaryCall<AbstractProcessor, Void>,
+    callback: sendUnaryData<Void>,
+  ): void {
+    call.on("data", function (processor: AbstractProcessor): void {
+      resolve().then((constructor) => {
+        processors.set(processor.uri, constructor);
+        callback(null, {});
+      });
+    });
+  }
+
+  exec(call: ServerUnaryCall<Void, Void>, callback: sendUnaryData<Void>): void {
+    call.on("data", function (): void {
+      processors.forEach((processor) => {
+        new processor().exec();
+      });
+    });
+  }
 }
 
-export function initStages(stages: Stages): Processor[] {
-  return stages.stages.map((stage) => initStage(stage));
-}
-
-export function initStage(stage: Stage): Processor {
+export function initStage(stage: Stage): void {
   const abstractArgs = Object.entries(stage.arguments);
   const parsedArgs = new Map<string, unknown>();
 
@@ -90,10 +100,10 @@ export function initStage(stage: Stage): Processor {
           console.log("Next:", value);
         },
         error: () => {
-          JVMRunnerError.channelError();
+          RunnerError.channelError();
         },
         complete: () => {
-          JVMRunnerError.unexpectedBehaviour();
+          RunnerError.unexpectedBehaviour();
         },
       };
 
@@ -106,11 +116,7 @@ export function initStage(stage: Stage): Processor {
     parsedArgs.set(name, argument.value);
   }
 
-  const processor = Processor.getProcessors().get(stage.processorUri);
-  if (!processor) {
-    throw JVMRunnerError.missingImplementation();
-  }
-
-  // @ts-expect-error - Processors are instaniated with a map of arguments.
-  return new processor(parsedArgs);
+  // Initialize the new stage.
+  const constructor = processors.get(stage.processorUri)!;
+  stages.set(stage.uri, new constructor(parsedArgs));
 }

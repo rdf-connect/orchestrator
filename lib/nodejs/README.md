@@ -12,7 +12,7 @@ We use `proto-ts` to generate TypeScript interfaces from the protocol buffer def
 protoc \
   --plugin=./node_modules/.bin/protoc-gen-ts_proto \
   --ts_proto_out=./src \
-  --ts_proto_opt=fileSuffix=.d \
   --ts_proto_opt=outputServices=grpc-js \
+  --proto-path=.. \
   ./runner.proto
 ```
