@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+enum IRParameterType {
+    BOOLEAN = 0;
+    BYTE = 1;
+    DATE = 2;
+    DOUBLE = 3;
+    FLOAT = 4;
+    INT = 5;
+    LONG = 6;
+    STRING = 7;
+    WRITER = 8;
+    READER = 9;
+}
+
+enum IRParameterPresence {
+  OPTIONAL = 0;
+  REQUIRED = 1;
+}
+
+enum IRParameterCount {
+  SINGLE = 0;
+  MULTIPLE = 1;
+}
+
+message IRParameter {
+  string name = 1;
+  IRParameterType type = 2;
+  IRParameterPresence presence = 3;
+  IRParameterCount count = 4;
+}
+
+message IRProcessor {
+  string uri = 1;
+  repeated IRParameter parameters = 2;
+  map<string, string> metadata = 3;
+}
+
+message IRArgument {
+  string name = 1;
+  repeated string value = 2;
+}
+
+message IRStage {
+  string uri = 1;
+  string processor_uri = 2;
+  repeated IRArgument arguments = 3;
+}

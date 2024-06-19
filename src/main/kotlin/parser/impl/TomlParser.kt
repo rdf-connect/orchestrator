@@ -4,13 +4,13 @@ import java.io.File
 import org.tomlj.Toml
 import org.tomlj.TomlParseResult
 import org.tomlj.TomlTable
+import runner.Runner
 import technology.idlab.parser.Parser
 import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRChannel
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
-import technology.idlab.runtime.Runner
 import technology.idlab.util.Log
 
 private fun TomlTable.toIRParameter(): IRParameter {

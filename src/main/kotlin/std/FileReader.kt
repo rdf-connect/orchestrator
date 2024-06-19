@@ -1,8 +1,8 @@
 package technology.idlab.std
 
 import java.io.File
-import technology.idlab.runtime.jvm.Processor
-import technology.idlab.runtime.jvm.Writer
+import runner.jvm.Processor
+import runner.jvm.Writer
 
 class FileReader(args: Map<String, Any>) : Processor(args) {
   /** Arguments */

@@ -1,10 +1,10 @@
-package technology.idlab.runtime
+package runner
 
 import kotlinx.coroutines.channels.Channel
+import runner.impl.NodeRunner
+import runner.jvm.JVMRunner
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
-import technology.idlab.runtime.impl.NodeRunner
-import technology.idlab.runtime.jvm.JVMRunner
 import technology.idlab.util.Log
 
 abstract class Runner {

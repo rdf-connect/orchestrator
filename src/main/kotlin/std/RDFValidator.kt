@@ -6,10 +6,10 @@ import org.apache.jena.graph.Graph
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.RiotException
 import org.apache.jena.shacl.ShaclValidator
+import runner.jvm.Processor
+import runner.jvm.Reader
+import runner.jvm.Writer
 import technology.idlab.extensions.readModelRecursively
-import technology.idlab.runtime.jvm.Processor
-import technology.idlab.runtime.jvm.Reader
-import technology.idlab.runtime.jvm.Writer
 import technology.idlab.util.Log
 
 class RDFValidator(args: Map<String, Any>) : Processor(args) {

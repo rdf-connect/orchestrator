@@ -1,10 +1,10 @@
-package technology.idlab.runtime.jvm
+package runner.jvm
 
 import kotlin.concurrent.thread
 import kotlinx.coroutines.flow.flow
+import runner.Runner
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
-import technology.idlab.runtime.Runner
 
 class JVMRunner : Runner() {
   // The processors that are available to the runtime.

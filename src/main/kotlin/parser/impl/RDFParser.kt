@@ -3,6 +3,7 @@ package technology.idlab.parser.impl
 import java.io.File
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
+import runner.Runner
 import technology.idlab.extensions.query
 import technology.idlab.extensions.validate
 import technology.idlab.parser.Parser
@@ -11,7 +12,6 @@ import technology.idlab.parser.intermediate.IRChannel
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
-import technology.idlab.runtime.Runner
 import technology.idlab.util.Log
 
 class RDFParser(file: File) : Parser() {

@@ -1,4 +1,4 @@
-package technology.idlab.runtime.impl
+package runner.impl
 
 import RunnerGrpcKt
 import com.google.protobuf.kotlin.toByteString
@@ -6,9 +6,9 @@ import io.grpc.ManagedChannelBuilder
 import java.io.BufferedReader
 import java.io.File
 import kotlinx.coroutines.flow.flow
+import runner.Runner
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
-import technology.idlab.runtime.Runner
 
 class NodeRunner : Runner() {
   // Process runtime.

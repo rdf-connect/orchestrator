@@ -1,6 +1,6 @@
 package technology.idlab.parser.intermediate
 
-import technology.idlab.runtime.Runner
+import runner.Runner
 
 class IRProcessor(
     // The URI of the processor.

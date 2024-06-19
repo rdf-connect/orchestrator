@@ -3,8 +3,8 @@ package technology.idlab
 import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
+import runner.Runner
 import technology.idlab.parser.Parser
-import technology.idlab.runtime.Runner
 
 fun main(args: Array<String>) = runBlocking {
   // Parse arguments.

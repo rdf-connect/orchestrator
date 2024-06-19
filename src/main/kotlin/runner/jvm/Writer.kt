@@ -1,4 +1,4 @@
-package technology.idlab.runtime.jvm
+package runner.jvm
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking

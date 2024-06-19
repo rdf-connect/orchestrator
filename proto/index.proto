@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "empty.proto";
+import "intermediate.proto";
+
+message ChannelData {
+  string target_uri = 1;
+  string data = 2;
+}
+
+service Runner {
+  rpc initProcessor(IRProcessor) returns (Empty);
+  rpc initStage(IRStage) returns (Empty);
+  rpc exec(Empty) returns (Empty);
+  rpc channel(stream ChannelData) returns (stream ChannelData);
+}

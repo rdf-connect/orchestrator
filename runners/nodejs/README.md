@@ -14,5 +14,5 @@ protoc \
   --ts_proto_out=./src \
   --ts_proto_opt=outputServices=grpc-js \
   --proto-path=.. \
-  ./runner.proto
+  ./index.proto
 ```

@@ -5,9 +5,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import runner.Runner
 import technology.idlab.parser.Parser
 import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.runtime.Runner
 
 abstract class ParserTest {
   // The parser to test.

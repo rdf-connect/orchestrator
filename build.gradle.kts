@@ -34,7 +34,7 @@ tasks.shadowJar {
 tasks.test { useJUnitPlatform() }
 
 /** We define these explicitly due to the reliance on Protobuf and gRPC. */
-sourceSets { main { proto { srcDir("lib/proto") } } }
+sourceSets { main { proto { srcDir("proto") } } }
 
 /*
  * Check this document for more info on the section below:

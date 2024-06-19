@@ -1,6 +1,6 @@
 package technology.idlab.parser.intermediate
 
-import technology.idlab.runtime.Runner
+import runner.Runner
 
 data class IRStage(
     // The URI of the stage.

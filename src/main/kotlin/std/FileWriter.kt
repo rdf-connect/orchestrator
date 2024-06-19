@@ -1,8 +1,8 @@
 package technology.idlab.std
 
 import java.io.File
-import technology.idlab.runtime.jvm.Processor
-import technology.idlab.runtime.jvm.Reader
+import runner.jvm.Processor
+import runner.jvm.Reader
 
 class FileWriter(args: Map<String, Any>) : Processor(args) {
   /** Processor default values. */
