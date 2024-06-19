@@ -4,6 +4,7 @@ plugins {
   kotlin("jvm") version "1.9.22"
   id("maven-publish")
   id("co.uzzu.dotenv.gradle") version "4.0.0"
+  id("com.google.protobuf") version "0.9.4"
 }
 
 /** JVM Runner configuration. */
@@ -31,6 +32,30 @@ tasks.shadowJar {
 
 /** Use JUnit for testing. */
 tasks.test { useJUnitPlatform() }
+
+/** We define these explicitly due to the reliance on Protobuf and gRPC. */
+sourceSets { main { proto { srcDir("lib/proto") } } }
+
+/*
+ * Check this document for more info on the section below:
+ * https://github.com/grpc/grpc-kotlin/tree/master/compiler
+ */
+protobuf {
+  protoc { artifact = "com.google.protobuf:protoc:4.27.1" }
+  plugins {
+    create("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.64.0" }
+    create("grpckt") { artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar" }
+  }
+  generateProtoTasks {
+    all().forEach {
+      it.plugins {
+        create("grpc")
+        create("grpckt")
+      }
+      it.builtins { create("kotlin") }
+    }
+  }
+}
 
 /**
  * A list of all the repositories we use in the project. This includes the maven central repository
@@ -62,6 +87,16 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")
   implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.9.22")
   implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
+
+  // TOML parser.
+  implementation("org.tomlj:tomlj:1.1.1")
+
+  // gRPC
+  implementation("io.grpc:grpc-netty:1.64.0")
+  implementation("io.grpc:grpc-protobuf:1.64.0")
+  implementation("io.grpc:grpc-stub:1.64.0")
+  implementation("io.grpc:grpc-kotlin-stub:1.4.1")
+  implementation("com.google.protobuf:protobuf-kotlin:4.27.1")
 
   // HTTP dependencies.
   implementation("io.ktor:ktor-client-core:2.3.10")

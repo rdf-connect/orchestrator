@@ -1,11 +1,9 @@
 package technology.idlab.std
 
 import java.io.File
-import technology.idlab.bridge.Writer
-import technology.idlab.runner.Processor
-import technology.idlab.runner.ProcessorDefinition
+import technology.idlab.runtime.jvm.Processor
+import technology.idlab.runtime.jvm.Writer
 
-@ProcessorDefinition("/std/file_reader.ttl")
 class FileReader(args: Map<String, Any>) : Processor(args) {
   /** Arguments */
   private val path: String = this.getArgument("path")

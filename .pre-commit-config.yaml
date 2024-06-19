@@ -13,8 +13,3 @@ repos:
     hooks:
     - id: pretty-format-java
       args: [--autofix]
-  - repo: https://github.com/CasperWA/turtle-canon
-    rev: v0.1.0
-    hooks:
-    - id: turtle-canon
-      args: [--autofix]

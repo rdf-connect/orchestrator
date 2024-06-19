@@ -1,0 +1,19 @@
+PREFIX conn: <http://www.rdf-connect.com/#>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+
+SELECT
+  ?path
+  ?datatype
+  ?minCount
+  ?maxCount
+
+WHERE {
+  ?shape sh:targetClass ?processor.
+  ?shape sh:property ?property.
+
+  ?property sh:datatype ?datatype.
+  ?property sh:path ?path.
+
+OPTIONAL { ?property sh:minCount ?minCount. }
+  OPTIONAL { ?property sh:maxCount ?maxCount. }
+}

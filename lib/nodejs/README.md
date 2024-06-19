@@ -1,6 +1,6 @@
 # Node.js
 
-In this directory, a runtime and processor interface is defined for use with Node.js.
+In this directory, a runner and processor interface is defined for use with Node.js.
 
 ## Development Guide
 

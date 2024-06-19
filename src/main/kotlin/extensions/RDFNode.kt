@@ -3,7 +3,7 @@ package technology.idlab.extensions
 import java.time.Instant
 import java.util.*
 import org.apache.jena.rdf.model.RDFNode
-import technology.idlab.logging.Log
+import technology.idlab.util.Log
 
 /**
  * Parse an RDFNode as a literal. In contrast to the default method, this method will return the

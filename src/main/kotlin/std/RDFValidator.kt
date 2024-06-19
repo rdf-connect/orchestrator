@@ -6,14 +6,12 @@ import org.apache.jena.graph.Graph
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.RiotException
 import org.apache.jena.shacl.ShaclValidator
-import technology.idlab.bridge.Reader
-import technology.idlab.bridge.Writer
 import technology.idlab.extensions.readModelRecursively
-import technology.idlab.logging.Log
-import technology.idlab.runner.Processor
-import technology.idlab.runner.ProcessorDefinition
+import technology.idlab.runtime.jvm.Processor
+import technology.idlab.runtime.jvm.Reader
+import technology.idlab.runtime.jvm.Writer
+import technology.idlab.util.Log
 
-@ProcessorDefinition("/std/rdf_validator.ttl")
 class RDFValidator(args: Map<String, Any>) : Processor(args) {
   /** Default values. */
   private val errorIsFatalDefault = false

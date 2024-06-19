@@ -1,4 +1,4 @@
-package technology.idlab.logging
+package technology.idlab.util
 
 import java.time.format.DateTimeFormatter
 import java.util.Date

@@ -2,9 +2,9 @@ PREFIX conn: <http://www.rdf-connect.com/#>
 
 SELECT
   ?uri
-  ?processor
+  ?target
 
 WHERE {
-  ?uri a ?processor.
-  ?processor a conn:Processor.
+  ?uri a conn:Processor.
+  ?uri conn:target ?target.
 }

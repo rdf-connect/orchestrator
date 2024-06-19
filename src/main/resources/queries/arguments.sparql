@@ -1,8 +1,12 @@
+PREFIX conn: <http://www.rdf-connect.com/#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
 
-SELECT ?key ?value
+SELECT
+  ?key
+  ?value
 
 WHERE {
   ?stage ?key ?value.
-  FILTER (?key != rdf:type)
+  FILTER (rdf:type != ?key)
 }

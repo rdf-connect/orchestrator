@@ -6,7 +6,7 @@ import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QuerySolution
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shacl.ShaclValidator
-import technology.idlab.logging.Log
+import technology.idlab.util.Log
 
 /** Execute a query as and apply a function to each solution. */
 internal fun Model.query(

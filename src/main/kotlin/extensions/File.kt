@@ -6,7 +6,7 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.vocabulary.OWL
-import technology.idlab.logging.Log
+import technology.idlab.util.Log
 
 /**
  * Read a model from a file and recursively import all referenced ontologies based on <owl:import>

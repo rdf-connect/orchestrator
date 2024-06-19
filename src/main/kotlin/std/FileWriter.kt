@@ -1,11 +1,9 @@
 package technology.idlab.std
 
 import java.io.File
-import technology.idlab.bridge.Reader
-import technology.idlab.runner.Processor
-import technology.idlab.runner.ProcessorDefinition
+import technology.idlab.runtime.jvm.Processor
+import technology.idlab.runtime.jvm.Reader
 
-@ProcessorDefinition("/std/file_writer.ttl")
 class FileWriter(args: Map<String, Any>) : Processor(args) {
   /** Processor default values. */
   private val overwriteDefault = true

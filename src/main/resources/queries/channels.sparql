@@ -1,0 +1,12 @@
+PREFIX conn: <http://www.rdf-connect.com/#>
+
+SELECT
+  ?uri
+  ?writer
+  ?reader
+
+WHERE {
+  ?uri a conn:Channel.
+  ?uri conn:writer ?writer.
+  ?uri conn:reader ?reader.
+}

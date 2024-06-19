@@ -7,11 +7,9 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import technology.idlab.bridge.Writer
-import technology.idlab.runner.Processor
-import technology.idlab.runner.ProcessorDefinition
+import technology.idlab.runtime.jvm.Processor
+import technology.idlab.runtime.jvm.Writer
 
-@ProcessorDefinition("/std/http_fetch.ttl")
 class HttpFetch(args: Map<String, Any>) : Processor(args) {
   /** Meta configuration. */
   private var engine: HttpClientEngine = CIO.create()
