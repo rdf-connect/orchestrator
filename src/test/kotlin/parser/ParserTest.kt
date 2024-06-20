@@ -1,6 +1,7 @@
 package parser
 
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -21,6 +22,11 @@ abstract class ParserTest {
     // Get alpha processor and check its values.
     val alpha = processors.find { it.uri.endsWith("alpha") }
     assertNotNull(alpha, "Alpha processor should exist.")
+    assertContains(alpha.metadata.keys, "class", "Alpha processor should have a class key.")
+    assertEquals(
+        "Alpha",
+        alpha.metadata["class"],
+        "Alpha processor should have a class key with value Alpha.")
     assertEquals(Runner.Target.JVM, alpha.target, "Alpha processor should target JVM.")
     assertEquals(2, alpha.parameters.size, "Alpha processor should have two parameters.")
 

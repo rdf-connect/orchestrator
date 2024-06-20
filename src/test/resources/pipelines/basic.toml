@@ -4,6 +4,7 @@
 
 [processors.alpha]
 target = "JVM"
+class = "Alpha"
 
 [[processors.alpha.parameters]]
 name = "one"

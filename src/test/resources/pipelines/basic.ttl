@@ -1,62 +1,68 @@
 @prefix conn: <http://www.rdf-connect.com/#> .
-@prefix ns1: <file:///Users/jens/Developer/technology.idlab.jvm-runner/src/test/resources/pipelines/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-ns1:alpha_one a ns1:alpha ;
-    ns1:one "Hello, World!" .
+<alpha_one> a <alpha> ;
+    <one> "Hello, World!" .
 
-ns1:alpha_two a ns1:alpha ;
-    ns1:one "Hello, World!" ;
-    ns1:two "1"^^xsd:int,
-        "2"^^xsd:int,
-        "3"^^xsd:int .
+<alpha_two> a <alpha> ;
+    <one> "Hello, World!" ;
+    <two> "1"^^xsd:int,
+          "2"^^xsd:int,
+          "3"^^xsd:int .
 
-ns1:beta_one a ns1:beta ;
-    ns1:one "Hello, World!" .
+<beta_one> a <beta> ;
+    <one> "Hello, World!" .
 
-ns1:beta_two a ns1:beta ;
-    ns1:one "Hello, World!" ;
-    ns1:two "1"^^xsd:int,
-        "2"^^xsd:int,
-        "3"^^xsd:int .
+<beta_two> a <beta> ;
+    <one> "Hello, World!" ;
+    <two> "1"^^xsd:int,
+          "2"^^xsd:int,
+          "3"^^xsd:int .
 
-ns1:first a conn:Channel ;
-    conn:reader ns1:reader1 ;
-    conn:writer ns1:writer1 .
+<first> a conn:Channel ;
+    conn:reader <reader1> ;
+    conn:writer <writer1> .
 
-ns1:second a conn:Channel ;
-    conn:reader ns1:reader2 ;
-    conn:writer ns1:writer2 .
+<second> a conn:Channel ;
+    conn:reader <reader2> ;
+    conn:writer <writer2> .
 
-ns1:alpha a conn:Processor ;
-    conn:target "JVM" .
+<alpha> a conn:Processor ;
+    conn:target "JVM" ;
+    conn:class "Alpha".
 
-ns1:beta a conn:Processor ;
+<beta> a conn:Processor ;
     conn:target "NodeJS" .
 
 [] a sh:NodeShape ;
     sh:closed true ;
     sh:ignoredProperties ( rdf:type ) ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:minCount 1 ;
-            sh:path ns1:one ],
-        [ sh:datatype xsd:int ;
-            sh:minCount 0 ;
-            sh:path ns1:two ] ;
-    sh:targetClass ns1:alpha .
+    sh:property [
+      sh:datatype xsd:string ;
+      sh:maxCount 1 ;
+      sh:minCount 1 ;
+      sh:path <one>
+    ], [
+      sh:datatype xsd:int ;
+      sh:minCount 0 ;
+      sh:path <two>
+    ] ;
+    sh:targetClass <alpha> .
 
 [] a sh:NodeShape ;
     sh:closed true ;
     sh:ignoredProperties ( rdf:type ) ;
-    sh:property [ sh:datatype xsd:string ;
-            sh:maxCount 1 ;
-            sh:minCount 1 ;
-            sh:path ns1:one ],
-        [ sh:datatype xsd:int ;
-            sh:minCount 0 ;
-            sh:path ns1:two ] ;
-    sh:targetClass ns1:beta .
+    sh:property [
+      sh:datatype xsd:string ;
+      sh:maxCount 1 ;
+      sh:minCount 1 ;
+      sh:path <one>
+    ], [
+      sh:datatype xsd:int ;
+      sh:minCount 0 ;
+      sh:path <two>
+    ] ;
+    sh:targetClass <beta> .
 
