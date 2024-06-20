@@ -83,4 +83,10 @@ abstract class Runner(
 
   /** Return the current state of the runtime. */
   abstract suspend fun status(): Status
+
+  /** Halt the execution of the runtime and release all resources. */
+  fun halt() {
+    // TODO: Propagate halting signal to processors.
+    handler.interrupt()
+  }
 }

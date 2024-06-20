@@ -1,7 +1,7 @@
 package runner.jvm
 
+import kotlin.concurrent.thread
 import kotlin.test.Test
-import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -62,15 +62,28 @@ class JVMRunnerTest {
   }
 
   @Test
-  fun channelTest() = runBlocking {
-    runner.prepare(processor)
-    runner.prepare(stage)
-    val execution = async { runner.exec() }
+  fun channelTest(): Unit = runBlocking {
+    try {
+      runner.prepare(processor)
+      runner.prepare(stage)
+      val execution = thread {
+        try {
+          runBlocking { runner.exec() }
+        } catch (_: InterruptedException) {
+          // Ignore.
+        }
+      }
 
-    val data = "Hello, World!".encodeToByteArray()
-    incoming.send(Runner.Payload("channel_in_uri", data))
-    val result = outgoing.receive()
-    assertEquals("channel_out_uri", result.destinationURI)
-    assertEquals(data, result.data)
+      val data = "Hello, World!".encodeToByteArray()
+      incoming.send(Runner.Payload("channel_in_uri", data))
+      val result = outgoing.receive()
+      assertEquals("channel_out_uri", result.destinationURI)
+      assertEquals(data, result.data)
+
+      runner.halt()
+      execution.interrupt()
+    } catch (_: InterruptedException) {
+      // Ignore.
+    }
   }
 }

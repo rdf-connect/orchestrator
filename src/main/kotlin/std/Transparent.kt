@@ -9,7 +9,14 @@ class Transparent(args: Map<String, Any>) : Processor(args) {
   private val output = this.getArgument<Writer>("output")
 
   override fun exec() {
-    val result = input.readSync()
-    output.pushSync(result.value)
+    while (true) {
+      val result = input.readSync()
+
+      if (result.isClosed()) {
+        break
+      }
+
+      output.pushSync(result.value)
+    }
   }
 }
