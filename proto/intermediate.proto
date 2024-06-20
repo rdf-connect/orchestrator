@@ -20,7 +20,7 @@ enum IRParameterPresence {
 
 enum IRParameterCount {
   SINGLE = 0;
-  MULTIPLE = 1;
+  LIST = 1;
 }
 
 message IRParameter {
