@@ -16,16 +16,4 @@
 [] a sh:NodeShape ;
     sh:closed true ;
     sh:ignoredProperties ( rdf:type ) ;
-    sh:property [
-      sh:maxCount 1 ;
-      sh:minCount 1 ;
-      sh:nodeKind sh:BlankNodeOrIRI ;
-      sh:path conn:reader
-    ], [
-      sh:maxCount 1 ;
-      sh:minCount 1 ;
-      sh:nodeKind sh:BlankNodeOrIRI ;
-      sh:path conn:writer
-    ] ;
     sh:targetClass conn:Channel .
-

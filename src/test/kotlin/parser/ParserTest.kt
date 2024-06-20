@@ -64,25 +64,4 @@ abstract class ParserTest {
     val two = alphaOne.arguments.find { it.name == "two" }
     assertNull(two, "alpha_one::two should not exist.")
   }
-
-  @Test
-  fun channels() {
-    val channels = parser.channels()
-
-    // Get the first channel.
-    val channel = channels.find { it.uri.endsWith("first") }
-    assertNotNull(channel, "first channel should exist.")
-    assertTrue(channel.source.endsWith("writer1"), "first channel should have writer1 as source.")
-    assertTrue(
-        channel.destination.endsWith("reader1"),
-        "first channel should have reader1 as destination.")
-
-    // Get the second channel.
-    val channel2 = channels.find { it.uri.endsWith("second") }
-    assertNotNull(channel2, "second channel should exist.")
-    assertTrue(channel2.source.endsWith("writer2"), "second channel should have writer2 as source.")
-    assertTrue(
-        channel2.destination.endsWith("reader2"),
-        "second channel should have reader2 as destination.")
-  }
 }

@@ -21,13 +21,9 @@
           "2"^^xsd:int,
           "3"^^xsd:int .
 
-<first> a conn:Channel ;
-    conn:reader <reader1> ;
-    conn:writer <writer1> .
+<first> a conn:Channel .
 
-<second> a conn:Channel ;
-    conn:reader <reader2> ;
-    conn:writer <writer2> .
+<second> a conn:Channel .
 
 <alpha> a conn:Processor ;
     conn:target "JVM" ;

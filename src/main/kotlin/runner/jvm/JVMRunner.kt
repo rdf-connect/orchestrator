@@ -12,8 +12,6 @@ class JVMRunner(incoming: Channel<Payload>, outgoing: Channel<Payload>) :
     Runner(incoming, outgoing) {
   private val processors = mutableMapOf<String, Pair<IRProcessor, Class<Processor>>>()
   private val stages = mutableMapOf<String, Processor>()
-  private val readers = mutableMapOf<String, Reader>()
-  private val writers = mutableMapOf<String, Writer>()
 
   override suspend fun prepare(processor: IRProcessor) {
     val className = processor.metadata["class"] ?: Log.shared.fatal("Processor has no class key.")
@@ -79,17 +77,11 @@ class JVMRunner(incoming: Channel<Payload>, outgoing: Channel<Payload>) :
       IRParameter.Type.INT -> value.toInt()
       IRParameter.Type.LONG -> value.toLong()
       IRParameter.Type.STRING -> value
-      IRParameter.Type.WRITER -> {
-        val channel = Channel<ByteArray>()
-        val writer = Writer(channel)
-        this.writers[value] = writer
-        return writer
-      }
+      IRParameter.Type.WRITER -> return Writer(this.outgoing, value)
       IRParameter.Type.READER -> {
         val channel = Channel<ByteArray>()
-        val reader = Reader(channel)
-        this.readers[value] = reader
-        return reader
+        this.readers[value] = channel
+        return Reader(channel)
       }
     }
   }

@@ -56,15 +56,3 @@ arguments.one = "Hello, World!"
 processor = "beta"
 arguments.one = "Hello, World!"
 arguments.two = [1, 2, 3]
-
-##################
-# Some channels. #
-##################
-
-[channels.first]
-in = "writer1"
-out = "reader1"
-
-[channels.second]
-in = "writer2"
-out = "reader2"

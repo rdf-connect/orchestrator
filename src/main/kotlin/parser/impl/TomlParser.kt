@@ -7,7 +7,6 @@ import org.tomlj.TomlTable
 import runner.Runner
 import technology.idlab.parser.Parser
 import technology.idlab.parser.intermediate.IRArgument
-import technology.idlab.parser.intermediate.IRChannel
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
@@ -110,12 +109,6 @@ private fun TomlTable.toIRProcessor(uri: String): IRProcessor {
   return IRProcessor(uri, target, result, metadata)
 }
 
-private fun TomlTable.toIRChannel(uri: String): IRChannel {
-  val input = this.getString("in") ?: Log.shared.fatal("No in found for channel.")
-  val output = this.getString("out") ?: Log.shared.fatal("No out found for channel.")
-  return IRChannel(uri, input, output)
-}
-
 private fun TomlTable.toIRStage(processors: Map<String, IRProcessor>, uri: String): IRStage {
   // Get processor.
   val processorURI =
@@ -136,9 +129,6 @@ class TomlParser(file: File) : Parser() {
 
   /* Save stages as well. */
   private val stages: Map<String, IRStage>
-
-  /* Channels ditto. */
-  private val channels: Map<String, IRChannel>
 
   init {
     // Get the processors table.
@@ -167,28 +157,11 @@ class TomlParser(file: File) : Parser() {
     this.stages = stages?.associateBy { it.uri } ?: emptyMap()
   }
 
-  init {
-    val channelsTable = toml.getTable("channels")
-
-    // Iterate over the channels and save them.
-    val channels =
-        channelsTable?.keySet()?.map { uri ->
-          val table = channelsTable.getTable(uri)!!
-          return@map table.toIRChannel(uri)
-        }
-
-    this.channels = channels?.associateBy { it.uri } ?: emptyMap()
-  }
-
   override fun processors(): List<IRProcessor> {
     return processors.values.toList()
   }
 
   override fun stages(): List<IRStage> {
     return stages.values.toList()
-  }
-
-  override fun channels(): List<IRChannel> {
-    return channels.values.toList()
   }
 }

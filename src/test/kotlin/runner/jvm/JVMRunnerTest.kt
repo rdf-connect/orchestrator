@@ -38,8 +38,8 @@ class JVMRunnerTest {
           "transparent_stage",
           processor,
           listOf(
-              IRArgument("input", listOf("reader_uri")),
-              IRArgument("output", listOf("writer_uri"))),
+              IRArgument("input", listOf("channel_in_uri")),
+              IRArgument("output", listOf("channel_out_uri"))),
       )
 
   private var incoming: Channel<Runner.Payload> = Channel()
@@ -68,9 +68,9 @@ class JVMRunnerTest {
     val execution = async { runner.exec() }
 
     val data = "Hello, World!".encodeToByteArray()
-    incoming.send(Runner.Payload("reader_uri", data))
+    incoming.send(Runner.Payload("channel_in_uri", data))
     val result = outgoing.receive()
-    assertEquals("writer_uri", result.destinationURI)
+    assertEquals("channel_out_uri", result.destinationURI)
     assertEquals(data, result.data)
   }
 }

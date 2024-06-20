@@ -2,16 +2,17 @@ package runner.jvm
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
+import runner.Runner
 import technology.idlab.util.Log
 
-class Writer(private val channel: Channel<ByteArray>) {
+class Writer(private val channel: Channel<Runner.Payload>, private val destination: String) {
   fun pushSync(value: ByteArray) {
-    runBlocking { channel.send(value) }
+    runBlocking { channel.send(Runner.Payload(destination, value)) }
   }
 
   fun push(value: ByteArray) {
     try {
-      channel.trySend(value)
+      channel.trySend(Runner.Payload(destination, value))
     } catch (e: Exception) {
       Log.shared.fatal(e)
     }

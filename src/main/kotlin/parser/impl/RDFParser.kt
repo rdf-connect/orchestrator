@@ -8,7 +8,6 @@ import technology.idlab.extensions.query
 import technology.idlab.extensions.validate
 import technology.idlab.parser.Parser
 import technology.idlab.parser.intermediate.IRArgument
-import technology.idlab.parser.intermediate.IRChannel
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
@@ -30,9 +29,6 @@ class RDFParser(file: File) : Parser() {
 
   /* Cache stages as well. */
   private val stages: Map<String, IRStage>
-
-  /* Channels, too. */
-  private val channels: Map<String, IRChannel>
 
   init {
     val processors = mutableListOf<IRProcessor>()
@@ -151,34 +147,11 @@ class RDFParser(file: File) : Parser() {
     this.stages = stages.associateBy { it.uri }
   }
 
-  init {
-    val channels = mutableListOf<IRChannel>()
-
-    model.query("/queries/channels.sparql") {
-      // Get URI
-      val uri = it.get("uri").asResource().toString()
-
-      // Get input and output.
-      val input = it.get("writer").asResource().toString()
-      val output = it.get("reader").asResource().toString()
-
-      // Append as result.
-      val channel = IRChannel(uri, input, output)
-      channels.add(channel)
-    }
-
-    this.channels = channels.associateBy { it.uri }
-  }
-
   override fun processors(): List<IRProcessor> {
     return processors.values.toList()
   }
 
   override fun stages(): List<IRStage> {
     return stages.values.toList()
-  }
-
-  override fun channels(): List<IRChannel> {
-    return channels.values.toList()
   }
 }

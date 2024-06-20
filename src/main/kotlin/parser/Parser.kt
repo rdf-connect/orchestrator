@@ -2,7 +2,6 @@ package technology.idlab.parser
 
 import java.io.File
 import technology.idlab.parser.impl.TomlParser
-import technology.idlab.parser.intermediate.IRChannel
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
@@ -18,9 +17,6 @@ abstract class Parser {
 
   /* Retrieve all the declared stages in the file. */
   abstract fun stages(): List<IRStage>
-
-  /* Model all channels as a simple "source -> destination" relation. */
-  abstract fun channels(): List<IRChannel>
 
   companion object {
     /* Create a parser based on the file extension. */
