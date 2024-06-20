@@ -4,8 +4,8 @@ import "empty.proto";
 import "intermediate.proto";
 
 message ChannelData {
-  string target_uri = 1;
-  string data = 2;
+  string destination_uri = 1;
+  bytes data = 2;
 }
 
 service Runner {

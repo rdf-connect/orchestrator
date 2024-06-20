@@ -50,7 +50,7 @@ abstract class Runner {
   )
 
   /* Messages which are destined to a processor inside the runner. */
-  private val incoming: Channel<Payload> = Channel()
+  protected val incoming: Channel<Payload> = Channel()
 
   /* Message which must be transmitted to the outside world. */
   protected val outgoing: Channel<Payload> = Channel()

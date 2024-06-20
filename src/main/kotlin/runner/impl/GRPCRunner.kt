@@ -1,9 +1,14 @@
 package technology.idlab.runner.impl
 
 import EmptyOuterClass.Empty
+import Index.ChannelData as GRPCChannelData
 import Intermediate as GRPC
 import RunnerGrpcKt
+import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import runner.Runner
 import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRParameter
@@ -83,10 +88,31 @@ abstract class GRPCRunner(host: String, port: Int) : Runner() {
 
   /** Create a single stub for all communication. */
   private val grpc: RunnerGrpcKt.RunnerCoroutineStub
+  private val parseIncoming: Flow<GRPCChannelData>
+  private val parseOutgoing: Flow<Unit>
 
   init {
-    val builder = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
-    grpc = RunnerGrpcKt.RunnerCoroutineStub(builder)
+    // Initialize the GRPC stub.
+    val connection = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
+    grpc = RunnerGrpcKt.RunnerCoroutineStub(connection)
+
+    // Create a flow for incoming messages.
+    parseIncoming =
+        flow<GRPCChannelData> {
+          for (message in this@GRPCRunner.incoming) {
+            val builder = GRPCChannelData.newBuilder()
+            builder.setDestinationUri(message.destinationURI)
+            builder.setData(ByteString.copyFrom(message.data))
+            emit(builder.build())
+          }
+        }
+
+    // Emit outgoing messages.
+    parseOutgoing =
+        grpc.channel(parseIncoming).map {
+          val message = Runner.Payload(it.destinationUri, it.data.toByteArray())
+          this.outgoing.send(message)
+        }
   }
 
   override suspend fun prepare(processor: IRProcessor) {
