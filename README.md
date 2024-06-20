@@ -1,5 +1,5 @@
 > [!CAUTION]
-> This software is not yet considered stable. Feel free to report any bugs or issues.
+> This software is undergoing major changes. Documentation may be outdated.
 
 # JVM Runner
 
