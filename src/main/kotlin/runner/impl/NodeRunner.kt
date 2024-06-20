@@ -1,11 +1,9 @@
 package runner.impl
 
 import RunnerGrpcKt
-import com.google.protobuf.kotlin.toByteString
 import io.grpc.ManagedChannelBuilder
 import java.io.BufferedReader
 import java.io.File
-import kotlinx.coroutines.flow.flow
 import runner.Runner
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
@@ -38,51 +36,15 @@ class NodeRunner : Runner() {
   }
 
   override suspend fun prepare(processor: IRProcessor) {
-    val builder = RunnerOuterClass.Processor.newBuilder().setUri(processor.uri)
-
-    // TODO: Implement the rest of the types.
-    grpc.prepareProcessor(builder.build())
+    TODO("Not yet implemented")
   }
 
   override suspend fun prepare(stage: IRStage) {
-    // Init builder and set the stage URI and processor URI.
-    val builder =
-        RunnerOuterClass.Stage.newBuilder().setUri(stage.uri).setProcessorUri(stage.processor.uri)
-
-    // Insert all processor arguments.
-    stage.arguments.forEach { (name, value) ->
-      val arg =
-          RunnerOuterClass.Argument.newBuilder()
-              .setType(RunnerOuterClass.ArgumentType.STRING)
-              //          .setValue(value.second.toByteStringUtf8())
-              .build()
-      builder.putArguments(name, arg)
-    }
-
-    // Execute the call.
-    grpc.prepareStage(builder.build())
+    TODO("Not yet implemented")
   }
 
   override suspend fun exec() {
-    // On incoming data, send it to the channel.
-    val requests =
-        flow<RunnerOuterClass.Payload> {
-          for (payload in outgoing) {
-            val req = RunnerOuterClass.Payload.newBuilder()
-            req.setChannelUri(payload.first)
-            req.setData(payload.second.toByteString())
-            emit(req.build())
-          }
-        }
-
-    // Initialize the stream.
-    val responses = grpc.channel(requests)
-
-    // Capture the responses down the channel.
-    responses.collect { incoming.send(it.channelUri to it.data.toByteArray()) }
-
-    // Execute the call.
-    grpc.exec(RunnerOuterClass.Void.getDefaultInstance())
+    TODO("Not yet implemented")
   }
 
   override suspend fun status(): Status {

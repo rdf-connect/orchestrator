@@ -99,7 +99,15 @@ private fun TomlTable.toIRProcessor(uri: String): IRProcessor {
     result.add(parameter.toIRParameter())
   }
 
-  return IRProcessor(uri, target, result)
+  // Parse metadata.
+  val metadata = mutableMapOf<String, String>()
+  this.keySet().forEach {
+    if (it != "parameters" && it != "target") {
+      metadata[it] = this.getString(it) ?: Log.shared.fatal("No value found for metadata key: $it")
+    }
+  }
+
+  return IRProcessor(uri, target, result, metadata)
 }
 
 private fun TomlTable.toIRChannel(uri: String): IRChannel {

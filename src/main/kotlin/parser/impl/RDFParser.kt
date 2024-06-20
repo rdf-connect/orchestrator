@@ -46,9 +46,9 @@ class RDFParser(file: File) : Parser() {
       val target = Runner.Target.fromString(targetString)
 
       // Parse parameters.
-      val bindings = mapOf("?processor" to uri)
+      val parameterBindings = mapOf("?processor" to uri)
       val parameters = mutableListOf<IRParameter>()
-      model.query("/queries/parameters.sparql", bindings) { query ->
+      model.query("/queries/parameters.sparql", parameterBindings) { query ->
         val path = query.get("path").asResource().toString().substringAfterLast("/")
         val datatype = query.get("datatype").asResource().toString()
         val minCount =
@@ -102,8 +102,18 @@ class RDFParser(file: File) : Parser() {
         parameters.add(parameter)
       }
 
+      // Parse metadata.
+      val metadataBuilder = mutableMapOf<String, String>()
+      val metadataBindings = mapOf("?processor" to uri)
+      model.query("/queries/metadata.sparql", metadataBindings) { query ->
+        val key = query.get("key").asResource().toString().substringAfterLast("#")
+        val value = query.get("value").asLiteral().string
+        metadataBuilder[key] = value
+      }
+      val metadata = metadataBuilder.toMap()
+
       // Append as result.
-      val processor = IRProcessor(uri, target, parameters)
+      val processor = IRProcessor(uri, target, parameters, metadata)
       processors.add(processor)
     }
 
