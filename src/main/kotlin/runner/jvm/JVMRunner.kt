@@ -8,8 +8,7 @@ import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
-class JVMRunner(incoming: Channel<Payload>, outgoing: Channel<Payload>) :
-    Runner(incoming, outgoing) {
+class JVMRunner : Runner() {
   private val processors = mutableMapOf<String, Pair<IRProcessor, Class<Processor>>>()
   private val stages = mutableMapOf<String, Processor>()
 

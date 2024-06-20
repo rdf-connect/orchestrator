@@ -1,26 +1,10 @@
 package runner.impl
 
-import RunnerGrpcKt
-import io.grpc.ManagedChannelBuilder
-import java.io.BufferedReader
 import java.io.File
-import kotlinx.coroutines.channels.Channel
-import runner.Runner
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.runner.impl.GRPCRunner
 
-class NodeRunner(incoming: Channel<Payload>, outgoing: Channel<Payload>) :
-    Runner(incoming, outgoing) {
-  // Process runtime.
-  private val process: Process
-  private val input: BufferedReader
-  private val error: BufferedReader
-
-  // gRPC Channels
-  private val grpc =
-      ManagedChannelBuilder.forAddress("localhost", 50051).usePlaintext().build().let {
-        RunnerGrpcKt.RunnerCoroutineStub(it)
-      }
+class NodeRunner : GRPCRunner("localhost", 50051) {
+  override val process: Process
 
   init {
     // Configuration.
@@ -31,34 +15,5 @@ class NodeRunner(incoming: Channel<Payload>, outgoing: Channel<Payload>) :
     val processBuilder = ProcessBuilder(command)
     processBuilder.directory(File(directory))
     process = processBuilder.start()
-
-    // Link input and output streams.
-    input = process.inputStream.bufferedReader()
-    error = process.errorStream.bufferedReader()
-  }
-
-  override suspend fun prepare(processor: IRProcessor) {
-    TODO("Not yet implemented")
-  }
-
-  override suspend fun prepare(stage: IRStage) {
-    TODO("Not yet implemented")
-  }
-
-  override suspend fun exec() {
-    TODO("Not yet implemented")
-  }
-
-  override suspend fun status(): Status {
-    // If the process has finished.
-    if (!process.isAlive) {
-      return if (process.exitValue() == 0) {
-        Status.FINISHED
-      } else {
-        Status.ERROR
-      }
-    }
-
-    TODO("Not yet implemented")
   }
 }

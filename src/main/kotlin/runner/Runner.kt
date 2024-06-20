@@ -7,12 +7,7 @@ import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
-abstract class Runner(
-    // Messages which are destined to a processor inside the runner.
-    protected val incoming: Channel<Payload>,
-    // Message which must be transmitted to the outside world.
-    protected val outgoing: Channel<Payload>,
-) {
+abstract class Runner {
   /** The state of a runtime. */
   enum class Status {
     STARTING,
@@ -54,6 +49,12 @@ abstract class Runner(
       val data: ByteArray,
   )
 
+  /* Messages which are destined to a processor inside the runner. */
+  private val incoming: Channel<Payload> = Channel()
+
+  /* Message which must be transmitted to the outside world. */
+  protected val outgoing: Channel<Payload> = Channel()
+
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   protected val readers = mutableMapOf<String, Channel<ByteArray>>()
 
@@ -85,8 +86,16 @@ abstract class Runner(
   abstract suspend fun status(): Status
 
   /** Halt the execution of the runtime and release all resources. */
-  fun halt() {
+  open fun halt() {
     // TODO: Propagate halting signal to processors.
     handler.interrupt()
+  }
+
+  fun getIncomingChannel(): Channel<Payload> {
+    return incoming
+  }
+
+  fun getOutgoingChannel(): Channel<Payload> {
+    return outgoing
   }
 }
