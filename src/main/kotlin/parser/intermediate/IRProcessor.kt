@@ -11,9 +11,4 @@ class IRProcessor(
     val parameters: List<IRParameter> = emptyList(),
     // Additional parameters. These may be used by the runner for any reason.
     val metadata: Map<String, String> = emptyMap()
-) {
-  /** Load the abstract processor in the runner. */
-  suspend fun prepare() {
-    Runner.get(target).prepare(this)
-  }
-}
+)

@@ -4,11 +4,13 @@ import RunnerGrpcKt
 import io.grpc.ManagedChannelBuilder
 import java.io.BufferedReader
 import java.io.File
+import kotlinx.coroutines.channels.Channel
 import runner.Runner
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 
-class NodeRunner : Runner() {
+class NodeRunner(incoming: Channel<Payload>, outgoing: Channel<Payload>) :
+    Runner(incoming, outgoing) {
   // Process runtime.
   private val process: Process
   private val input: BufferedReader

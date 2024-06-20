@@ -1,13 +1,16 @@
 package runner
 
 import kotlinx.coroutines.channels.Channel
-import runner.impl.NodeRunner
-import runner.jvm.JVMRunner
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
-abstract class Runner {
+abstract class Runner(
+    // Messages which are destined to a processor inside the runner.
+    private val incoming: Channel<Payload>,
+    // Message which must be transmitted to the outside world.
+    private val outgoing: Channel<Payload>,
+) {
   /** The state of a runtime. */
   enum class Status {
     STARTING,
@@ -41,9 +44,13 @@ abstract class Runner {
     }
   }
 
-  /** Every runtime comes with its own bidirectional channel for reading and writing messages. */
-  protected val incoming = Channel<Pair<String, ByteArray>>()
-  protected val outgoing = Channel<Pair<String, ByteArray>>()
+  /** The contents of a channel message. */
+  data class Payload(
+      // The URI of the reader which the message was sent to.
+      val destinationURI: String,
+      // The data of the message.
+      val data: ByteArray,
+  )
 
   /** Register and prepare a processor inside the runtime. */
   abstract suspend fun prepare(processor: IRProcessor)
@@ -56,22 +63,4 @@ abstract class Runner {
 
   /** Return the current state of the runtime. */
   abstract suspend fun status(): Status
-
-  companion object {
-    /* Runtimes are provided as singletons, but are lazily initialized. */
-    private val runtimes = mutableMapOf<Target, Runner>()
-
-    /* Create a new runtime. Note this will not save it in the targets. */
-    private fun create(target: Target): Runner {
-      return when (target) {
-        Target.JVM -> JVMRunner()
-        Target.NODEJS -> NodeRunner()
-      }
-    }
-
-    /** Get the runtime for a specific target. */
-    fun get(target: Target): Runner {
-      return runtimes.getOrPut(target) { create(target) }
-    }
-  }
 }

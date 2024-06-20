@@ -3,7 +3,6 @@ package technology.idlab
 import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
-import runner.Runner
 import technology.idlab.parser.Parser
 
 fun main(args: Array<String>) = runBlocking {
@@ -20,14 +19,7 @@ fun main(args: Array<String>) = runBlocking {
 
   // Initialize the processors.
   val processors = parser.processors()
-  processors.forEach { it.prepare() }
 
   // Initialize the stages.
   val stages = parser.stages()
-  stages.forEach { it.prepare() }
-
-  // Delegate execution to the runners.
-  for (target in Runner.Target.entries) {
-    Runner.get(target).exec()
-  }
 }
