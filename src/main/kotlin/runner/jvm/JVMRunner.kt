@@ -2,6 +2,7 @@ package runner.jvm
 
 import kotlin.concurrent.thread
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 import runner.Runner
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
@@ -11,6 +12,31 @@ import technology.idlab.util.Log
 class JVMRunner : Runner() {
   private val processors = mutableMapOf<String, Pair<IRProcessor, Class<Processor>>>()
   private val stages = mutableMapOf<String, Processor>()
+
+  /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
+  private val readers = mutableMapOf<String, Channel<ByteArray>>()
+
+  // Handle incoming messages.
+  private val handler = thread {
+    try {
+      runBlocking {
+        while (true) {
+          // Get the next message, check if it is valid.
+          val message = this@JVMRunner.incoming.receiveCatching()
+          if (message.isClosed || message.isFailure) {
+            break
+          }
+          val payload = message.getOrNull()!!
+
+          // Get the reader.
+          val reader = readers[payload.destinationURI]!!
+          reader.send(payload.data)
+        }
+      }
+    } catch (e: InterruptedException) {
+      Log.shared.severe("Message handler thread interrupted.")
+    }
+  }
 
   override suspend fun prepare(processor: IRProcessor) {
     val className = processor.metadata["class"] ?: Log.shared.fatal("Processor has no class key.")
@@ -83,5 +109,9 @@ class JVMRunner : Runner() {
         return Reader(channel)
       }
     }
+  }
+
+  override fun halt() {
+    handler.interrupt()
   }
 }

@@ -6,14 +6,17 @@ import Intermediate as GRPC
 import RunnerGrpcKt
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
+import io.ktor.utils.io.errors.*
+import kotlin.concurrent.thread
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import runner.Runner
 import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.util.Log
 
 private val empty = Empty.getDefaultInstance()
 
@@ -82,16 +85,38 @@ private fun IRProcessor.toGRPC(): GRPC.IRProcessor {
  * This runner has GRPC built-in, so the only configuration that an extending class needs to provide
  * is the host and port of the GRPC server, as well as actually booting the process.
  */
-abstract class GRPCRunner(host: String, port: Int) : Runner() {
+abstract class GRPCRunner(host: String, protected val port: Int) : Runner() {
   /** Handle to the child process. */
-  abstract val process: Process
+  private val process by lazy { createProcess() }
 
   /** Create a single stub for all communication. */
   private val grpc: RunnerGrpcKt.RunnerCoroutineStub
   private val parseIncoming: Flow<GRPCChannelData>
-  private val parseOutgoing: Flow<Unit>
+  private val parseOutgoing: Flow<GRPCChannelData>
 
   init {
+    // Add a shutdown hook to ensure that the process is killed when the JVM exits.
+    Runtime.getRuntime().addShutdownHook(Thread { process.destroyForcibly() })
+
+    // Get the command that was used to start the process.
+    val command =
+        this.process.info().command().orElseThrow { Log.shared.fatal("Failed to start process.") }
+
+    // Pipe all process output to the logger.
+    thread {
+      val stream = process.inputStream.bufferedReader()
+      for (line in stream.lines()) {
+        Log.shared.runtime(command, line)
+      }
+    }
+
+    thread {
+      val stream = process.errorStream.bufferedReader()
+      for (line in stream.lines()) {
+        Log.shared.runtimeFatal(command, line)
+      }
+    }
+
     // Initialize the GRPC stub.
     val connection = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
     grpc = RunnerGrpcKt.RunnerCoroutineStub(connection)
@@ -100,6 +125,7 @@ abstract class GRPCRunner(host: String, port: Int) : Runner() {
     parseIncoming =
         flow<GRPCChannelData> {
           for (message in this@GRPCRunner.incoming) {
+            Log.shared.info("Sending message to runner with URI: `${message.destinationURI}`")
             val builder = GRPCChannelData.newBuilder()
             builder.setDestinationUri(message.destinationURI)
             builder.setData(ByteString.copyFrom(message.data))
@@ -108,19 +134,31 @@ abstract class GRPCRunner(host: String, port: Int) : Runner() {
         }
 
     // Emit outgoing messages.
-    parseOutgoing =
-        grpc.channel(parseIncoming).map {
-          val message = Runner.Payload(it.destinationUri, it.data.toByteArray())
-          this.outgoing.send(message)
+    parseOutgoing = grpc.channel(parseIncoming)
+
+    thread {
+      runBlocking {
+        parseOutgoing.collect {
+          val message = Payload(it.destinationUri, it.data.toByteArray())
+          Log.shared.info("Received message from runner with URI: `${message.destinationURI}`")
+          this@GRPCRunner.outgoing.send(message)
         }
+      }
+    }
   }
 
+  abstract fun createProcess(): Process
+
   override suspend fun prepare(processor: IRProcessor) {
+    Log.shared.info("Preparing processor: `${processor.uri}`")
     grpc.prepareProcessor(processor.toGRPC())
+    Log.shared.info("Done preparing processor: `${processor.uri}`")
   }
 
   override suspend fun prepare(stage: IRStage) {
+    Log.shared.info("Preparing stage: `${stage.uri}`")
     grpc.prepareStage(stage.toGRPC())
+    Log.shared.info("Done preparing stage: `${stage.uri}`")
   }
 
   override suspend fun exec() {
@@ -128,7 +166,6 @@ abstract class GRPCRunner(host: String, port: Int) : Runner() {
   }
 
   override fun halt() {
-    super.halt()
     process.destroy()
   }
 

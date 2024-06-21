@@ -1,8 +1,6 @@
 package runner
 
-import kotlin.concurrent.thread
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
@@ -55,24 +53,6 @@ abstract class Runner {
   /* Message which must be transmitted to the outside world. */
   protected val outgoing: Channel<Payload> = Channel()
 
-  /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
-  protected val readers = mutableMapOf<String, Channel<ByteArray>>()
-
-  // Handle incoming messages.
-  private val handler = thread {
-    runBlocking {
-      for (message in this@Runner.incoming) {
-        // Get the reader.
-        val reader =
-            readers[message.destinationURI]
-                ?: Log.shared.fatal("Unknown reader: ${message.destinationURI}")
-
-        // Push data to the reader.
-        reader.send(message.data)
-      }
-    }
-  }
-
   /** Register and prepare a processor inside the runtime. */
   abstract suspend fun prepare(processor: IRProcessor)
 
@@ -86,10 +66,7 @@ abstract class Runner {
   abstract suspend fun status(): Status
 
   /** Halt the execution of the runtime and release all resources. */
-  open fun halt() {
-    // TODO: Propagate halting signal to processors.
-    handler.interrupt()
-  }
+  abstract fun halt()
 
   fun getIncomingChannel(): Channel<Payload> {
     return incoming

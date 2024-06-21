@@ -28,29 +28,36 @@ export class ServerImplementation implements RunnerServer {
     call: ServerUnaryCall<IRStage, Empty>,
     callback: sendUnaryData<Empty>,
   ): void {
-    call.on("data", (stage) => {
-      Runner.shared.prepareStage(stage);
-      callback(null, {});
-    });
+    Runner.shared
+      .prepareStage(call.request)
+      .then(() => {
+        callback(null, {});
+      })
+      .catch((e) => {
+        callback(e, {});
+      });
   }
 
   prepareProcessor(
     call: ServerUnaryCall<IRProcessor, Empty>,
     callback: sendUnaryData<Empty>,
   ): void {
-    call.on("data", (processor) => {
-      Runner.shared.prepareProcessor(processor);
-      callback(null, {});
-    });
+    Runner.shared
+      .prepareProcessor(call.request)
+      .then(() => {
+        callback(null, {});
+      })
+      .catch((e) => {
+        callback(e, {});
+      });
   }
 
   exec(
     call: ServerUnaryCall<Empty, Empty>,
     callback: sendUnaryData<Empty>,
   ): void {
-    call.on("data", () => {
+    Runner.shared.exec().then(() => {
       callback(null, {});
-      Runner.shared.exec();
     });
   }
 }

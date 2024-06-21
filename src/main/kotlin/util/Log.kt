@@ -87,6 +87,45 @@ class Log private constructor() {
     }
   }
 
+  fun runtime(runtime: String, message: String) {
+    val instant = Date().toInstant()
+    val tz = instant.atZone(TimeZone.getDefault().toZoneId())
+    val iso = DateTimeFormatter.ISO_LOCAL_TIME
+    val time = tz.format(iso)
+
+    val line =
+        listOf(
+                time.padEnd(12, '0'),
+                "[${Thread.currentThread().id}]".padEnd(6, ' '),
+                "INFO".padEnd(7, ' '),
+                runtime.padEnd(50, ' '),
+                message,
+            )
+            .joinToString(" ")
+
+    println(line)
+  }
+
+  fun runtimeFatal(runtime: String, message: String): Nothing {
+    val instant = Date().toInstant()
+    val tz = instant.atZone(TimeZone.getDefault().toZoneId())
+    val iso = DateTimeFormatter.ISO_LOCAL_TIME
+    val time = tz.format(iso)
+
+    val line =
+        listOf(
+                time.padEnd(12, '0'),
+                "[${Thread.currentThread().id}]".padEnd(6, ' '),
+                "FATAL".padEnd(7, ' '),
+                runtime.padEnd(50, ' '),
+                message,
+            )
+            .joinToString(" ")
+
+    println(line)
+    throw RunnerException()
+  }
+
   companion object {
     val shared = Log()
   }
