@@ -8,6 +8,7 @@ import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
 import io.ktor.utils.io.errors.*
 import kotlin.concurrent.thread
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
@@ -85,7 +86,11 @@ private fun IRProcessor.toGRPC(): GRPC.IRProcessor {
  * This runner has GRPC built-in, so the only configuration that an extending class needs to provide
  * is the host and port of the GRPC server, as well as actually booting the process.
  */
-abstract class GRPCRunner(host: String, protected val port: Int) : Runner() {
+abstract class GRPCRunner(
+    outgoing: Channel<Payload> = Channel(),
+    host: String,
+    protected val port: Int
+) : Runner(outgoing) {
   /** Handle to the child process. */
   private val process by lazy { createProcess() }
 
@@ -162,7 +167,9 @@ abstract class GRPCRunner(host: String, protected val port: Int) : Runner() {
   }
 
   override suspend fun exec() {
+    Log.shared.debug("gRPC::exec::invoke")
     grpc.exec(empty)
+    Log.shared.debug("gRPC::exec::success")
   }
 
   override fun halt() {

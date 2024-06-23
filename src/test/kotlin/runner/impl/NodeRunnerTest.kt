@@ -9,6 +9,6 @@ class NodeRunnerTest : RunnerTest() {
   override val metadata: Map<String, String> = mapOf("import" to "../std/transparent.js")
 
   override fun createRunner(): Runner {
-    return NodeRunner(5000)
+    return NodeRunner(port = 5000)
   }
 }

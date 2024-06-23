@@ -2,21 +2,17 @@ import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { ServerImplementation } from "./server";
 import { RunnerService } from "../proto";
 
-// Get arguments.
+/** The socket at which gRPC binds is decided by the orchestrator. */
 const host = process.argv[2];
 const port = process.argv[3];
-console.log(`gRPC targeting ${host}:${port}`);
 
 // Initialize the server.
-console.log("Initializing server.");
 const server = new Server();
 
 // Add the Runner service.
-console.log("Adding Runner service.");
 server.addService(RunnerService, new ServerImplementation());
 
 // Startup.
-console.log("Starting server.");
 server.bindAsync(
   `${host}:${port}`,
   ServerCredentials.createInsecure(),
@@ -24,7 +20,7 @@ server.bindAsync(
     if (error) {
       return console.error(error);
     } else {
-      console.log(`Server started on port ${port}.`);
+      console.log(`gRPC up and running (port=${port})`);
     }
   },
 );

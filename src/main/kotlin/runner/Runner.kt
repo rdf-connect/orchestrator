@@ -5,7 +5,10 @@ import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
-abstract class Runner {
+abstract class Runner(
+    /* Message which must be transmitted to the outside world. */
+    protected val outgoing: Channel<Payload> = Channel()
+) {
   /** The state of a runtime. */
   enum class Status {
     STARTING,
@@ -49,9 +52,6 @@ abstract class Runner {
 
   /* Messages which are destined to a processor inside the runner. */
   protected val incoming: Channel<Payload> = Channel()
-
-  /* Message which must be transmitted to the outside world. */
-  protected val outgoing: Channel<Payload> = Channel()
 
   /** Register and prepare a processor inside the runtime. */
   abstract suspend fun prepare(processor: IRProcessor)

@@ -1,0 +1,55 @@
+package processors
+
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
+import runner.Runner
+import runner.jvm.Processor
+import runner.jvm.Reader
+import technology.idlab.parser.intermediate.IRArgument
+import technology.idlab.parser.intermediate.IRParameter
+import technology.idlab.parser.intermediate.IRProcessor
+import technology.idlab.parser.intermediate.IRStage
+
+/**
+ * The TappedReader processor provides a convenient way to read data from the pipeline during
+ * testing. All incoming data will be written to a global channel, which can be used directly during
+ * testing to read data from.
+ */
+class TappedReader(args: Map<String, Any>) : Processor(args) {
+  /** The channel which is exposed to the pipeline. */
+  private val input = this.getArgument<Reader>("input")
+
+  /** Continuously read data from the input and write it to the global channel. */
+  override fun exec() = runBlocking {
+    while (true) {
+      val read = input.read()
+      output.send(read.value)
+    }
+  }
+
+  companion object {
+    /** Global channel into which all data is dumped. */
+    val output = Channel<ByteArray>()
+
+    /** Implementation of this processor as IR. */
+    val processor =
+        IRProcessor(
+            "tapped_reader",
+            Runner.Target.JVM,
+            listOf(
+                IRParameter(
+                    "input",
+                    IRParameter.Type.READER,
+                    IRParameter.Presence.REQUIRED,
+                    IRParameter.Count.SINGLE,
+                ),
+            ),
+            mapOf("class" to "processors.TappedReader"),
+        )
+
+    fun stage(channelURI: String): IRStage {
+      return IRStage(
+          "tapped_reader_stage", processor, listOf(IRArgument("input", listOf(channelURI))))
+    }
+  }
+}

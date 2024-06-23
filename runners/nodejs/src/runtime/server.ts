@@ -42,12 +42,15 @@ export class ServerImplementation implements RunnerServer {
     call: ServerUnaryCall<IRProcessor, Empty>,
     callback: sendUnaryData<Empty>,
   ): void {
+    console.log("gRPC::prepareProcessor::invoke");
     Runner.shared
       .prepareProcessor(call.request)
       .then(() => {
+        console.log("gRPC::prepareProcessor::success");
         callback(null, {});
       })
       .catch((e) => {
+        console.log("gRPC::prepareProcessor::error");
         callback(e, {});
       });
   }
@@ -56,7 +59,9 @@ export class ServerImplementation implements RunnerServer {
     call: ServerUnaryCall<Empty, Empty>,
     callback: sendUnaryData<Empty>,
   ): void {
+    console.log("gRPC::prepareProcessor::invoke");
     Runner.shared.exec().then(() => {
+      console.log("gRPC::prepareProcessor::success");
       callback(null, {});
     });
   }

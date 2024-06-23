@@ -6,9 +6,7 @@ import runner.Runner
 import technology.idlab.util.Log
 
 class Writer(private val channel: Channel<Runner.Payload>, private val destination: String) {
-  fun pushSync(value: ByteArray) {
-    runBlocking { channel.send(Runner.Payload(destination, value)) }
-  }
+  fun pushSync(value: ByteArray) = runBlocking { push(value) }
 
   fun push(value: ByteArray) {
     try {

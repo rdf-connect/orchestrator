@@ -40,26 +40,7 @@ class Reader(private val channel: Channel<ByteArray>) {
     }
   }
 
-  suspend fun push(bytes: ByteArray) {
-    channel.send(bytes)
-  }
-
-  fun readSync(): Result {
-    val result = runBlocking { channel.receiveCatching() }
-
-    // Check if the channel got closed.
-    if (result.isClosed) {
-      return Result.closed()
-    }
-
-    // If an error occurred, the runner must handle it itself.
-    if (result.isFailure) {
-      Log.shared.fatal("Failed to read bytes")
-    }
-
-    val bytes = result.getOrThrow()
-    return Result.success(bytes)
-  }
+  fun readSync(): Result = runBlocking { read() }
 
   suspend fun read(): Result {
     return try {
@@ -70,9 +51,5 @@ class Reader(private val channel: Channel<ByteArray>) {
     } catch (e: Exception) {
       Log.shared.fatal(e)
     }
-  }
-
-  fun isClosed(): Boolean {
-    return channel.isClosedForSend
   }
 }

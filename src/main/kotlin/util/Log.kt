@@ -7,6 +7,32 @@ import kotlin.Exception
 import technology.idlab.exception.RunnerException
 
 class Log private constructor() {
+  enum class Level {
+    INFO,
+    SEVERE,
+    FATAL,
+    DEBUG,
+    ;
+
+    fun style(string: String): String {
+      return when (this) {
+        INFO -> string
+        SEVERE -> string
+        FATAL -> string
+        DEBUG -> "\u001B[34m${string}\u001B[0m"
+      }
+    }
+
+    fun code(): String {
+      return when (this) {
+        INFO -> "INFO"
+        SEVERE -> "SEVERE"
+        FATAL -> "FATAL"
+        DEBUG -> "DEBUG"
+      }
+    }
+  }
+
   init {
     val header =
         listOf(
@@ -31,54 +57,55 @@ class Log private constructor() {
     println(separator)
   }
 
-  private fun print(message: String, level: String) {
+  private fun line(message: String, level: Level): String {
     val instant = Date().toInstant()
     val tz = instant.atZone(TimeZone.getDefault().toZoneId())
     val iso = DateTimeFormatter.ISO_LOCAL_TIME
     val time = tz.format(iso)
 
-    val caller = Throwable().stackTrace[2]
+    val caller = Throwable().stackTrace[3]
     val name =
         "${caller.className.substringAfterLast(".")}::${caller.methodName}::${caller.lineNumber}"
 
-    val line =
-        listOf(
-                time.padEnd(12, '0'),
-                "[${Thread.currentThread().id}]".padEnd(6, ' '),
-                level.padEnd(7, ' '),
-                name.padEnd(50, ' '),
-                message,
-            )
-            .joinToString(" ")
+    return listOf(
+            time.padEnd(12, '0'),
+            "[${Thread.currentThread().id}]".padEnd(6, ' '),
+            level.code().padEnd(7, ' '),
+            name.padEnd(50, ' '),
+            message,
+        )
+        .joinToString(" ")
+  }
 
-    println(line)
+  private fun toConsole(message: String, level: Level) {
+    println(level.style(line(message, level)))
   }
 
   fun info(message: String) {
-    print(message, "INFO")
+    toConsole(message, Level.INFO)
   }
 
   fun severe(message: String) {
-    print(message, "SEVERE")
+    toConsole(message, Level.SEVERE)
   }
 
   fun fatal(message: String): Nothing {
-    print(message, "FATAL")
+    toConsole(message, Level.FATAL)
     throw RunnerException()
   }
 
   fun fatal(exception: Exception): Nothing {
-    print(exception.message.toString(), "FATAL")
+    toConsole(exception.message.toString(), Level.FATAL)
     throw RunnerException()
   }
 
   fun fatal(message: String, exception: Exception) {
-    print("$message - ${exception.message}")
+    toConsole("$message - ${exception.message}", Level.FATAL)
     throw RunnerException()
   }
 
   fun debug(message: String) {
-    print(message, "DEBUG")
+    toConsole(message, Level.DEBUG)
   }
 
   fun assert(condition: Boolean, message: String) {

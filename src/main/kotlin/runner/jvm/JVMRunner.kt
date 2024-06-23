@@ -9,12 +9,15 @@ import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
-class JVMRunner : Runner() {
+class JVMRunner(outgoing: Channel<Payload> = Channel()) : Runner(outgoing) {
   private val processors = mutableMapOf<String, Pair<IRProcessor, Class<Processor>>>()
   private val stages = mutableMapOf<String, Processor>()
 
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
+
+  /** Keep track of all spawned threads. */
+  private var threads = mutableListOf<Thread>()
 
   // Handle incoming messages.
   private val handler = thread {
@@ -85,7 +88,9 @@ class JVMRunner : Runner() {
   }
 
   override suspend fun exec() {
-    this.stages.values.map { thread { it.exec() } }.map { it.join() }
+    Log.shared.info("Bringing JVM stages online.")
+    this.stages.values.forEach { this.threads.add(thread { it.exec() }) }
+    Log.shared.info("All stages are online.")
   }
 
   override suspend fun status(): Status {

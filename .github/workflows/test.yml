@@ -25,5 +25,16 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
 
+      - name: Set up NPM
+        uses: actions/setup-node@v2
+        with:
+          node-version: '21'
+
+      - name: Install NPM dependencies
+        run: npm install --prefix runners/nodejs
+
+      - name: Build NPM runner
+        run: npm run build --prefix runners/nodejs
+
       - name: Run tests
         run: ./gradlew test
