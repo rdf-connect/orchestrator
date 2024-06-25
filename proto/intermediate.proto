@@ -24,10 +24,9 @@ enum IRParameterCount {
 }
 
 message IRParameter {
-  string name = 1;
-  IRParameterType type = 2;
-  IRParameterPresence presence = 3;
-  IRParameterCount count = 4;
+  IRParameterType type = 1;
+  IRParameterPresence presence = 2;
+  IRParameterCount count = 3;
 }
 
 message IRProcessor {

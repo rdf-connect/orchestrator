@@ -157,7 +157,6 @@ export function iRParameterCountToJSON(object: IRParameterCount): string {
 }
 
 export interface IRParameter {
-  name: string;
   type: IRParameterType;
   presence: IRParameterPresence;
   count: IRParameterCount;
@@ -196,7 +195,7 @@ export interface IRStage_ArgumentsEntry {
 }
 
 function createBaseIRParameter(): IRParameter {
-  return { name: "", type: 0, presence: 0, count: 0 };
+  return { type: 0, presence: 0, count: 0 };
 }
 
 export const IRParameter = {
@@ -204,17 +203,14 @@ export const IRParameter = {
     message: IRParameter,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
-    if (message.name !== "") {
-      writer.uint32(10).string(message.name);
-    }
     if (message.type !== 0) {
-      writer.uint32(16).int32(message.type);
+      writer.uint32(8).int32(message.type);
     }
     if (message.presence !== 0) {
-      writer.uint32(24).int32(message.presence);
+      writer.uint32(16).int32(message.presence);
     }
     if (message.count !== 0) {
-      writer.uint32(32).int32(message.count);
+      writer.uint32(24).int32(message.count);
     }
     return writer;
   },
@@ -228,28 +224,21 @@ export const IRParameter = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
-          message.name = reader.string();
+          message.type = reader.int32() as any;
           continue;
         case 2:
           if (tag !== 16) {
             break;
           }
 
-          message.type = reader.int32() as any;
+          message.presence = reader.int32() as any;
           continue;
         case 3:
           if (tag !== 24) {
-            break;
-          }
-
-          message.presence = reader.int32() as any;
-          continue;
-        case 4:
-          if (tag !== 32) {
             break;
           }
 
@@ -266,7 +255,6 @@ export const IRParameter = {
 
   fromJSON(object: any): IRParameter {
     return {
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
       type: isSet(object.type) ? iRParameterTypeFromJSON(object.type) : 0,
       presence: isSet(object.presence)
         ? iRParameterPresenceFromJSON(object.presence)
@@ -277,9 +265,6 @@ export const IRParameter = {
 
   toJSON(message: IRParameter): unknown {
     const obj: any = {};
-    if (message.name !== "") {
-      obj.name = message.name;
-    }
     if (message.type !== 0) {
       obj.type = iRParameterTypeToJSON(message.type);
     }
@@ -299,7 +284,6 @@ export const IRParameter = {
     object: I,
   ): IRParameter {
     const message = createBaseIRParameter();
-    message.name = object.name ?? "";
     message.type = object.type ?? 0;
     message.presence = object.presence ?? 0;
     message.count = object.count ?? 0;

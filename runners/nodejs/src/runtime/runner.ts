@@ -36,12 +36,12 @@ export class Runner {
 
     /** Parse the stage's arguments. */
     const args: Map<String, unknown> = new Map();
-    Object.entries(stage.arguments).map(([key, arg]) => {
+    Object.entries(stage.arguments).map(([name, arg]) => {
       if (arg.parameter!.type == IRParameterType.READER) {
         const subject = new Subject<Uint8Array>();
         const reader = new Reader(subject);
         this.readers.set(arg.value[0], subject);
-        args.set(arg.parameter!.name, reader);
+        args.set(name, reader);
       } else if (arg.parameter!.type == IRParameterType.WRITER) {
         const subject = new Subject<Uint8Array>();
         subject.subscribe((data) => {
@@ -51,7 +51,7 @@ export class Runner {
           });
         });
         const writer = new Writer(subject);
-        args.set(arg.parameter!.name, writer);
+        args.set(name, writer);
       } else {
         console.error(
           new Error(`Unsupported parameter type ${arg.parameter!.type}`),

@@ -15,14 +15,12 @@ class NodeTransparent {
             mapOf(
                 "input" to
                     IRParameter(
-                        "input",
                         IRParameter.Type.READER,
                         IRParameter.Presence.REQUIRED,
                         IRParameter.Count.SINGLE,
                     ),
                 "output" to
                     IRParameter(
-                        "output",
                         IRParameter.Type.WRITER,
                         IRParameter.Presence.REQUIRED,
                         IRParameter.Count.SINGLE,

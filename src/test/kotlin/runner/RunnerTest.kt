@@ -55,7 +55,6 @@ abstract class RunnerTest {
 
   private val paramInput =
       IRParameter(
-          "input",
           IRParameter.Type.READER,
           IRParameter.Presence.REQUIRED,
           IRParameter.Count.SINGLE,
@@ -63,7 +62,6 @@ abstract class RunnerTest {
 
   private val paramOutput =
       IRParameter(
-          "output",
           IRParameter.Type.WRITER,
           IRParameter.Presence.REQUIRED,
           IRParameter.Count.SINGLE,

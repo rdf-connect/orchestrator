@@ -37,7 +37,6 @@ class TappedWriter(args: Map<String, Any>) : Processor(args) {
             mapOf(
                 "output" to
                     IRParameter(
-                        "output",
                         IRParameter.Type.WRITER,
                         IRParameter.Presence.REQUIRED,
                         IRParameter.Count.SINGLE,

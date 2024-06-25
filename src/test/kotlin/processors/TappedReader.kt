@@ -37,7 +37,6 @@ class TappedReader(args: Map<String, Any>) : Processor(args) {
             mapOf(
                 "input" to
                     IRParameter(
-                        "input",
                         IRParameter.Type.READER,
                         IRParameter.Presence.REQUIRED,
                         IRParameter.Count.SINGLE,

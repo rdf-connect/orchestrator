@@ -52,7 +52,6 @@ private fun IRParameter.Count.toGRPC(): GRPC.IRParameterCount {
 
 private fun IRParameter.toGRPC(): GRPC.IRParameter {
   val builder = GRPC.IRParameter.newBuilder()
-  builder.setName(name)
   builder.setType(type.toGRPC())
   builder.setPresence(presence.toGRPC())
   builder.setCount(count.toGRPC())

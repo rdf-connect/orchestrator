@@ -94,7 +94,7 @@ class RDFParser(file: File) : Parser() {
               else -> Log.shared.fatal("Unknown datatype: $datatype")
             }
 
-        val parameter = IRParameter(path, type, presence, count)
+        val parameter = IRParameter(type, presence, count)
         parameters[path] = parameter
       }
 

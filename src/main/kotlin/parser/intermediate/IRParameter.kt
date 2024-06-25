@@ -1,8 +1,6 @@
 package technology.idlab.parser.intermediate
 
 data class IRParameter(
-    // Argument name.
-    val name: String,
     // The type of the argument.
     val type: Type,
     // Whether the argument is required.
