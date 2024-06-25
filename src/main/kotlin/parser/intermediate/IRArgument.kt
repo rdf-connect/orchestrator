@@ -1,8 +1,8 @@
 package technology.idlab.parser.intermediate
 
 data class IRArgument(
-    // Parameter name.
-    val name: String,
+    // Parameter.
+    val parameter: IRParameter,
     // Concrete but unparsed value.
     val value: List<String>,
 )

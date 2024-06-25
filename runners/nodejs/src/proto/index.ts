@@ -21,7 +21,7 @@ import {
 } from "@grpc/grpc-js";
 import * as _m0 from "protobufjs/minimal";
 import { Empty } from "./empty";
-import { IRProcessor, IRStage } from "./intermediate";
+import { IRStage } from "./intermediate";
 
 export const protobufPackage = "";
 
@@ -116,19 +116,8 @@ export const ChannelData = {
 
 export type RunnerService = typeof RunnerService;
 export const RunnerService = {
-  prepareProcessor: {
-    path: "/Runner/prepareProcessor",
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: IRProcessor) =>
-      Buffer.from(IRProcessor.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IRProcessor.decode(value),
-    responseSerialize: (value: Empty) =>
-      Buffer.from(Empty.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Empty.decode(value),
-  },
-  prepareStage: {
-    path: "/Runner/prepareStage",
+  load: {
+    path: "/Runner/load",
     requestStream: false,
     responseStream: false,
     requestSerialize: (value: IRStage) =>
@@ -163,38 +152,22 @@ export const RunnerService = {
 } as const;
 
 export interface RunnerServer extends UntypedServiceImplementation {
-  prepareProcessor: handleUnaryCall<IRProcessor, Empty>;
-  prepareStage: handleUnaryCall<IRStage, Empty>;
+  load: handleUnaryCall<IRStage, Empty>;
   exec: handleUnaryCall<Empty, Empty>;
   channel: handleBidiStreamingCall<ChannelData, ChannelData>;
 }
 
 export interface RunnerClient extends Client {
-  prepareProcessor(
-    request: IRProcessor,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall;
-  prepareProcessor(
-    request: IRProcessor,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall;
-  prepareProcessor(
-    request: IRProcessor,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall;
-  prepareStage(
+  load(
     request: IRStage,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
-  prepareStage(
+  load(
     request: IRStage,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
-  prepareStage(
+  load(
     request: IRStage,
     metadata: Metadata,
     options: Partial<CallOptions>,

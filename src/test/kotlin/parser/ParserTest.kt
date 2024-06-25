@@ -31,13 +31,13 @@ abstract class ParserTest {
     assertEquals(2, alpha.parameters.size, "Alpha processor should have two parameters.")
 
     // Check its arguments.
-    val one = alpha.parameters.find { it.name == "one" }
+    val one = alpha.parameters["one"]
     assertNotNull(one, "Parameter one should exist.")
     assertEquals(IRParameter.Type.STRING, one.type, "Parameter one should be of type string.")
     assertEquals(IRParameter.Count.SINGLE, one.count, "Parameter one should be a single value.")
     assertEquals(IRParameter.Presence.REQUIRED, one.presence, "Parameter one should be required.")
 
-    val two = alpha.parameters.find { it.name == "two" }
+    val two = alpha.parameters["two"]
     assertNotNull(two, "Parameter two should exist.")
     assertEquals(IRParameter.Type.INT, two.type, "Parameter two should be of type integer.")
     assertEquals(IRParameter.Count.LIST, two.count, "Parameter two should be an array.")
@@ -55,13 +55,13 @@ abstract class ParserTest {
         alphaOne.processor.uri.endsWith("alpha"), "alpha_one stage should use the alpha processor.")
 
     // Parse first argument.
-    val one = alphaOne.arguments.find { it.name == "one" }
+    val one = alphaOne.arguments["one"]
     assertNotNull(one, "alpha_one::one should exist.")
     assertEquals(1, one.value.size, "alpha_one::one should have one value.")
     assertEquals("Hello, World!", one.value[0], "alpha_one::one should be 'Hello, World!'.")
 
     // Parse second argument.
-    val two = alphaOne.arguments.find { it.name == "two" }
+    val two = alphaOne.arguments["two"]
     assertNull(two, "alpha_one::two should not exist.")
   }
 }

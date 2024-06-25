@@ -165,8 +165,13 @@ export interface IRParameter {
 
 export interface IRProcessor {
   uri: string;
-  parameters: IRParameter[];
+  parameters: { [key: string]: IRParameter };
   metadata: { [key: string]: string };
+}
+
+export interface IRProcessor_ParametersEntry {
+  key: string;
+  value: IRParameter | undefined;
 }
 
 export interface IRProcessor_MetadataEntry {
@@ -175,14 +180,19 @@ export interface IRProcessor_MetadataEntry {
 }
 
 export interface IRArgument {
-  name: string;
+  parameter: IRParameter | undefined;
   value: string[];
 }
 
 export interface IRStage {
   uri: string;
-  processorUri: string;
-  arguments: IRArgument[];
+  processor: IRProcessor | undefined;
+  arguments: { [key: string]: IRArgument };
+}
+
+export interface IRStage_ArgumentsEntry {
+  key: string;
+  value: IRArgument | undefined;
 }
 
 function createBaseIRParameter(): IRParameter {
@@ -298,7 +308,7 @@ export const IRParameter = {
 };
 
 function createBaseIRProcessor(): IRProcessor {
-  return { uri: "", parameters: [], metadata: {} };
+  return { uri: "", parameters: {}, metadata: {} };
 }
 
 export const IRProcessor = {
@@ -309,9 +319,12 @@ export const IRProcessor = {
     if (message.uri !== "") {
       writer.uint32(10).string(message.uri);
     }
-    for (const v of message.parameters) {
-      IRParameter.encode(v!, writer.uint32(18).fork()).ldelim();
-    }
+    Object.entries(message.parameters).forEach(([key, value]) => {
+      IRProcessor_ParametersEntry.encode(
+        { key: key as any, value },
+        writer.uint32(18).fork(),
+      ).ldelim();
+    });
     Object.entries(message.metadata).forEach(([key, value]) => {
       IRProcessor_MetadataEntry.encode(
         { key: key as any, value },
@@ -341,7 +354,13 @@ export const IRProcessor = {
             break;
           }
 
-          message.parameters.push(IRParameter.decode(reader, reader.uint32()));
+          const entry2 = IRProcessor_ParametersEntry.decode(
+            reader,
+            reader.uint32(),
+          );
+          if (entry2.value !== undefined) {
+            message.parameters[entry2.key] = entry2.value;
+          }
           continue;
         case 3:
           if (tag !== 26) {
@@ -368,9 +387,14 @@ export const IRProcessor = {
   fromJSON(object: any): IRProcessor {
     return {
       uri: isSet(object.uri) ? globalThis.String(object.uri) : "",
-      parameters: globalThis.Array.isArray(object?.parameters)
-        ? object.parameters.map((e: any) => IRParameter.fromJSON(e))
-        : [],
+      parameters: isObject(object.parameters)
+        ? Object.entries(object.parameters).reduce<{
+            [key: string]: IRParameter;
+          }>((acc, [key, value]) => {
+            acc[key] = IRParameter.fromJSON(value);
+            return acc;
+          }, {})
+        : {},
       metadata: isObject(object.metadata)
         ? Object.entries(object.metadata).reduce<{ [key: string]: string }>(
             (acc, [key, value]) => {
@@ -388,8 +412,14 @@ export const IRProcessor = {
     if (message.uri !== "") {
       obj.uri = message.uri;
     }
-    if (message.parameters?.length) {
-      obj.parameters = message.parameters.map((e) => IRParameter.toJSON(e));
+    if (message.parameters) {
+      const entries = Object.entries(message.parameters);
+      if (entries.length > 0) {
+        obj.parameters = {};
+        entries.forEach(([k, v]) => {
+          obj.parameters[k] = IRParameter.toJSON(v);
+        });
+      }
     }
     if (message.metadata) {
       const entries = Object.entries(message.metadata);
@@ -411,8 +441,14 @@ export const IRProcessor = {
   ): IRProcessor {
     const message = createBaseIRProcessor();
     message.uri = object.uri ?? "";
-    message.parameters =
-      object.parameters?.map((e) => IRParameter.fromPartial(e)) || [];
+    message.parameters = Object.entries(object.parameters ?? {}).reduce<{
+      [key: string]: IRParameter;
+    }>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = IRParameter.fromPartial(value);
+      }
+      return acc;
+    }, {});
     message.metadata = Object.entries(object.metadata ?? {}).reduce<{
       [key: string]: string;
     }>((acc, [key, value]) => {
@@ -421,6 +457,96 @@ export const IRProcessor = {
       }
       return acc;
     }, {});
+    return message;
+  },
+};
+
+function createBaseIRProcessor_ParametersEntry(): IRProcessor_ParametersEntry {
+  return { key: "", value: undefined };
+}
+
+export const IRProcessor_ParametersEntry = {
+  encode(
+    message: IRProcessor_ParametersEntry,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== undefined) {
+      IRParameter.encode(message.value, writer.uint32(18).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number,
+  ): IRProcessor_ParametersEntry {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseIRProcessor_ParametersEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = IRParameter.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): IRProcessor_ParametersEntry {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value)
+        ? IRParameter.fromJSON(object.value)
+        : undefined,
+    };
+  },
+
+  toJSON(message: IRProcessor_ParametersEntry): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== undefined) {
+      obj.value = IRParameter.toJSON(message.value);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<IRProcessor_ParametersEntry>, I>>(
+    base?: I,
+  ): IRProcessor_ParametersEntry {
+    return IRProcessor_ParametersEntry.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<IRProcessor_ParametersEntry>, I>>(
+    object: I,
+  ): IRProcessor_ParametersEntry {
+    const message = createBaseIRProcessor_ParametersEntry();
+    message.key = object.key ?? "";
+    message.value =
+      object.value !== undefined && object.value !== null
+        ? IRParameter.fromPartial(object.value)
+        : undefined;
     return message;
   },
 };
@@ -511,7 +637,7 @@ export const IRProcessor_MetadataEntry = {
 };
 
 function createBaseIRArgument(): IRArgument {
-  return { name: "", value: [] };
+  return { parameter: undefined, value: [] };
 }
 
 export const IRArgument = {
@@ -519,8 +645,8 @@ export const IRArgument = {
     message: IRArgument,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
-    if (message.name !== "") {
-      writer.uint32(10).string(message.name);
+    if (message.parameter !== undefined) {
+      IRParameter.encode(message.parameter, writer.uint32(10).fork()).ldelim();
     }
     for (const v of message.value) {
       writer.uint32(18).string(v!);
@@ -541,7 +667,7 @@ export const IRArgument = {
             break;
           }
 
-          message.name = reader.string();
+          message.parameter = IRParameter.decode(reader, reader.uint32());
           continue;
         case 2:
           if (tag !== 18) {
@@ -561,7 +687,9 @@ export const IRArgument = {
 
   fromJSON(object: any): IRArgument {
     return {
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      parameter: isSet(object.parameter)
+        ? IRParameter.fromJSON(object.parameter)
+        : undefined,
       value: globalThis.Array.isArray(object?.value)
         ? object.value.map((e: any) => globalThis.String(e))
         : [],
@@ -570,8 +698,8 @@ export const IRArgument = {
 
   toJSON(message: IRArgument): unknown {
     const obj: any = {};
-    if (message.name !== "") {
-      obj.name = message.name;
+    if (message.parameter !== undefined) {
+      obj.parameter = IRParameter.toJSON(message.parameter);
     }
     if (message.value?.length) {
       obj.value = message.value;
@@ -586,14 +714,17 @@ export const IRArgument = {
     object: I,
   ): IRArgument {
     const message = createBaseIRArgument();
-    message.name = object.name ?? "";
+    message.parameter =
+      object.parameter !== undefined && object.parameter !== null
+        ? IRParameter.fromPartial(object.parameter)
+        : undefined;
     message.value = object.value?.map((e) => e) || [];
     return message;
   },
 };
 
 function createBaseIRStage(): IRStage {
-  return { uri: "", processorUri: "", arguments: [] };
+  return { uri: "", processor: undefined, arguments: {} };
 }
 
 export const IRStage = {
@@ -604,12 +735,15 @@ export const IRStage = {
     if (message.uri !== "") {
       writer.uint32(10).string(message.uri);
     }
-    if (message.processorUri !== "") {
-      writer.uint32(18).string(message.processorUri);
+    if (message.processor !== undefined) {
+      IRProcessor.encode(message.processor, writer.uint32(18).fork()).ldelim();
     }
-    for (const v of message.arguments) {
-      IRArgument.encode(v!, writer.uint32(26).fork()).ldelim();
-    }
+    Object.entries(message.arguments).forEach(([key, value]) => {
+      IRStage_ArgumentsEntry.encode(
+        { key: key as any, value },
+        writer.uint32(26).fork(),
+      ).ldelim();
+    });
     return writer;
   },
 
@@ -633,14 +767,17 @@ export const IRStage = {
             break;
           }
 
-          message.processorUri = reader.string();
+          message.processor = IRProcessor.decode(reader, reader.uint32());
           continue;
         case 3:
           if (tag !== 26) {
             break;
           }
 
-          message.arguments.push(IRArgument.decode(reader, reader.uint32()));
+          const entry3 = IRStage_ArgumentsEntry.decode(reader, reader.uint32());
+          if (entry3.value !== undefined) {
+            message.arguments[entry3.key] = entry3.value;
+          }
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -654,12 +791,17 @@ export const IRStage = {
   fromJSON(object: any): IRStage {
     return {
       uri: isSet(object.uri) ? globalThis.String(object.uri) : "",
-      processorUri: isSet(object.processorUri)
-        ? globalThis.String(object.processorUri)
-        : "",
-      arguments: globalThis.Array.isArray(object?.arguments)
-        ? object.arguments.map((e: any) => IRArgument.fromJSON(e))
-        : [],
+      processor: isSet(object.processor)
+        ? IRProcessor.fromJSON(object.processor)
+        : undefined,
+      arguments: isObject(object.arguments)
+        ? Object.entries(object.arguments).reduce<{
+            [key: string]: IRArgument;
+          }>((acc, [key, value]) => {
+            acc[key] = IRArgument.fromJSON(value);
+            return acc;
+          }, {})
+        : {},
     };
   },
 
@@ -668,11 +810,17 @@ export const IRStage = {
     if (message.uri !== "") {
       obj.uri = message.uri;
     }
-    if (message.processorUri !== "") {
-      obj.processorUri = message.processorUri;
+    if (message.processor !== undefined) {
+      obj.processor = IRProcessor.toJSON(message.processor);
     }
-    if (message.arguments?.length) {
-      obj.arguments = message.arguments.map((e) => IRArgument.toJSON(e));
+    if (message.arguments) {
+      const entries = Object.entries(message.arguments);
+      if (entries.length > 0) {
+        obj.arguments = {};
+        entries.forEach(([k, v]) => {
+          obj.arguments[k] = IRArgument.toJSON(v);
+        });
+      }
     }
     return obj;
   },
@@ -683,9 +831,108 @@ export const IRStage = {
   fromPartial<I extends Exact<DeepPartial<IRStage>, I>>(object: I): IRStage {
     const message = createBaseIRStage();
     message.uri = object.uri ?? "";
-    message.processorUri = object.processorUri ?? "";
-    message.arguments =
-      object.arguments?.map((e) => IRArgument.fromPartial(e)) || [];
+    message.processor =
+      object.processor !== undefined && object.processor !== null
+        ? IRProcessor.fromPartial(object.processor)
+        : undefined;
+    message.arguments = Object.entries(object.arguments ?? {}).reduce<{
+      [key: string]: IRArgument;
+    }>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = IRArgument.fromPartial(value);
+      }
+      return acc;
+    }, {});
+    return message;
+  },
+};
+
+function createBaseIRStage_ArgumentsEntry(): IRStage_ArgumentsEntry {
+  return { key: "", value: undefined };
+}
+
+export const IRStage_ArgumentsEntry = {
+  encode(
+    message: IRStage_ArgumentsEntry,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== undefined) {
+      IRArgument.encode(message.value, writer.uint32(18).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number,
+  ): IRStage_ArgumentsEntry {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseIRStage_ArgumentsEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = IRArgument.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): IRStage_ArgumentsEntry {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value)
+        ? IRArgument.fromJSON(object.value)
+        : undefined,
+    };
+  },
+
+  toJSON(message: IRStage_ArgumentsEntry): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== undefined) {
+      obj.value = IRArgument.toJSON(message.value);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<IRStage_ArgumentsEntry>, I>>(
+    base?: I,
+  ): IRStage_ArgumentsEntry {
+    return IRStage_ArgumentsEntry.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<IRStage_ArgumentsEntry>, I>>(
+    object: I,
+  ): IRStage_ArgumentsEntry {
+    const message = createBaseIRStage_ArgumentsEntry();
+    message.key = object.key ?? "";
+    message.value =
+      object.value !== undefined && object.value !== null
+        ? IRArgument.fromPartial(object.value)
+        : undefined;
     return message;
   },
 };

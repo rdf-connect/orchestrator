@@ -51,7 +51,7 @@ private fun TomlTable.toIRParameter(): IRParameter {
   return IRParameter(name, type, presence, count)
 }
 
-private fun TomlTable.toIRArguments(): List<IRArgument> {
+private fun TomlTable.toIRArguments(parameters: Map<String, IRParameter>): List<IRArgument> {
   val results = mutableListOf<IRArgument>()
 
   this.keySet().forEach { name ->
@@ -64,10 +64,10 @@ private fun TomlTable.toIRArguments(): List<IRArgument> {
         values.add(value)
       }
 
-      results.add(IRArgument(name, values))
+      results.add(IRArgument(parameters[name]!!, values))
     } else {
       val value = this.get(name).toString()
-      results.add(IRArgument(name, listOf(value)))
+      results.add(IRArgument(parameters[name]!!, listOf(value)))
     }
   }
 
@@ -92,10 +92,10 @@ private fun TomlTable.toIRProcessor(uri: String): IRProcessor {
 
   // Parse the parameters.
   val parametersArray = this.getArray("parameters")!!
-  val result = mutableListOf<IRParameter>()
+  val result = mutableMapOf<String, IRParameter>()
   for (i in 0 until parametersArray.size()) {
-    val parameter = parametersArray.getTable(i)
-    result.add(parameter.toIRParameter())
+    val parameter = parametersArray.getTable(i).toIRParameter()
+    result[parameter.name] = parameter
   }
 
   // Parse metadata.
@@ -116,8 +116,8 @@ private fun TomlTable.toIRStage(processors: Map<String, IRProcessor>, uri: Strin
   val processor = processors[processorURI] ?: Log.shared.fatal("Unknown processor: $processorURI")
 
   // Parse arguments.
-  val arguments = this.getTable("arguments")?.toIRArguments() ?: emptyList()
-  return IRStage(uri, processor, arguments)
+  val arguments = this.getTable("arguments")?.toIRArguments(processor.parameters) ?: emptyList()
+  return IRStage(uri, processor, arguments.associateBy { it.parameter.name })
 }
 
 class TomlParser(file: File) : Parser() {

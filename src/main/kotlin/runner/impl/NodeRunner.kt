@@ -9,7 +9,7 @@ import technology.idlab.util.Log
 class NodeRunner(fromProcessors: Channel<Payload>, port: Int) :
     GRPCRunner(fromProcessors, "localhost", port) {
   /** Handle to the child process. */
-  private val process by lazy { createProcess() }
+  private val process = createProcess()
 
   init {
     // Add a shutdown hook to ensure that the process is killed when the JVM exits.

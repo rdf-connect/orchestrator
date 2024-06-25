@@ -8,7 +8,7 @@ class IRProcessor(
     // The destination of the processor.
     val target: Runner.Target,
     // Processor parameters.
-    val parameters: List<IRParameter> = emptyList(),
+    val parameters: Map<String, IRParameter> = emptyMap(),
     // Additional parameters. These may be used by the runner for any reason.
     val metadata: Map<String, String> = emptyMap()
 )

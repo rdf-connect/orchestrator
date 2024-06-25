@@ -34,20 +34,23 @@ class TappedWriter(args: Map<String, Any>) : Processor(args) {
         IRProcessor(
             "tapped_writer",
             Runner.Target.JVM,
-            listOf(
-                IRParameter(
-                    "output",
-                    IRParameter.Type.WRITER,
-                    IRParameter.Presence.REQUIRED,
-                    IRParameter.Count.SINGLE,
-                ),
+            mapOf(
+                "output" to
+                    IRParameter(
+                        "output",
+                        IRParameter.Type.WRITER,
+                        IRParameter.Presence.REQUIRED,
+                        IRParameter.Count.SINGLE,
+                    ),
             ),
             mapOf("class" to "processors.TappedWriter"),
         )
 
     fun stage(channelURI: String): IRStage {
       return IRStage(
-          "tapped_writer_stage", processor, listOf(IRArgument("output", listOf(channelURI))))
+          "tapped_writer_stage",
+          processor,
+          mapOf("output" to IRArgument(processor.parameters["output"]!!, listOf(channelURI))))
     }
   }
 }

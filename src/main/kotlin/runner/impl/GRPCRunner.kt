@@ -17,6 +17,7 @@ import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
+import technology.idlab.util.retries
 
 private val empty = Empty.getDefaultInstance()
 
@@ -60,23 +61,23 @@ private fun IRParameter.toGRPC(): GRPC.IRParameter {
 
 private fun IRArgument.toGRPC(): GRPC.IRArgument {
   val builder = GRPC.IRArgument.newBuilder()
-  builder.setName(name)
-  builder.addAllValue(value)
+  builder.setParameter(this.parameter.toGRPC())
+  builder.addAllValue(this.value)
   return builder.build()
 }
 
 private fun IRStage.toGRPC(): GRPC.IRStage {
   val builder = GRPC.IRStage.newBuilder()
   builder.setUri(uri)
-  builder.setProcessorUri(processor.uri)
-  builder.addAllArguments(arguments.map { it.toGRPC() })
+  builder.setProcessor(this.processor.toGRPC())
+  builder.putAllArguments(arguments.mapValues { it.value.toGRPC() })
   return builder.build()
 }
 
 private fun IRProcessor.toGRPC(): GRPC.IRProcessor {
   val builder = GRPC.IRProcessor.newBuilder()
   builder.setUri(uri)
-  builder.addAllParameters(parameters.map { it.toGRPC() })
+  builder.putAllParameters(parameters.mapValues { it.value.toGRPC() })
   builder.putAllMetadata(metadata)
   return builder.build()
 }
@@ -85,11 +86,17 @@ private fun IRProcessor.toGRPC(): GRPC.IRProcessor {
  * This runner has GRPC built-in, so the only configuration that an extending class needs to provide
  * is the host and port of the GRPC server, as well as actually booting the process.
  */
-abstract class GRPCRunner(fromProcessors: Channel<Payload>, host: String, protected val port: Int) :
-    Runner(fromProcessors) {
+abstract class GRPCRunner(
+    /** The channel to receive messages from the processors. */
+    fromProcessors: Channel<Payload>,
+    host: String,
+    /** The port of the GRPC server. */
+    protected val port: Int
+) : Runner(fromProcessors) {
+  /** Amount of retries before communication is considered failure. */
+  private val retries = 5
 
   /** Create a single stub for all communication. */
-  // Initialize the GRPC stub.
   private val conn: ManagedChannel =
       ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
   private val grpc: RunnerGrpcKt.RunnerCoroutineStub = RunnerGrpcKt.RunnerCoroutineStub(conn)
@@ -102,22 +109,12 @@ abstract class GRPCRunner(fromProcessors: Channel<Payload>, host: String, protec
     conn.shutdown()
   }
 
-  override suspend fun prepare(processor: IRProcessor) {
-    Log.shared.info("Preparing processor: `${processor.uri}`")
-    grpc.prepareProcessor(processor.toGRPC())
-    Log.shared.info("Done preparing processor: `${processor.uri}`")
-  }
-
-  override suspend fun prepare(stage: IRStage) {
-    Log.shared.info("Preparing stage: `${stage.uri}`")
-    grpc.prepareStage(stage.toGRPC())
-    Log.shared.info("Done preparing stage: `${stage.uri}`")
+  override suspend fun load(stage: IRStage) {
+    retries(5, 1000) { grpc.load(stage.toGRPC()) }
   }
 
   override suspend fun exec() = coroutineScope {
-    Log.shared.debug("gRPC::exec::invoke")
-    grpc.exec(empty)
-    Log.shared.debug("gRPC::exec::success")
+    retries(5, 1000) { grpc.exec(empty) }
 
     // Create a flow for outgoing messages.
     val toGRPCProcessors =

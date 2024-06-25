@@ -22,17 +22,9 @@ abstract class RunnerTest {
   @AfterEach fun allowGracefulShutdown() = runBlocking { delay(2000) }
 
   @Test
-  fun prepareProcessorTest() = runBlocking {
+  fun loadTest() = runBlocking {
     val runner = createRunner()
-    runner.prepare(createProcessor())
-    runner.exit()
-  }
-
-  @Test
-  fun prepareStageTest() = runBlocking {
-    val runner = createRunner()
-    runner.prepare(createProcessor())
-    runner.prepare(createStage())
+    runner.load(createStage())
     runner.exit()
   }
 
@@ -41,8 +33,7 @@ abstract class RunnerTest {
     val runner = createRunner()
 
     // Prepare the runner.
-    runner.prepare(createProcessor())
-    runner.prepare(createStage())
+    runner.load(createStage())
 
     // Start the runner.
     val job = launch { runner.exec() }
@@ -62,23 +53,29 @@ abstract class RunnerTest {
     runner.exit()
   }
 
+  private val paramInput =
+      IRParameter(
+          "input",
+          IRParameter.Type.READER,
+          IRParameter.Presence.REQUIRED,
+          IRParameter.Count.SINGLE,
+      )
+
+  private val paramOutput =
+      IRParameter(
+          "output",
+          IRParameter.Type.WRITER,
+          IRParameter.Presence.REQUIRED,
+          IRParameter.Count.SINGLE,
+      )
+
   private fun createProcessor(): IRProcessor {
     return IRProcessor(
         "transparent",
         this.target,
-        listOf(
-            IRParameter(
-                "input",
-                IRParameter.Type.READER,
-                IRParameter.Presence.REQUIRED,
-                IRParameter.Count.SINGLE,
-            ),
-            IRParameter(
-                "output",
-                IRParameter.Type.WRITER,
-                IRParameter.Presence.REQUIRED,
-                IRParameter.Count.SINGLE,
-            ),
+        mapOf(
+            "input" to this.paramInput,
+            "output" to this.paramOutput,
         ),
         this.metadata,
     )
@@ -88,9 +85,9 @@ abstract class RunnerTest {
     return IRStage(
         "transparent_stage",
         this.createProcessor(),
-        listOf(
-            IRArgument("input", listOf("channel_in_uri")),
-            IRArgument("output", listOf("channel_out_uri"))),
+        mapOf(
+            "input" to IRArgument(paramInput, listOf("channel_in_uri")),
+            "output" to IRArgument(paramOutput, listOf("channel_out_uri"))),
     )
   }
 }

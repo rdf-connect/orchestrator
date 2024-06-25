@@ -10,18 +10,14 @@ import runner.Runner
 import runner.impl.NodeRunner
 import runner.jvm.JVMRunner
 import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
 class Orchestrator(stages: Set<IRStage>) {
-  /** List of all processors in the pipeline. */
-  private val processors = stages.map { it.processor }.toSet()
-
   /** An exhaustive list of all runners. */
   private val channel = Channel<Runner.Payload>()
-  private val jvmRunner by lazy { JVMRunner(channel) }
-  private val nodeRunner by lazy { NodeRunner(channel, 5000) }
+  private val jvmRunner = JVMRunner(channel)
+  private val nodeRunner = NodeRunner(channel, 5000)
   private val runners = listOf(nodeRunner, jvmRunner)
 
   /** A map of all channel URIs and their readers. */
@@ -29,33 +25,20 @@ class Orchestrator(stages: Set<IRStage>) {
 
   init {
     /** Initialize the processors and stages in the runtimes. */
-    runBlocking {
-      processors.forEach { processor -> prepare(processor) }
-      stages.forEach { stage -> prepare(stage) }
-    }
-  }
-
-  /** Prepare a processor inside of it's corresponding runtime. */
-  private suspend fun prepare(processor: IRProcessor) {
-    val runner = getRuntime(processor.target)
-    runner.prepare(processor)
+    runBlocking { stages.forEach { stage -> prepare(stage) } }
   }
 
   /** Prepare a stage inside of it's corresponding runtime. */
   private suspend fun prepare(stage: IRStage) {
     // Get the corresponding runner.
     val runner = getRuntime(stage.processor.target)
-    runner.prepare(stage)
+    runner.load(stage)
 
     // Find all the readers in the stage.
-    val readers =
-        stage.processor.parameters.filter { it.type == IRParameter.Type.READER }.map { it.name }
-
-    // Get their concrete URIs.
-    val uris = stage.arguments.filter { readers.contains(it.name) }.map { it.value[0] }
-
-    // Add them as a channel targets.
-    uris.forEach { this.readers[it] = runner }
+    stage.arguments
+        .filter { it.value.parameter.type == IRParameter.Type.READER }
+        .mapValues { (_, argument) -> argument.value[0] }
+        .forEach { (_, uri) -> this.readers[uri] = runner }
   }
 
   /** Execute all stages in all the runtimes. */

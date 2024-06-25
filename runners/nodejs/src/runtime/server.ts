@@ -5,7 +5,7 @@ import {
   ServerUnaryCall,
   UntypedHandleCall,
 } from "@grpc/grpc-js";
-import { IRProcessor, IRStage } from "../proto/intermediate";
+import { IRStage } from "../proto/intermediate";
 import { Empty } from "../proto/empty";
 import { Runner } from "./runner";
 
@@ -26,33 +26,16 @@ export class ServerImplementation implements RunnerServer {
     });
   }
 
-  prepareStage(
+  load(
     call: ServerUnaryCall<IRStage, Empty>,
     callback: sendUnaryData<Empty>,
   ): void {
     Runner.shared
-      .prepareStage(call.request)
+      .load(call.request)
       .then(() => {
         callback(null, {});
       })
       .catch((e) => {
-        callback(e, {});
-      });
-  }
-
-  prepareProcessor(
-    call: ServerUnaryCall<IRProcessor, Empty>,
-    callback: sendUnaryData<Empty>,
-  ): void {
-    console.log("gRPC::prepareProcessor::invoke");
-    Runner.shared
-      .prepareProcessor(call.request)
-      .then(() => {
-        console.log("gRPC::prepareProcessor::success");
-        callback(null, {});
-      })
-      .catch((e) => {
-        console.log("gRPC::prepareProcessor::error");
         callback(e, {});
       });
   }

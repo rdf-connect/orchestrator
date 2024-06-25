@@ -8,65 +8,63 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.kotlin.backend.common.push
+import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 import runner.Runner
 import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
 class JVMRunner(
     fromProcessors: Channel<Payload>,
 ) : Runner(fromProcessors) {
-  private val processors = mutableMapOf<String, Pair<IRProcessor, Class<Processor>>>()
+  /** Map of all stages in the runner. */
   private val stages = mutableMapOf<String, Processor>()
+
+  /** All stages are ran in their own job, for cancellation purposes we keep track of them. */
   private val jobs: MutableList<Job> = mutableListOf()
 
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
-  override suspend fun prepare(processor: IRProcessor) {
-    val className = processor.metadata["class"] ?: Log.shared.fatal("Processor has no class key.")
+  override suspend fun load(stage: IRStage) {
+    /** Load the class into the JVM> */
+    val className =
+        stage.processor.metadata["class"] ?: Log.shared.fatal("The processor has no class key set.")
     val clazz = Class.forName(className) as Class<*>
 
+    /** Check if instantiatable. */
     if (!Processor::class.java.isAssignableFrom(clazz)) {
       Log.shared.fatal("Processor class does not extend Processor.")
     }
 
-    this.processors[processor.uri] = Pair(processor, clazz as Class<Processor>)
-  }
-
-  override suspend fun prepare(stage: IRStage) {
-    val processor =
-        processors[stage.processor.uri]
-            ?: Log.shared.fatal("Unknown processor: ${stage.processor.uri}")
-    val irArguments = stage.arguments.associateBy { it.name }
-
+    /** Build the argument map. */
     val arguments = mutableMapOf<String, Any>()
-    for (parameter in processor.first.parameters) {
-      val irArgument = irArguments[parameter.name]
 
-      if (irArgument == null) {
-        if (parameter.presence == IRParameter.Presence.REQUIRED) {
-          Log.shared.fatal("Missing required argument: ${parameter.name}")
-        }
+    for ((name, arg) in stage.arguments) {
+      /** Create concrete instances. */
+      val concrete = arg.value.map { instantiate(arg.parameter.type, it) }
 
-        continue
+      /**
+       * If an array is expected, simply pass the value directly. Otherwise, pass the first
+       * variable.
+       */
+      if (arg.parameter.count == IRParameter.Count.LIST) {
+        arguments[name] = concrete
+      } else {
+        assert(concrete.size == 1)
+        assert(arg.parameter.count == IRParameter.Count.SINGLE)
+        arguments[name] = concrete[0]
       }
-
-      if (parameter.count == IRParameter.Count.SINGLE) {
-        if (irArgument.value.size != 1) {
-          Log.shared.fatal("Expected single value for argument: ${parameter.name}")
-        }
-
-        val serialized = irArgument.value[0]
-        arguments[parameter.name] = instantiate(parameter.type, serialized)
-        continue
-      }
-
-      arguments[parameter.name] = irArgument.value.map { instantiate(parameter.type, it) }
     }
 
-    val constructor = processor.second.getConstructor(Map::class.java)
+    /** Check if the non-optional arguments were set. */
+    stage.processor.parameters
+        .filter { it.value.presence == IRParameter.Presence.REQUIRED }
+        .all { it.key in arguments.keys }
+        .ifFalse { Log.shared.fatal("Required argument not set.") }
+
+    /** Initialize the stage with the new map. */
+    val constructor = clazz.getConstructor(Map::class.java)
     this.stages[stage.uri] = constructor.newInstance(arguments) as Processor
   }
 

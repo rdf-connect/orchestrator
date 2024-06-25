@@ -43,7 +43,7 @@ class RDFParser(file: File) : Parser() {
 
       // Parse parameters.
       val parameterBindings = mapOf("?processor" to uri)
-      val parameters = mutableListOf<IRParameter>()
+      val parameters = mutableMapOf<String, IRParameter>()
       model.query("/queries/parameters.sparql", parameterBindings) { query ->
         val path = query.get("path").asResource().toString().substringAfterLast("/")
         val datatype = query.get("datatype").asResource().toString()
@@ -95,7 +95,7 @@ class RDFParser(file: File) : Parser() {
             }
 
         val parameter = IRParameter(path, type, presence, count)
-        parameters.add(parameter)
+        parameters[path] = parameter
       }
 
       // Parse metadata.
@@ -137,7 +137,12 @@ class RDFParser(file: File) : Parser() {
         val args = builder.getOrPut(key) { mutableListOf() }
         args.add(value)
       }
-      val arguments = builder.map { (key, value) -> IRArgument(key, value) }
+
+      val arguments =
+          builder.mapValues { (key, value) ->
+            val parameter = processor.parameters[key]!!
+            return@mapValues IRArgument(parameter, value)
+          }
 
       // Append as result.
       val stage = IRStage(uri, processor, arguments)

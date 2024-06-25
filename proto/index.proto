@@ -9,8 +9,7 @@ message ChannelData {
 }
 
 service Runner {
-  rpc prepareProcessor(IRProcessor) returns (Empty);
-  rpc prepareStage(IRStage) returns (Empty);
+  rpc load(IRStage) returns (Empty);
   rpc exec(Empty) returns (Empty);
   rpc channel(stream ChannelData) returns (stream ChannelData);
 }
