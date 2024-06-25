@@ -31,7 +31,6 @@ export class Runner {
 
   constructor() {
     this.incomingSubscription = this.incoming.subscribe((payload) => {
-      console.log(`Incoming payload: ${payload.destinationUri}`);
       const reader = this.readers.get(payload.destinationUri);
       if (!reader) {
         throw new Error(

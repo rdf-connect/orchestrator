@@ -33,16 +33,10 @@ class FileWriter(args: Map<String, Any>) : Processor(args) {
   }
 
   /** All incoming values are parsed as byte and appended onto the file. */
-  override fun exec() {
+  override suspend fun exec() {
     while (true) {
-      // Read the next incoming value.
-      val result = input.readSync()
-      if (result.isClosed()) {
-        break
-      }
-
-      // Append it to the file.
-      file.appendBytes(result.value)
+      val result = input.read()
+      file.appendBytes(result)
     }
   }
 }

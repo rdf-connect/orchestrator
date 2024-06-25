@@ -10,7 +10,9 @@ export class Reader {
 
   async read(): Promise<Uint8Array> {
     try {
-      return firstValueFrom(this.channel.pipe());
+      const result = await firstValueFrom(this.channel.pipe());
+      console.log(`[unknown] -> '${result.toString()}'`);
+      return result;
     } catch (error) {
       throw RunnerError.channelError();
     }

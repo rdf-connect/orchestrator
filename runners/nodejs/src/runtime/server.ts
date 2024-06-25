@@ -15,11 +15,13 @@ export class ServerImplementation implements RunnerServer {
   channel(call: ServerDuplexStream<ChannelData, ChannelData>): void {
     // On incoming data, call the appropriate reader.
     call.on("data", function (payload: ChannelData) {
+      console.log("gRPC::channel::data");
       Runner.shared.incoming.next(payload);
     });
 
     // On outgoing data, propagate to gRPC.
     Runner.shared.outgoing.subscribe((payload) => {
+      console.log("gRPC::channel::write");
       call.write(payload);
     });
   }

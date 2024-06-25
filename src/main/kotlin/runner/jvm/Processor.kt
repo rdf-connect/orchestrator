@@ -35,5 +35,5 @@ abstract class Processor(
     log.fatal("Argument $name is not optional")
   }
 
-  abstract fun exec()
+  abstract suspend fun exec()
 }

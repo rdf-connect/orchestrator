@@ -17,7 +17,6 @@ export default class Transparent extends Processor {
       if (!data) {
         break;
       }
-      console.log(data.toString());
       this.output.write(data);
     }
   }

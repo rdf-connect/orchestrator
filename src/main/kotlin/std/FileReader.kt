@@ -10,10 +10,9 @@ class FileReader(args: Map<String, Any>) : Processor(args) {
   private val output: Writer = this.getArgument("output")
 
   /** Read the file as a single byte array and push it down the pipeline. */
-  override fun exec() {
+  override suspend fun exec() {
     val file = File(path)
     val bytes = file.readBytes()
-    output.pushSync(bytes)
-    output.close()
+    output.push(bytes)
   }
 }

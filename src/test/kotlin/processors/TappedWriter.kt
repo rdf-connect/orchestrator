@@ -1,7 +1,6 @@
 package processors
 
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
 import runner.Runner
 import runner.jvm.Processor
 import runner.jvm.Writer
@@ -20,10 +19,9 @@ class TappedWriter(args: Map<String, Any>) : Processor(args) {
   private val output = this.getArgument<Writer>("output")
 
   /** Continuously read data from the global channel and write it to the output. */
-  override fun exec() = runBlocking {
+  override suspend fun exec() {
     while (true) {
-      val read = input.receiveCatching()
-      output.pushSync(read.getOrNull()!!)
+      output.push(input.receive())
     }
   }
 
@@ -32,7 +30,7 @@ class TappedWriter(args: Map<String, Any>) : Processor(args) {
     val input = Channel<ByteArray>()
 
     /** Implementation of this processor as IR. */
-    val processor =
+    private val processor =
         IRProcessor(
             "tapped_writer",
             Runner.Target.JVM,

@@ -8,6 +8,7 @@ export class Writer {
   }
 
   write(bytes: Uint8Array): void {
+    console.log(`'${bytes.toString()}' -> [unknown]`);
     this.channel.next(bytes);
   }
 }

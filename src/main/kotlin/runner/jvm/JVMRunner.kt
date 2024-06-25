@@ -1,45 +1,28 @@
 package runner.jvm
 
-import kotlin.concurrent.thread
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import org.jetbrains.kotlin.backend.common.push
 import runner.Runner
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
-class JVMRunner(outgoing: Channel<Payload> = Channel()) : Runner(outgoing) {
+class JVMRunner(
+    fromProcessors: Channel<Payload>,
+) : Runner(fromProcessors) {
   private val processors = mutableMapOf<String, Pair<IRProcessor, Class<Processor>>>()
   private val stages = mutableMapOf<String, Processor>()
+  private val jobs: MutableList<Job> = mutableListOf()
 
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
-
-  /** Keep track of all spawned threads. */
-  private var threads = mutableListOf<Thread>()
-
-  // Handle incoming messages.
-  private val handler = thread {
-    try {
-      runBlocking {
-        while (true) {
-          // Get the next message, check if it is valid.
-          val message = this@JVMRunner.incoming.receiveCatching()
-          if (message.isClosed || message.isFailure) {
-            break
-          }
-          val payload = message.getOrNull()!!
-
-          // Get the reader.
-          val reader = readers[payload.destinationURI]!!
-          reader.send(payload.data)
-        }
-      }
-    } catch (e: InterruptedException) {
-      Log.shared.severe("Message handler thread interrupted.")
-    }
-  }
 
   override suspend fun prepare(processor: IRProcessor) {
     val className = processor.metadata["class"] ?: Log.shared.fatal("Processor has no class key.")
@@ -87,14 +70,42 @@ class JVMRunner(outgoing: Channel<Payload> = Channel()) : Runner(outgoing) {
     this.stages[stage.uri] = constructor.newInstance(arguments) as Processor
   }
 
-  override suspend fun exec() {
-    Log.shared.info("Bringing JVM stages online.")
-    this.stages.values.forEach { this.threads.add(thread { it.exec() }) }
-    Log.shared.info("All stages are online.")
+  override suspend fun exec() = coroutineScope {
+    Log.shared.info("Executing all stages.")
+
+    // Initialize a job for all processors.
+    this@JVMRunner.stages.values.forEach {
+      val job = launch { it.exec() }
+      jobs.push(job)
+    }
+
+    // Route all incoming messages.
+    Log.shared.debug("Begin routing messages in JVMRunner.")
+    while (isActive) {
+      withTimeout(1000) {
+        val message = toProcessors.receive()
+        val target = readers[message.channel]!!
+        Log.shared.info("'${message.data.decodeToString()}' -> ${message.channel}")
+        target.send(message.data)
+      }
+    }
+    Log.shared.debug("Ending routing messages in JVMRunner.")
+
+    // Await all processors.
+    jobs.forEach { it.cancelAndJoin() }
   }
 
-  override suspend fun status(): Status {
-    TODO("Not yet implemented")
+  override suspend fun exit() {
+    Log.shared.info("Exiting the JVM Runner.")
+    super.exit()
+
+    // Close all readers.
+    for (reader in this.readers.values) {
+      reader.close()
+    }
+
+    // Suspend all jobs.
+    jobs.map { it.apply { it.cancel() } }.forEach { it.join() }
   }
 
   private fun instantiate(type: IRParameter.Type, value: String): Any {
@@ -107,16 +118,12 @@ class JVMRunner(outgoing: Channel<Payload> = Channel()) : Runner(outgoing) {
       IRParameter.Type.INT -> value.toInt()
       IRParameter.Type.LONG -> value.toLong()
       IRParameter.Type.STRING -> value
-      IRParameter.Type.WRITER -> return Writer(this.outgoing, value)
+      IRParameter.Type.WRITER -> return Writer(this.fromProcessors, value)
       IRParameter.Type.READER -> {
-        val channel = Channel<ByteArray>()
+        val channel = this.readers[value] ?: Channel()
         this.readers[value] = channel
-        return Reader(channel)
+        return Reader(channel, value)
       }
     }
-  }
-
-  override fun halt() {
-    handler.interrupt()
   }
 }

@@ -1,10 +1,11 @@
 package technology.idlab
 
-import kotlin.concurrent.thread
-import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import runner.Runner
 import runner.impl.NodeRunner
 import runner.jvm.JVMRunner
@@ -17,30 +18,8 @@ class Orchestrator(stages: Set<IRStage>) {
   /** List of all processors in the pipeline. */
   private val processors = stages.map { it.processor }.toSet()
 
-  /**
-   * A channel which listens to all incoming messages and distributes them according to the topology
-   * of the runners.
-   */
-  private val channel =
-      Channel<Runner.Payload>().also {
-        thread {
-          runBlocking {
-            for (payload in it) {
-              // Special URI for printing to the console.
-              if (payload.destinationURI == "print") {
-                println(payload.data.decodeToString())
-                continue
-              }
-
-              // Get the runner and send the message.
-              val runner = readers[payload.destinationURI]
-              runner!!.getIncomingChannel().send(payload)
-            }
-          }
-        }
-      }
-
   /** An exhaustive list of all runners. */
+  private val channel = Channel<Runner.Payload>()
   private val jvmRunner by lazy { JVMRunner(channel) }
   private val nodeRunner by lazy { NodeRunner(channel, 5000) }
   private val runners = listOf(nodeRunner, jvmRunner)
@@ -82,8 +61,22 @@ class Orchestrator(stages: Set<IRStage>) {
   /** Execute all stages in all the runtimes. */
   suspend fun exec() = coroutineScope {
     Log.shared.info("Bringing all stages online.")
-    runners.map { async { it.exec() } }.forEach { it.await() }
-    Log.shared.info("All stages are online.")
+    val runnerJobs = runners.map { launch { it.exec() } }
+
+    // Route messages.
+    while (isActive) {
+      withTimeout(1000) {
+        val message = channel.receive()
+        val target = readers[message.channel]!!
+        Log.shared.info(
+            "Brokering message '${message.data.decodeToString()}' to ${message.channel}.")
+        target.toProcessors.send(message)
+      }
+    }
+    Log.shared.debug("End routing messages between runners.")
+
+    // Await all runners.
+    runnerJobs.forEach { it.join() }
   }
 
   /** Get a lazy evaluated runner. */

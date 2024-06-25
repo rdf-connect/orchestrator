@@ -6,7 +6,6 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.runBlocking
 import runner.jvm.Processor
 import runner.jvm.Writer
 
@@ -34,7 +33,7 @@ class HttpFetch(args: Map<String, Any>) : Processor(args) {
   }
 
   /** Execute an HTTP request and output it to the writer. */
-  override fun exec() = runBlocking {
+  override suspend fun exec() {
     val client = HttpClient(engine)
     val res = client.request(builder)
 

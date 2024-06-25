@@ -1,5 +1,6 @@
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import processors.NodeTransparent
 import processors.TappedReader
@@ -15,7 +16,7 @@ class OrchestratorTest {
     val orchestrator = Orchestrator(stages)
 
     // Bring pipeline online.
-    orchestrator.exec()
+    launch { orchestrator.exec() }
 
     // Send message into the pipeline.
     val data = "Hello, World!".encodeToByteArray()

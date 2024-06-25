@@ -44,18 +44,15 @@ class RDFValidator(args: Map<String, Any>) : Processor(args) {
   }
 
   /** Read incoming data, validate it, and output it. */
-  override fun exec() {
+  override suspend fun exec() {
     while (true) {
       // Read incoming data.
-      val res = input.readSync()
-      if (res.isClosed()) {
-        break
-      }
+      val res = input.read()
 
       // Parse as a model.
       Log.shared.assert(model.isEmpty, "Model should be empty.")
       try {
-        model.read(res.value.inputStream(), null, "TURTLE")
+        model.read(res.inputStream(), null, "TURTLE")
       } catch (e: RiotException) {
         Log.shared.fatal("Failed to read incoming RDF data.")
       }
@@ -65,7 +62,7 @@ class RDFValidator(args: Map<String, Any>) : Processor(args) {
 
       if (report.conforms()) {
         // Propagate to the output.
-        output.pushSync(res.value)
+        output.push(res)
       } else {
         // Print the report if required.
         if (printReport.orElse(printReportDefault)) {
@@ -83,8 +80,5 @@ class RDFValidator(args: Map<String, Any>) : Processor(args) {
       // Reset model for next invocation.
       model.removeAll(null, null, null)
     }
-
-    // Close the output.
-    output.close()
   }
 }

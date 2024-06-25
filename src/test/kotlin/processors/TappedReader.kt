@@ -1,7 +1,6 @@
 package processors
 
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
 import runner.Runner
 import runner.jvm.Processor
 import runner.jvm.Reader
@@ -20,10 +19,9 @@ class TappedReader(args: Map<String, Any>) : Processor(args) {
   private val input = this.getArgument<Reader>("input")
 
   /** Continuously read data from the input and write it to the global channel. */
-  override fun exec() = runBlocking {
+  override suspend fun exec() {
     while (true) {
-      val read = input.read()
-      output.send(read.value)
+      output.send(input.read())
     }
   }
 
@@ -32,7 +30,7 @@ class TappedReader(args: Map<String, Any>) : Processor(args) {
     val output = Channel<ByteArray>()
 
     /** Implementation of this processor as IR. */
-    val processor =
+    private val processor =
         IRProcessor(
             "tapped_reader",
             Runner.Target.JVM,

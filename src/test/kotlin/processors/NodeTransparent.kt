@@ -8,7 +8,7 @@ import technology.idlab.parser.intermediate.IRStage
 
 class NodeTransparent {
   companion object {
-    val processor =
+    private val processor =
         IRProcessor(
             "transparent",
             Runner.Target.NODEJS,

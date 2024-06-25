@@ -6,20 +6,8 @@ import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
 abstract class Runner(
-    /* Message which must be transmitted to the outside world. */
-    protected val outgoing: Channel<Payload> = Channel()
+    val fromProcessors: Channel<Payload>,
 ) {
-  /** The state of a runtime. */
-  enum class Status {
-    STARTING,
-    INITIALIZING,
-    READY,
-    RUNNING,
-    FINISHED,
-    ERROR,
-    CRASHED,
-  }
-
   /*
    * Implementations of this abstract class are exhaustively listed here. If you were to write your
    * own runtime implementation, you should add an entry here, as well as extend the companion
@@ -45,13 +33,13 @@ abstract class Runner(
   /** The contents of a channel message. */
   data class Payload(
       // The URI of the reader which the message was sent to.
-      val destinationURI: String,
+      val channel: String,
       // The data of the message.
       val data: ByteArray,
   )
 
   /* Messages which are destined to a processor inside the runner. */
-  protected val incoming: Channel<Payload> = Channel()
+  val toProcessors = Channel<Payload>()
 
   /** Register and prepare a processor inside the runtime. */
   abstract suspend fun prepare(processor: IRProcessor)
@@ -62,17 +50,10 @@ abstract class Runner(
   /** Start pipeline execution. */
   abstract suspend fun exec()
 
-  /** Return the current state of the runtime. */
-  abstract suspend fun status(): Status
-
-  /** Halt the execution of the runtime and release all resources. */
-  abstract fun halt()
-
-  fun getIncomingChannel(): Channel<Payload> {
-    return incoming
-  }
-
-  fun getOutgoingChannel(): Channel<Payload> {
-    return outgoing
+  /** Attempt to exit the pipeline gracefully. */
+  open suspend fun exit() {
+    Log.shared.debug("Closing channels.")
+    fromProcessors.close()
+    toProcessors.close()
   }
 }
