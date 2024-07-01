@@ -23,10 +23,17 @@ enum IRParameterCount {
   LIST = 1;
 }
 
+message IRParameters {
+  map<string, IRParameter> parameters = 1;
+}
+
 message IRParameter {
-  IRParameterType type = 1;
-  IRParameterPresence presence = 2;
-  IRParameterCount count = 3;
+  oneof type {
+    IRParameterType simple = 1;
+    IRParameters complex = 2;
+  }
+  IRParameterPresence presence = 3;
+  IRParameterCount count = 4;
 }
 
 message IRProcessor {
@@ -35,9 +42,23 @@ message IRProcessor {
   map<string, string> metadata = 3;
 }
 
+message IRArgumentSimple {
+  repeated string value = 1;
+}
+
+message IRArgumentMap {
+  map<string, IRArgument> arguments = 1;
+}
+
+message IRArgumentComplex {
+  repeated IRArgumentMap value = 1;
+}
+
 message IRArgument {
-  IRParameter parameter = 1;
-  repeated string value = 2;
+  oneof value {
+    IRArgumentSimple simple = 1;
+    IRArgumentComplex complex = 2;
+  }
 }
 
 message IRStage {

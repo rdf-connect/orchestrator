@@ -91,6 +91,10 @@ dependencies {
   // TOML parser.
   implementation("org.tomlj:tomlj:1.1.1")
 
+  // Arrow functional library.
+  implementation("io.arrow-kt:arrow-core:1.2.4")
+  implementation("io.arrow-kt:arrow-fx-coroutines:1.2.4")
+
   // gRPC
   implementation("io.grpc:grpc-netty:1.64.0")
   implementation("io.grpc:grpc-protobuf:1.64.0")
@@ -108,6 +112,7 @@ dependencies {
   // RDF dependencies.
   implementation("org.apache.jena:apache-jena-libs:5.0.0")
   implementation("org.apache.jena:jena-arq:5.0.0")
+  implementation("org.apache.jena:jena-shacl:5.0.0")
 
   // Hide SLF4J warnings.
   implementation("org.slf4j:slf4j-nop:2.0.7")

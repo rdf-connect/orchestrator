@@ -1,5 +1,6 @@
 package runner.jvm
 
+import arrow.core.zip
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
@@ -8,11 +9,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.kotlin.backend.common.push
-import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 import runner.Runner
+import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
+import technology.idlab.util.Log.Cause.*
 
 class JVMRunner(
     fromProcessors: Channel<Payload>,
@@ -28,8 +30,7 @@ class JVMRunner(
 
   override suspend fun load(stage: IRStage) {
     /** Load the class into the JVM> */
-    val className =
-        stage.processor.metadata["class"] ?: Log.shared.fatal("The processor has no class key set.")
+    val className = stage.processor.metadata["class"] ?: Log.shared.fatal(JVM_RUNNER_STAGE_NO_CLASS)
     val clazz = Class.forName(className) as Class<*>
 
     /** Check if instantiatable. */
@@ -38,30 +39,7 @@ class JVMRunner(
     }
 
     /** Build the argument map. */
-    val arguments = mutableMapOf<String, Any>()
-
-    for ((name, arg) in stage.arguments) {
-      /** Create concrete instances. */
-      val concrete = arg.value.map { instantiate(arg.parameter.type, it) }
-
-      /**
-       * If an array is expected, simply pass the value directly. Otherwise, pass the first
-       * variable.
-       */
-      if (arg.parameter.count == IRParameter.Count.LIST) {
-        arguments[name] = concrete
-      } else {
-        assert(concrete.size == 1)
-        assert(arg.parameter.count == IRParameter.Count.SINGLE)
-        arguments[name] = concrete[0]
-      }
-    }
-
-    /** Check if the non-optional arguments were set. */
-    stage.processor.parameters
-        .filter { it.value.presence == IRParameter.Presence.REQUIRED }
-        .all { it.key in arguments.keys }
-        .ifFalse { Log.shared.fatal("Required argument not set.") }
+    val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
 
     /** Initialize the stage with the new map. */
     val constructor = clazz.getConstructor(Map::class.java)
@@ -104,6 +82,23 @@ class JVMRunner(
 
     // Suspend all jobs.
     jobs.map { it.apply { it.cancel() } }.forEach { it.join() }
+  }
+
+  private fun instantiate(
+      serialized: Map<String, Pair<IRParameter, IRArgument>>
+  ): Map<String, Any> {
+    return serialized.mapValues { (_, map) ->
+      val (parameter, arguments) = map
+
+      when (parameter.kind) {
+        IRParameter.Kind.SIMPLE -> {
+          arguments.getSimple().map { instantiate(parameter.getSimple(), it) }
+        }
+        IRParameter.Kind.COMPLEX -> {
+          arguments.getComplex().map { instantiate(parameter.getComplex().zip(it)) }
+        }
+      }
+    }
   }
 
   private fun instantiate(type: IRParameter.Type, value: String): Any {

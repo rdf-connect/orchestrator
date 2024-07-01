@@ -16,14 +16,14 @@ class NodeTransparent {
                 "input" to
                     IRParameter(
                         IRParameter.Type.READER,
-                        IRParameter.Presence.REQUIRED,
-                        IRParameter.Count.SINGLE,
+                        presence = IRParameter.Presence.REQUIRED,
+                        count = IRParameter.Count.SINGLE,
                     ),
                 "output" to
                     IRParameter(
                         IRParameter.Type.WRITER,
-                        IRParameter.Presence.REQUIRED,
-                        IRParameter.Count.SINGLE,
+                        presence = IRParameter.Presence.REQUIRED,
+                        count = IRParameter.Count.SINGLE,
                     ),
             ),
             mapOf("import" to "../std/transparent.js"),
@@ -34,8 +34,8 @@ class NodeTransparent {
           "transparent_stage",
           processor,
           mapOf(
-              "input" to IRArgument(processor.parameters["input"]!!, listOf(channelInURI)),
-              "output" to IRArgument(processor.parameters["output"]!!, listOf(channelOutURI))),
+              "input" to IRArgument(listOf(channelInURI)),
+              "output" to IRArgument(listOf(channelOutURI))),
       )
     }
   }

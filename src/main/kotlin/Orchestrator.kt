@@ -9,7 +9,6 @@ import kotlinx.coroutines.withTimeout
 import runner.Runner
 import runner.impl.NodeRunner
 import runner.jvm.JVMRunner
-import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
@@ -35,10 +34,7 @@ class Orchestrator(stages: Set<IRStage>) {
     runner.load(stage)
 
     // Find all the readers in the stage.
-    stage.arguments
-        .filter { it.value.parameter.type == IRParameter.Type.READER }
-        .mapValues { (_, argument) -> argument.value[0] }
-        .forEach { (_, uri) -> this.readers[uri] = runner }
+    stage.getReaders().forEach { this.readers[it] = runner }
   }
 
   /** Execute all stages in all the runtimes. */

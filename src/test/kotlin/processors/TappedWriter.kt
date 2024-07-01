@@ -38,8 +38,8 @@ class TappedWriter(args: Map<String, Any>) : Processor(args) {
                 "output" to
                     IRParameter(
                         IRParameter.Type.WRITER,
-                        IRParameter.Presence.REQUIRED,
-                        IRParameter.Count.SINGLE,
+                        presence = IRParameter.Presence.REQUIRED,
+                        count = IRParameter.Count.SINGLE,
                     ),
             ),
             mapOf("class" to "processors.TappedWriter"),
@@ -47,9 +47,7 @@ class TappedWriter(args: Map<String, Any>) : Processor(args) {
 
     fun stage(channelURI: String): IRStage {
       return IRStage(
-          "tapped_writer_stage",
-          processor,
-          mapOf("output" to IRArgument(processor.parameters["output"]!!, listOf(channelURI))))
+          "tapped_writer_stage", processor, mapOf("output" to IRArgument(listOf(channelURI))))
     }
   }
 }

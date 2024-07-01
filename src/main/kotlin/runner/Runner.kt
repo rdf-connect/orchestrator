@@ -15,18 +15,6 @@ abstract class Runner(
   enum class Target {
     JVM,
     NODEJS,
-    ;
-
-    companion object {
-      /* Convert a string to a target. */
-      fun fromString(value: String): Target {
-        return when (value) {
-          "JVM" -> JVM
-          "NodeJS" -> NODEJS
-          else -> Log.shared.fatal("Unknown target: $value")
-        }
-      }
-    }
   }
 
   /** The contents of a channel message. */

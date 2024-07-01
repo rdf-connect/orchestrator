@@ -1,7 +1,7 @@
 package technology.idlab.parser
 
 import java.io.File
-import technology.idlab.parser.impl.TomlParser
+import technology.idlab.parser.impl.RDFParser
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
@@ -22,7 +22,7 @@ abstract class Parser {
     /* Create a parser based on the file extension. */
     fun create(file: File): Parser {
       return when (file.extension) {
-        "toml" -> TomlParser(file)
+        "ttl" -> RDFParser(file)
         else -> Log.shared.fatal("Unsupported file extension: ${file.extension}")
       }
     }

@@ -50,9 +50,33 @@ private fun IRParameter.Count.toGRPC(): GRPC.IRParameterCount {
   }
 }
 
+private fun Map<String, IRParameter>.toGRPC(): GRPC.IRParameters {
+  return GRPC.IRParameters.newBuilder().putAllParameters(mapValues { it.value.toGRPC() }).build()
+}
+
+private fun List<String>.toGRPC(): GRPC.IRArgumentSimple {
+  return GRPC.IRArgumentSimple.newBuilder().addAllValue(this).build()
+}
+
+private fun List<Map<String, IRArgument>>.toGRPC(): GRPC.IRArgumentComplex {
+  val arguments = map { it.toGRPC() }
+  val builder = GRPC.IRArgumentComplex.newBuilder()
+  builder.addAllValue(arguments)
+  return builder.build()
+}
+
+private fun Map<String, IRArgument>.toGRPC(): GRPC.IRArgumentMap {
+  val builder = GRPC.IRArgumentMap.newBuilder()
+  forEach { (key, value) -> builder.putArguments(key, value.toGRPC()) }
+  return builder.build()
+}
+
 private fun IRParameter.toGRPC(): GRPC.IRParameter {
   val builder = GRPC.IRParameter.newBuilder()
-  builder.setType(type.toGRPC())
+  when (kind) {
+    IRParameter.Kind.SIMPLE -> builder.setSimple(getSimple().toGRPC())
+    IRParameter.Kind.COMPLEX -> builder.setComplex(getComplex().toGRPC())
+  }
   builder.setPresence(presence.toGRPC())
   builder.setCount(count.toGRPC())
   return builder.build()
@@ -60,8 +84,12 @@ private fun IRParameter.toGRPC(): GRPC.IRParameter {
 
 private fun IRArgument.toGRPC(): GRPC.IRArgument {
   val builder = GRPC.IRArgument.newBuilder()
-  builder.setParameter(this.parameter.toGRPC())
-  builder.addAllValue(this.value)
+  when (kind) {
+    IRArgument.Kind.SIMPLE -> builder.setSimple(getSimple().toGRPC())
+    IRArgument.Kind.COMPLEX -> {
+      builder.setComplex(getComplex().toGRPC())
+    }
+  }
   return builder.build()
 }
 
@@ -92,9 +120,6 @@ abstract class GRPCRunner(
     /** The port of the GRPC server. */
     protected val port: Int
 ) : Runner(fromProcessors) {
-  /** Amount of retries before communication is considered failure. */
-  private val retries = 5
-
   /** Create a single stub for all communication. */
   private val conn: ManagedChannel =
       ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()

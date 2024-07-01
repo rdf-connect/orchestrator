@@ -17,16 +17,17 @@ abstract class Processor(
   @JvmField protected val log = Log.shared
 
   fun <T> getArgument(name: String): T {
-    val result = arguments[name] as T ?: log.fatal("Argument $name is missing")
-    return result
+    val result = arguments.get(name) as List<T> ?: log.fatal("Argument $name is missing")
+    return result.get(0) ?: log.fatal("Argument $name is missing")
   }
 
   fun <T> getNullableArgument(name: String): T? {
-    return arguments[name] as T?
+    val result = arguments.get(name) as List<T>?
+    return result?.get(0)
   }
 
   fun <T> getOptionalArgument(name: String): Optional<T> {
-    val result = arguments[name] ?: log.fatal("Argument $name is missing")
+    val result = (arguments.get(name) as List<T>?)?.get(0) ?: log.fatal("Argument $name is missing")
 
     if (result is Optional<*>) {
       return result as Optional<T>

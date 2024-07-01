@@ -1,64 +1,87 @@
-@prefix conn: <http://www.rdf-connect.com/#> .
+@prefix conn: <https://www.rdf-connect.com/#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<alpha_one> a <alpha> ;
-    <one> "Hello, World!" .
+############################
+### DEFINE THE PROCESSOR ###
+############################
 
-<alpha_two> a <alpha> ;
-    <one> "Hello, World!" ;
-    <two> "1"^^xsd:int,
-          "2"^^xsd:int,
-          "3"^^xsd:int .
+<processor> a conn:Processor ;
+  conn:target conn:Kotlin ;
+  conn:metadata "class:MyProcessor" .
 
-<beta_one> a <beta> ;
-    <one> "Hello, World!" .
+########################
+### DEFINE A CHANNEL ###
+########################
 
-<beta_two> a <beta> ;
-    <one> "Hello, World!" ;
-    <two> "1"^^xsd:int,
-          "2"^^xsd:int,
-          "3"^^xsd:int .
+<channel> a conn:Channel .
 
-<first> a conn:Channel .
+########################
+### DEFINE THE STAGE ###
+########################
 
-<second> a conn:Channel .
+<processor/stage> a <processor> ;
+  conn:arguments [
+    <processor/arg1>
+      "Hello, World!" ;
+    <processor/arg2>
+      "1"^^xsd:int ,
+      "2"^^xsd:int ,
+      "3"^^xsd:int ;
+    <processor/arg3> [
+      <processor/arg4> "Hello, World!" ;
+      <processor/arg5> "1"^^xsd:int
+    ] ;
+  ].
 
-<alpha> a conn:Processor ;
-    conn:target "JVM" ;
-    conn:class "Alpha".
-
-<beta> a conn:Processor ;
-    conn:target "NodeJS" .
+###########################################
+### DEFINE THE SHAPE OF THE PARAMETERS. ###
+###########################################
 
 [] a sh:NodeShape ;
-    sh:closed true ;
-    sh:ignoredProperties ( rdf:type ) ;
-    sh:property [
-      sh:datatype xsd:string ;
-      sh:maxCount 1 ;
-      sh:minCount 1 ;
-      sh:path <one>
-    ], [
-      sh:datatype xsd:int ;
-      sh:minCount 0 ;
-      sh:path <two>
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  sh:targetClass <processor> ;
+  sh:property [
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "arguments" ;
+    sh:path conn:arguments ;
+    sh:node [
+      sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "arg1" ;
+        sh:path <processor/arg1> ;
+        sh:datatype xsd:string ;
+      ], [
+        sh:minCount 0 ;
+        sh:name "arg2" ;
+        sh:path <processor/arg2> ;
+        sh:datatype xsd:int ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "arg3" ;
+        sh:path <processor/arg3> ;
+        sh:node [
+          sh:closed true ;
+          sh:ignoredProperties ( rdf:type ) ;
+          sh:property [
+            sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "arg4" ;
+            sh:path <processor/arg4> ;
+          ], [
+            sh:datatype xsd:int ;
+            sh:maxCount 1 ;
+            sh:minCount 0 ;
+            sh:name "arg5" ;
+            sh:path <processor/arg5> ;
+          ] ;
+        ] ;
+      ] ;
     ] ;
-    sh:targetClass <alpha> .
-
-[] a sh:NodeShape ;
-    sh:closed true ;
-    sh:ignoredProperties ( rdf:type ) ;
-    sh:property [
-      sh:datatype xsd:string ;
-      sh:maxCount 1 ;
-      sh:minCount 1 ;
-      sh:path <one>
-    ], [
-      sh:datatype xsd:int ;
-      sh:minCount 0 ;
-      sh:path <two>
-    ] ;
-    sh:targetClass <beta> .
-
+  ].

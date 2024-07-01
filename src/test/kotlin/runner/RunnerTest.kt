@@ -55,16 +55,16 @@ abstract class RunnerTest {
 
   private val paramInput =
       IRParameter(
-          IRParameter.Type.READER,
-          IRParameter.Presence.REQUIRED,
-          IRParameter.Count.SINGLE,
+          simple = IRParameter.Type.READER,
+          presence = IRParameter.Presence.REQUIRED,
+          count = IRParameter.Count.SINGLE,
       )
 
   private val paramOutput =
       IRParameter(
-          IRParameter.Type.WRITER,
-          IRParameter.Presence.REQUIRED,
-          IRParameter.Count.SINGLE,
+          simple = IRParameter.Type.WRITER,
+          presence = IRParameter.Presence.REQUIRED,
+          count = IRParameter.Count.SINGLE,
       )
 
   private fun createProcessor(): IRProcessor {
@@ -84,8 +84,8 @@ abstract class RunnerTest {
         "transparent_stage",
         this.createProcessor(),
         mapOf(
-            "input" to IRArgument(paramInput, listOf("channel_in_uri")),
-            "output" to IRArgument(paramOutput, listOf("channel_out_uri"))),
+            "input" to IRArgument(simple = listOf("channel_in_uri")),
+            "output" to IRArgument(simple = listOf("channel_out_uri"))),
     )
   }
 }

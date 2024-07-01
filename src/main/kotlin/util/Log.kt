@@ -7,6 +7,10 @@ import kotlin.Exception
 import technology.idlab.exception.RunnerException
 
 class Log private constructor() {
+  enum class Cause(val message: String) {
+    JVM_RUNNER_STAGE_NO_CLASS("The processor has no class key set."),
+  }
+
   enum class Level {
     INFO,
     SEVERE,
@@ -103,6 +107,8 @@ class Log private constructor() {
     toConsole("$message - ${exception.message}", Level.FATAL)
     throw RunnerException()
   }
+
+  fun fatal(cause: Cause): Nothing = fatal(cause.message)
 
   fun debug(message: String) {
     toConsole(message, Level.DEBUG)

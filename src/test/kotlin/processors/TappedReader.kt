@@ -38,8 +38,8 @@ class TappedReader(args: Map<String, Any>) : Processor(args) {
                 "input" to
                     IRParameter(
                         IRParameter.Type.READER,
-                        IRParameter.Presence.REQUIRED,
-                        IRParameter.Count.SINGLE,
+                        presence = IRParameter.Presence.REQUIRED,
+                        count = IRParameter.Count.SINGLE,
                     ),
             ),
             mapOf("class" to "processors.TappedReader"),
@@ -47,9 +47,7 @@ class TappedReader(args: Map<String, Any>) : Processor(args) {
 
     fun stage(channelURI: String): IRStage {
       return IRStage(
-          "tapped_reader_stage",
-          processor,
-          mapOf("input" to IRArgument(processor.parameters["input"]!!, listOf(channelURI))))
+          "tapped_reader_stage", processor, mapOf("input" to IRArgument(listOf(channelURI))))
     }
   }
 }
