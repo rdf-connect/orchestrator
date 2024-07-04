@@ -5,8 +5,8 @@ import technology.idlab.util.Log
 
 abstract class Processor(
     /**
-     * The arguments of a processor are stored in a map and can be accessed by name. At the time of
-     * writing, the user must manually cast the arguments to the correct type.
+     * The arguments of a processor are stored in a map and can be accessed by name. Type safety is
+     * assured through the use of Kotlin reflection.
      */
     protected val arguments: Arguments,
 ) {
@@ -16,5 +16,9 @@ abstract class Processor(
    */
   @JvmField protected val log = Log.shared
 
+  /**
+   * The `exec` function will be called when the pipeline executes. All inter-processor
+   * communication must happen here, and not in the constructor.
+   */
   abstract suspend fun exec()
 }
