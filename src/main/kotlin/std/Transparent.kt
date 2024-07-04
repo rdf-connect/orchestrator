@@ -3,10 +3,11 @@ package technology.idlab.std
 import runner.jvm.Processor
 import runner.jvm.Reader
 import runner.jvm.Writer
+import technology.idlab.runner.jvm.Arguments
 
-class Transparent(args: Map<String, Any>) : Processor(args) {
-  private val input = this.getArgument<Reader>("input")
-  private val output = this.getArgument<Writer>("output")
+class Transparent(args: Arguments) : Processor(args) {
+  private val input: Reader = arguments["input"]
+  private val output: Writer = arguments["output"]
 
   override suspend fun exec() {
     output.push(input.read())

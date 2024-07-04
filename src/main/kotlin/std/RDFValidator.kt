@@ -10,18 +10,19 @@ import runner.jvm.Processor
 import runner.jvm.Reader
 import runner.jvm.Writer
 import technology.idlab.extensions.readModelRecursively
+import technology.idlab.runner.jvm.Arguments
 import technology.idlab.util.Log
 
-class RDFValidator(args: Map<String, Any>) : Processor(args) {
+class RDFValidator(args: Arguments) : Processor(args) {
   /** Default values. */
   private val errorIsFatalDefault = false
   private val printReportDefault = false
 
   /** Arguments. */
-  private val errorIsFatal = this.getOptionalArgument<Boolean>("error_is_fatal")
-  private val printReport = this.getOptionalArgument<Boolean>("print_report")
-  private val input = this.getArgument<Reader>("input")
-  private val output = this.getArgument<Writer>("output")
+  private val errorIsFatal: Boolean? = arguments["error_is_fatal"]
+  private val printReport: Boolean? = arguments["print_report"]
+  private val input: Reader = arguments["input"]
+  private val output: Writer = arguments["output"]
 
   /** Runtime fields. */
   private val shapes: Graph
@@ -30,7 +31,7 @@ class RDFValidator(args: Map<String, Any>) : Processor(args) {
 
   // Initialize the shape graph and validator.
   init {
-    val path = this.getArgument<String>("shapes")
+    val path: String = arguments["shapes"]
     val file = File(path)
 
     val shapesModel =
@@ -65,14 +66,14 @@ class RDFValidator(args: Map<String, Any>) : Processor(args) {
         output.push(res)
       } else {
         // Print the report if required.
-        if (printReport.orElse(printReportDefault)) {
+        if (printReport ?: printReportDefault) {
           val out = ByteArrayOutputStream()
           report.model.write(out, "TURTLE")
           Log.shared.info(out.toString())
         }
 
         // Check if we can continue after an error.
-        if (errorIsFatal.orElse(errorIsFatalDefault)) {
+        if (errorIsFatal ?: errorIsFatalDefault) {
           Log.shared.fatal("Validation error is fatal.")
         }
       }

@@ -13,6 +13,7 @@ import runner.Runner
 import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.runner.jvm.Arguments
 import technology.idlab.util.Log
 import technology.idlab.util.Log.Cause.*
 
@@ -42,8 +43,9 @@ class JVMRunner(
     val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
 
     /** Initialize the stage with the new map. */
-    val constructor = clazz.getConstructor(Map::class.java)
-    this.stages[stage.uri] = constructor.newInstance(arguments) as Processor
+    val constructor = clazz.getConstructor(Arguments::class.java)
+    val args = Arguments.from(arguments)
+    this.stages[stage.uri] = constructor.newInstance(args) as Processor
   }
 
   override suspend fun exec() = coroutineScope {
@@ -86,7 +88,7 @@ class JVMRunner(
 
   private fun instantiate(
       serialized: Map<String, Pair<IRParameter, IRArgument>>
-  ): Map<String, Any> {
+  ): Map<String, List<Any>> {
     return serialized.mapValues { (_, map) ->
       val (parameter, arguments) = map
 

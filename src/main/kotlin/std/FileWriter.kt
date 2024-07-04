@@ -3,31 +3,33 @@ package technology.idlab.std
 import java.io.File
 import runner.jvm.Processor
 import runner.jvm.Reader
+import technology.idlab.runner.jvm.Arguments
 
-class FileWriter(args: Map<String, Any>) : Processor(args) {
+class FileWriter(args: Arguments) : Processor(args) {
   /** Processor default values. */
   private val overwriteDefault = true
   private val appendDefault = false
 
   /** Arguments */
-  private val file = File(this.getArgument<String>("path"))
-  private val input: Reader = this.getArgument("input")
-  private val overwrite = this.getOptionalArgument<Boolean>("overwrite")
-  private val append = this.getOptionalArgument<Boolean>("append")
+  private val path: String = arguments["path"]
+  private val file = File(path)
+  private val input: Reader = arguments["input"]
+  private val overwrite: Boolean? = arguments["overwrite"]
+  private val append: Boolean? = arguments["append"]
 
   init {
     // Sanity check.
-    if (overwrite.orElse(false) && append.orElse(false)) {
+    if (overwrite == true && append == true) {
       log.fatal("Cannot overwrite and append at the same time")
     }
 
     // Do not overwrite the file if it exists.
-    if (file.exists() && !overwrite.orElse(overwriteDefault)) {
+    if (file.exists() && !(overwrite ?: overwriteDefault)) {
       log.fatal("File ${file.path} already exists")
     }
 
     // Overwrite file if not exists.
-    if (file.exists() && !append.orElse(appendDefault)) {
+    if (file.exists() && !(append ?: appendDefault)) {
       file.writeBytes(ByteArray(0))
     }
   }

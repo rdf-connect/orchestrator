@@ -8,15 +8,16 @@ import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.runner.jvm.Arguments
 
 /**
  * The TappedReader processor provides a convenient way to read data from the pipeline during
  * testing. All incoming data will be written to a global channel, which can be used directly during
  * testing to read data from.
  */
-class TappedReader(args: Map<String, Any>) : Processor(args) {
+class TappedReader(args: Arguments) : Processor(args) {
   /** The channel which is exposed to the pipeline. */
-  private val input = this.getArgument<Reader>("input")
+  private val input: Reader = arguments["input"]
 
   /** Continuously read data from the input and write it to the global channel. */
   override suspend fun exec() {

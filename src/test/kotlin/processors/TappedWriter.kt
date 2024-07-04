@@ -8,15 +8,16 @@ import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRParameter
 import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.runner.jvm.Arguments
 
 /**
  * The TappedWriter processor provides a convenient way to write data into the pipeline during
  * testing. All instances listen to a global channel, which can be used directly during testing to
  * write date to.
  */
-class TappedWriter(args: Map<String, Any>) : Processor(args) {
+class TappedWriter(args: Arguments) : Processor(args) {
   /** Writer which is exposed to the pipeline. */
-  private val output = this.getArgument<Writer>("output")
+  private val output: Writer = arguments["output"]
 
   /** Continuously read data from the global channel and write it to the output. */
   override suspend fun exec() {

@@ -8,16 +8,17 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import runner.jvm.Processor
 import runner.jvm.Writer
+import technology.idlab.runner.jvm.Arguments
 
-class HttpFetch(args: Map<String, Any>) : Processor(args) {
+class HttpFetch(args: Arguments) : Processor(args) {
   /** Meta configuration. */
   private var engine: HttpClientEngine = CIO.create()
 
   /** Parameters. */
-  private val endpoint = this.getArgument<String>("endpoint")
-  private val output = this.getArgument<Writer>("output")
-  private val headers = this.getArgument<Array<String>>("headers")
-  private val method = this.getNullableArgument<String>("method") ?: "GET"
+  private val endpoint: String = arguments["endpoint"]
+  private val output: Writer = arguments["output"]
+  private val headers: Array<String> = arguments["headers"]
+  private val method: String = arguments.get<String?>("method") ?: "GET"
 
   /** Prebuild request. */
   private val builder = HttpRequestBuilder()
