@@ -1,22 +1,38 @@
 export class RunnerError extends Error {
-  constructor(message: string) {
+  private constructor(message: string) {
     super(message);
-    this.name = "JVMRunnerError";
+    this.name = "RunnerError";
   }
 
-  static missingArgument(key: string): RunnerError {
-    return new RunnerError(`Missing argument: ${key}`);
+  static inconsistency(message: string | null = null): never {
+    let msg = "An error occurred while parsing incoming data.";
+    if (message) {
+      msg += "\n" + message;
+    }
+    throw new RunnerError(msg);
   }
 
-  static missingImplementation(): RunnerError {
-    return new RunnerError("Not implemented");
+  static missingArgument(key: string): never {
+    throw new RunnerError(`Missing argument: ${key}`);
+  }
+
+  static incorrectType(key: string, type: string): never {
+    throw new RunnerError(`Incorrect type '${type}' for argument: ${key}`);
+  }
+
+  static nonExhaustiveSwitch(): never {
+    throw new RunnerError("Non-exhaustive switch statement");
+  }
+
+  static missingImplementation(): never {
+    throw new RunnerError("Not implemented");
   }
 
   static channelError(): RunnerError {
     return new RunnerError("Channel error");
   }
 
-  static unexpectedBehaviour(): RunnerError {
-    return new RunnerError("Unexpected behaviour");
+  static unexpectedBehaviour(): never {
+    throw new RunnerError("Unexpected behaviour");
   }
 }
