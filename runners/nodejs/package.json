@@ -5,7 +5,6 @@
   "scripts": {
     "run": "ts-node src/runtime/index.ts",
     "build": "tsc && tsc-alias",
-    "prepare": "ts-patch install -s",
     "test": "vitest run --coverage --coverage.include src",
     "format": "eslint --fix . && prettier --write ."
   },
