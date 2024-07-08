@@ -3,13 +3,19 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+[]
+  a rdfc:Package ;
+  rdfc:version "0.0.1" ;
+  rdfc:author "Jens Pots" ;
+  rdfc:description "A SHACL Validator processor, written in TypeScript." ;
+  rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
+  rdfc:license "MIT" ;
+  rdfc:prepare "npm run build" ;
+  rdfc:processors <Validator> .
+
 <Validator>
   a rdfc:Processor ;
   rdfc:target rdfc:node ;
-  rdfc:version "0.0.1" ;
-  rdfc:author "Jens Pots" ;
-  rdfc:license "MIT" ;
-  rdfc:prepare "npm run build" ;
   rdfc:entrypoint "build/index.js" .
 
 []

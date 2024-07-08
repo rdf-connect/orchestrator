@@ -31,7 +31,7 @@ class TappedWriter(args: Arguments) : Processor(args) {
     val input = Channel<ByteArray>()
 
     /** Implementation of this processor as IR. */
-    private val processor =
+    val processor =
         IRProcessor(
             "tapped_writer",
             Runner.Target.JVM,
@@ -48,7 +48,7 @@ class TappedWriter(args: Arguments) : Processor(args) {
 
     fun stage(channelURI: String): IRStage {
       return IRStage(
-          "tapped_writer_stage", processor, mapOf("output" to IRArgument(listOf(channelURI))))
+          "tapped_writer_stage", processor.uri, mapOf("output" to IRArgument(listOf(channelURI))))
     }
   }
 }

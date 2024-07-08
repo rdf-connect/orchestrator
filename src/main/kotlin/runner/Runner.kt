@@ -1,6 +1,7 @@
 package runner
 
 import kotlinx.coroutines.channels.Channel
+import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
@@ -29,7 +30,7 @@ abstract class Runner(
   val toProcessors = Channel<Payload>()
 
   /** Register and prepare a stage inside the runtime. */
-  abstract suspend fun load(stage: IRStage)
+  abstract suspend fun load(processor: IRProcessor, stage: IRStage)
 
   /** Start pipeline execution. */
   abstract suspend fun exec()

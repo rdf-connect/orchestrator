@@ -8,7 +8,7 @@ import technology.idlab.parser.intermediate.IRStage
 
 class NodeTransparent {
   companion object {
-    private val processor =
+    val processor =
         IRProcessor(
             "transparent",
             Runner.Target.NODEJS,
@@ -32,7 +32,7 @@ class NodeTransparent {
     fun stage(channelInURI: String, channelOutURI: String): IRStage {
       return IRStage(
           "transparent_stage",
-          processor,
+          processor.uri,
           mapOf(
               "input" to IRArgument(listOf(channelInURI)),
               "output" to IRArgument(listOf(channelOutURI))),

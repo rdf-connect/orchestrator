@@ -1,0 +1,58 @@
+@prefix test: <https://www.rdf-connect.com/test#> .
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+test:BasicProcessor
+  a rdfc:Processor ;
+  rdfc:target rdfc:Kotlin ;
+  rdfc:metadata "class:MyProcessor" .
+
+[] a sh:NodeShape ;
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  sh:targetClass test:BasicProcessor ;
+  sh:property [
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "arguments" ;
+    sh:path rdfc:arguments ;
+    sh:node [
+      sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "arg1" ;
+        sh:path test:arg1 ;
+        sh:datatype xsd:string ;
+      ], [
+        sh:minCount 0 ;
+        sh:name "arg2" ;
+        sh:path test:arg2 ;
+        sh:datatype xsd:int ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "arg3" ;
+        sh:path test:arg3 ;
+        sh:node [
+          sh:closed true ;
+          sh:ignoredProperties ( rdf:type ) ;
+          sh:property [
+            sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:name "arg4" ;
+            sh:path test:arg4 ;
+          ], [
+            sh:datatype xsd:int ;
+            sh:maxCount 1 ;
+            sh:minCount 0 ;
+            sh:name "arg5" ;
+            sh:path test:arg5 ;
+          ] ;
+        ] ;
+      ] ;
+    ] ;
+  ].

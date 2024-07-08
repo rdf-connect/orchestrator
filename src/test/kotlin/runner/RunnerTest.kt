@@ -24,7 +24,7 @@ abstract class RunnerTest {
   @Test
   fun loadTest() = runBlocking {
     val runner = createRunner()
-    runner.load(createStage())
+    runner.load(createProcessor(), createStage())
     runner.exit()
   }
 
@@ -33,7 +33,7 @@ abstract class RunnerTest {
     val runner = createRunner()
 
     // Prepare the runner.
-    runner.load(createStage())
+    runner.load(createProcessor(), createStage())
 
     // Start the runner.
     val job = launch { runner.exec() }
@@ -82,7 +82,7 @@ abstract class RunnerTest {
   private fun createStage(): IRStage {
     return IRStage(
         "transparent_stage",
-        this.createProcessor(),
+        this.createProcessor().uri,
         mapOf(
             "input" to IRArgument(simple = listOf("channel_in_uri")),
             "output" to IRArgument(simple = listOf("channel_out_uri"))),

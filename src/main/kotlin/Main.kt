@@ -6,22 +6,26 @@ import kotlinx.coroutines.runBlocking
 import technology.idlab.parser.Parser
 
 fun main(args: Array<String>) = runBlocking {
-  /**
-   * At the moment, the only argument that the runtime accepts is the path to the pipeline
-   * declaration file.
-   */
+  // Retrieve the pipeline configuration path from the CLI arguments.
   if (args.size != 1) {
-    println("Usage: jvm-runner <config>")
+    println("Usage: rdfc <config>")
     exitProcess(0)
   }
 
-  /**
-   * We start off by parsing the configuration file. This file contains the list of processors and
-   * stages that the runtime should prepare, as well as channel declarations.
-   */
-  val configPath = args[0]
-  val config = File(configPath)
-  val parser = Parser.create(config)
-  val processors = parser.processors()
-  val stages = parser.stages()
+  // Load the configuration file.
+  val path = args[0]
+  val file = File(path)
+
+  // Parse said config to a IRPipeline.
+  val parser = Parser(file)
+
+  // Parse the pipeline out of the configuration file.
+  val pipeline = parser.pipelines[0]
+
+  // From all packages, retrieve all processors.
+  val processors = parser.processors
+
+  // Start the orchestrator.
+  val orchestrator = Orchestrator(pipeline, processors)
+  orchestrator.exec()
 }

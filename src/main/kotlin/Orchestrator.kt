@@ -9,32 +9,36 @@ import kotlinx.coroutines.withTimeout
 import runner.Runner
 import runner.impl.NodeRunner
 import runner.jvm.JVMRunner
+import technology.idlab.parser.intermediate.IRPipeline
+import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
-class Orchestrator(stages: Set<IRStage>) {
+class Orchestrator(private val pipeline: IRPipeline, processors: List<IRProcessor>) {
   /** An exhaustive list of all runners. */
   private val channel = Channel<Runner.Payload>()
   private val jvmRunner = JVMRunner(channel)
   private val nodeRunner = NodeRunner(channel, 5000)
   private val runners = listOf(nodeRunner, jvmRunner)
 
+  private val processors = processors.associateBy { it.uri }
+
   /** A map of all channel URIs and their readers. */
   private val readers = mutableMapOf<String, Runner>()
 
   init {
-    /** Initialize the processors and stages in the runtimes. */
-    runBlocking { stages.forEach { stage -> prepare(stage) } }
+    runBlocking { pipeline.stages.forEach { prepare(it) } }
   }
 
   /** Prepare a stage inside of it's corresponding runtime. */
   private suspend fun prepare(stage: IRStage) {
     // Get the corresponding runner.
-    val runner = getRuntime(stage.processor.target)
-    runner.load(stage)
+    val processor = this.processors[stage.processorURI]!!
+    val runner = getRuntime(processor.target)
+    runner.load(processor, stage)
 
     // Find all the readers in the stage.
-    stage.getReaders().forEach { this.readers[it] = runner }
+    stage.getReaders(processor).forEach { this.readers[it] = runner }
   }
 
   /** Execute all stages in all the runtimes. */

@@ -1,5 +1,6 @@
 package parser
 
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -9,17 +10,49 @@ import runner.Runner
 import technology.idlab.parser.Parser
 import technology.idlab.parser.intermediate.IRParameter
 
-abstract class ParserTest {
-  // The parser to test.
-  abstract val parser: Parser
+class ParserTest {
+  private fun parse(resource: String): Parser {
+    val uri = this::class.java.getResource(resource)
+    val file = File(uri!!.toURI())
+    return Parser(file)
+  }
+
+  @Test
+  fun pipelines() {
+    val parser = parse("/pipelines/dummy/index.ttl")
+    assertEquals(1, parser.pipelines.size, "There should be one pipeline.")
+    assertEquals(1, parser.pipelines[0].stages.size, "There should be one stage.")
+    assertEquals(1, parser.packages.size, "There should be one package.")
+    assertEquals(1, parser.packages[0].processors.size, "There should be one processor.")
+  }
+
+  @Test
+  fun packages() {
+    // Parse the package in the file.
+    val parser = parse("/packages/dummy/index.ttl")
+    val pkg = parser.packages[0]
+
+    // Check the contents of the data class.
+    assertEquals("1.0.0", pkg.version)
+    assertEquals("Jens Pots", pkg.author)
+    assertEquals("A simple description.", pkg.description)
+    assertEquals("https://example.com.git", pkg.repo)
+    assertEquals("MIT", pkg.license)
+    assertEquals("make", pkg.prepare)
+    assertEquals(1, pkg.processors.size)
+    assertEquals(Runner.Target.JVM, pkg.processors[0].target)
+    assertEquals(IRParameter.Count.SINGLE, pkg.processors[0].parameters["message"]?.count)
+  }
 
   @Test
   fun processors() {
-    val processors = parser.processors()
+    val parser = parse("/pipelines/basic/index.ttl")
+    val processors = parser.packages.map { it.processors }.flatten()
+
     assertEquals(1, processors.size, "There should be one processor.")
 
     // Get processor and check its values.
-    val processor = processors.find { it.uri.endsWith("processor") }
+    val processor = processors.find { it.uri.endsWith("Processor") }
     assertNotNull(processor, "Processor should exist.")
     assertContains(processor.metadata.keys, "class", "processor processor should have a class key.")
     assertEquals(
@@ -67,12 +100,16 @@ abstract class ParserTest {
 
   @Test
   fun stages() {
-    val stages = parser.stages()
+    val uri = this::class.java.getResource("/pipelines/basic/index.ttl")
+    val file = File(uri!!.toURI())
+    val parser = Parser(file)
+
+    val stages = parser.pipelines[0].stages
 
     // Get the stage.
     assertEquals(1, stages.size, "There should be one stage.")
     val stage = stages[0]
-    assertTrue(stage.processor.uri.endsWith("processor"), "Stage should use the correct processor.")
+    assertTrue(stage.processorURI.endsWith("Processor"), "Stage should use the correct processor.")
 
     // Parse first argument.
     val arg1 = stage.arguments["arg1"]

@@ -1,0 +1,19 @@
+@prefix test: <https://www.rdf-connect.com/test#> .
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> owl:imports <./processor.ttl> .
+
+test:DummyPackage
+  a rdfc:Package ;
+  rdfc:version "1.0.0" ;
+  rdfc:author "Jens Pots" ;
+  rdfc:description "A simple description." ;
+  rdfc:repo "https://example.com.git" ;
+  rdfc:license "MIT" ;
+  rdfc:prepare "make" ;
+  rdfc:processors test:DummyProcessor .

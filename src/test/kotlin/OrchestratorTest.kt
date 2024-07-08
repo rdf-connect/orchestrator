@@ -6,14 +6,24 @@ import processors.NodeTransparent
 import processors.TappedReader
 import processors.TappedWriter
 import technology.idlab.Orchestrator
+import technology.idlab.parser.intermediate.IRPipeline
+
+val processors = listOf(TappedWriter.processor, NodeTransparent.processor, TappedReader.processor)
+
+val stages =
+    listOf(TappedWriter.stage("in"), NodeTransparent.stage("in", "out"), TappedReader.stage("out"))
+
+val pipeline =
+    IRPipeline(
+        uri = "pipeline",
+        dependencies = emptyList(),
+        stages = stages,
+    )
 
 class OrchestratorTest {
   @Test
   fun channelTest(): Unit = runBlocking {
-    val stages =
-        setOf(
-            TappedWriter.stage("in"), NodeTransparent.stage("in", "out"), TappedReader.stage("out"))
-    val orchestrator = Orchestrator(stages)
+    val orchestrator = Orchestrator(pipeline, processors)
 
     // Bring pipeline online.
     launch { orchestrator.exec() }

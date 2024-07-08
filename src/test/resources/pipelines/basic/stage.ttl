@@ -1,0 +1,20 @@
+@prefix test: <https://www.rdf-connect.com/test#> .
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+test:BasicStage
+  a test:BasicProcessor;
+  rdfc:arguments [
+    test:arg1 "Hello, World!" ;
+    test:arg2
+      "1"^^xsd:int ,
+      "2"^^xsd:int ,
+      "3"^^xsd:int ;
+    test:arg3 [
+      test:arg4 "Hello, World!" ;
+      test:arg5 "1"^^xsd:int ;
+    ] ;
+  ].

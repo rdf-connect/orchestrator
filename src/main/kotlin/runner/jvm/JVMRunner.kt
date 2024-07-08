@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.backend.common.push
 import runner.Runner
 import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRParameter
+import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.runner.jvm.Arguments
 import technology.idlab.util.Log
@@ -29,9 +30,9 @@ class JVMRunner(
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
-  override suspend fun load(stage: IRStage) {
+  override suspend fun load(processor: IRProcessor, stage: IRStage) {
     /** Load the class into the JVM> */
-    val className = stage.processor.metadata["class"] ?: Log.shared.fatal(JVM_RUNNER_STAGE_NO_CLASS)
+    val className = processor.metadata["class"] ?: Log.shared.fatal(JVM_RUNNER_STAGE_NO_CLASS)
     val clazz = Class.forName(className) as Class<*>
 
     /** Check if instantiatable. */
@@ -40,7 +41,7 @@ class JVMRunner(
     }
 
     /** Build the argument map. */
-    val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
+    val arguments = this.instantiate(processor.parameters.zip(stage.arguments))
 
     /** Initialize the stage with the new map. */
     val constructor = clazz.getConstructor(Arguments::class.java)

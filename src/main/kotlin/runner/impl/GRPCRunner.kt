@@ -93,10 +93,10 @@ private fun IRArgument.toGRPC(): GRPC.IRArgument {
   return builder.build()
 }
 
-private fun IRStage.toGRPC(): GRPC.IRStage {
+private fun IRStage.toGRPC(processor: GRPC.IRProcessor): GRPC.IRStage {
   val builder = GRPC.IRStage.newBuilder()
   builder.setUri(uri)
-  builder.setProcessor(this.processor.toGRPC())
+  builder.setProcessor(processor)
   builder.putAllArguments(arguments.mapValues { it.value.toGRPC() })
   return builder.build()
 }
@@ -133,8 +133,9 @@ abstract class GRPCRunner(
     conn.shutdown()
   }
 
-  override suspend fun load(stage: IRStage) {
-    retries(5, 1000) { grpc.load(stage.toGRPC()) }
+  override suspend fun load(processor: IRProcessor, stage: IRStage) {
+    val payload = stage.toGRPC(processor.toGRPC())
+    retries(5, 1000) { grpc.load(payload) }
   }
 
   override suspend fun exec() = coroutineScope {
