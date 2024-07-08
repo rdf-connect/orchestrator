@@ -1,0 +1,58 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <http://www.rdf-connect.com/#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<Validator>
+  a rdfc:Processor ;
+  rdfc:target rdfc:node ;
+  rdfc:version "0.0.1" ;
+  rdfc:author "Jens Pots" ;
+  rdfc:license "MIT" ;
+  rdfc:prepare "npm run build" ;
+  rdfc:entrypoint "build/index.js" .
+
+[]
+  a sh:NodeShape ;
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  sh:targetClass <Validator> ;
+  sh:property [
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "arguments" ;
+    sh:path rdfc:arguments ;
+    sh:node [
+      sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "incoming" ;
+        sh:path <Validator/incoming> ;
+        sh:class rdfc:Reader;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "outgoing" ;
+        sh:path <Validator/outgoing> ;
+        sh:class rdfc:Writer;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "report" ;
+        sh:path <Validator/report> ;
+        sh:class rdfc:Writer;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "mime" ;
+        sh:path <Validator/mime> ;
+        sh:datatype xsd:string;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "validation_is_fatal" ;
+        sh:path <Validator/validation_is_fatal> ;
+        sh:datatype xsd:bool;
+      ] ;
+    ] ;
+  ].

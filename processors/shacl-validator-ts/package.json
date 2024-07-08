@@ -1,0 +1,43 @@
+{
+  "name": "shacl-validator-ts",
+  "version": "0.0.1",
+  "description": "A SHACL validator processor for RDF-Connect, written in TypeScript.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "test": "vitest run --coverage --coverage.include src",
+    "format": "eslint --fix . && prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rdf-connect/orchestrator.git"
+  },
+  "keywords": [
+    "rdf-connect"
+  ],
+  "author": "Jens Pots",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rdf-connect/orchestrator/issues"
+  },
+  "homepage": "https://github.com/rdf-connect/orchestrator#readme",
+  "devDependencies": {
+    "@types/rdf-ext": "^2.5.0",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.2",
+    "tsc-alias": "^1.8.10",
+    "typescript": "^5.5.3",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "@rdfjs/formats": "^4.0.0",
+    "@rdfjs/serializer-turtle": "^1.1.3",
+    "jvm-runner-ts": "file:../../runners/nodejs",
+    "rdf-ext": "^2.5.2",
+    "shacl-engine": "^1.0.0"
+  }
+}
