@@ -84,14 +84,17 @@ class Parser(file: File) {
       val port: Int? = it.getOptional("port")?.asLiteral()?.int
       val type = Ontology.get(subClass)
 
-      val reader =
-          when (type) {
-            Ontology.MEMORY_READER -> MemoryReader()
-            Ontology.HTTP_READER -> HttpReader(port ?: 8080)
-            else -> Log.shared.fatal("Reader $subClass not found")
-          }
+      Log.shared.info("Creating reader: ${identifier}")
 
-      readers[identifier] = reader
+
+        val reader =
+            when (type) {
+              Ontology.MEMORY_READER -> MemoryReader()
+              Ontology.HTTP_READER -> HttpReader(port ?: 8080)
+              else -> Log.shared.fatal("Reader $subClass not found")
+            }
+
+        readers[identifier] = reader
     }
   }
 
@@ -102,15 +105,16 @@ class Parser(file: File) {
       val identifier = it["writer"]
       val endpoint: String? = it.getOptional("endpoint")?.asLiteral()?.string
       val type = Ontology.get(subClass)
+      Log.shared.info("Writer ${it}")
 
-      val writer =
-          when (type) {
-            Ontology.MEMORY_WRITER -> MemoryWriter()
-            Ontology.HTTP_WRITER -> HttpWriter(endpoint ?: "http://localhost:8081")
-            else -> Log.shared.fatal("Writer $subClass not found")
-          }
+        val writer =
+            when (type) {
+              Ontology.MEMORY_WRITER -> MemoryWriter()
+              Ontology.HTTP_WRITER -> HttpWriter(endpoint ?: "http://localhost:8081")
+              else -> Log.shared.fatal("Writer $subClass not found")
+            }
 
-      writers[identifier] = writer
+        writers[identifier] = writer
     }
   }
 

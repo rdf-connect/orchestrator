@@ -39,3 +39,4 @@ jvm:RDFValidator a jvm:Processor.
   ];
   sh:closed true;
   sh:ignoredProperties (rdf:type).
+

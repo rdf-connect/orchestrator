@@ -4,6 +4,7 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix : <https://w3id.org/conn#>.
 
 # Definition of a Processor.
 []
@@ -66,29 +67,34 @@ jvm:MemoryChannelReader rdfs:subClassOf jvm:ChannelReader.
   sh:ignoredProperties ( rdf:type ).
 
 # HTTP Channels are specific channels.
-jvm:HttpChannelReader rdfs:subClassOf jvm:ChannelReader.
-jvm:HttpChannelWriter rdfs:subClassOf jvm:ChannelWriter.
+:HttpReaderChannel rdfs:subClassOf jvm:ChannelReader.
+:HttpWriterChannel rdfs:subClassOf jvm:ChannelWriter.
 
-# Define a HTTP reader.
-[]
-  a sh:NodeShape;
-  sh:targetClass jvm:HttpChannelReader;
-  sh:property [
-    sh:path jvm:port;
-    sh:datatype xsd:integer;
-    sh:maxCount 1;
-  ];
-  sh:closed true;
-  sh:ignoredProperties ( rdf:type ).
-
-# Define a HTTP writer.
-[]
-  a sh:NodeShape;
-  sh:targetClass jvm:HttpChannelWriter;
-  sh:property [
-    sh:path jvm:endpoint;
-    sh:datatype xsd:string;
-    sh:maxCount 1;
-  ];
-  sh:closed true;
-  sh:ignoredProperties ( rdf:type ).
+# # Define a HTTP reader.
+# []
+#   a sh:NodeShape;
+#   sh:targetClass :HttpReaderChannel;
+#   sh:property [
+#     sh:path :httpPort;
+#     sh:datatype xsd:integer;
+#     sh:maxCount 1;
+#   ];
+#   sh:closed true;
+#   sh:ignoredProperties ( rdf:type ).
+#
+# # Define a HTTP writer.
+# []
+#   a sh:NodeShape;
+#   sh:targetClass :HttpWriterChannel;
+#   sh:property [
+#     sh:path :httpEndpoint;
+#     sh:datatype xsd:string;
+#     sh:maxCount 1;
+#   ],[
+#     sh:path :httpMethod;
+#     sh:datatype xsd:string;
+#     sh:maxCount 1;
+#   ];
+#
+#   sh:closed true;
+#   sh:ignoredProperties ( rdf:type ).

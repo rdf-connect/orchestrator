@@ -1,10 +1,15 @@
 PREFIX jvm: <https://w3id.org/conn/jvm#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdfc: <https://w3id.org/conn#>
 
-SELECT ?writer ?subClass ?endpoint
+SELECT ?writer ?subClass ?endpoint ?subj ?subjClass ?p
 {
+  ?subj ?p ?writer.
+  ?subj a ?subjClass.
+  ?subjClass a jvm:Processor.
+
     ?writer a ?subClass.
     ?subClass rdfs:subClassOf jvm:ChannelWriter.
-    OPTIONAL { ?reader jvm:endpoint ?endpoint }
+    ?writer rdfc:httpEndpoint ?endpoint.
 }

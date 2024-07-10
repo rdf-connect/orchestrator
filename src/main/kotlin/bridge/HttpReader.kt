@@ -33,6 +33,10 @@ class HttpReader(private val port: Int) : Reader {
           }
           .start(wait = false)
 
+    init {
+        Log.shared.debug("Waiting for incoming message on port ${port}")
+    }
+
   override suspend fun read(): Reader.Result {
     try {
       val result = buffer.receive()
@@ -45,7 +49,6 @@ class HttpReader(private val port: Int) : Reader {
   }
 
   override fun readSync(): Reader.Result {
-    Log.shared.debug("Waiting for incoming message on port ${port}")
     return runBlocking { read() }
   }
 

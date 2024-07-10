@@ -1,10 +1,15 @@
 PREFIX jvm: <https://w3id.org/conn/jvm#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfc: <https://w3id.org/conn#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?reader ?subClass ?port
 {
+  ?subj ?p ?reader.
+  ?subj a ?subjClass.
+  ?subjClass a jvm:Processor.
+
     ?reader a ?subClass.
     ?subClass rdfs:subClassOf jvm:ChannelReader.
-    OPTIONAL { ?reader jvm:port ?port }
+    OPTIONAL { ?reader rdfc:httpPort ?port }
 }

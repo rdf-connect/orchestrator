@@ -10,6 +10,10 @@ import technology.idlab.logging.Log
 class HttpWriter(private val endpoint: String) : Writer {
   private val client = HttpClient(CIO)
 
+    init {
+        Log.shared.debug("I'll post things to ${endpoint}")
+    }
+
   override suspend fun push(value: ByteArray) {
     // Create request.
     Log.shared.debug("POST $endpoint (${value.size} bytes)")
