@@ -81,12 +81,13 @@ class Parser(file: File) {
     model.query("/queries/readers.sparql") {
       val subClass = it["subClass"]
       val identifier = it["reader"]
+      val port: Int? = it.getOptional("port")?.asLiteral()?.int
       val type = Ontology.get(subClass)
 
       val reader =
           when (type) {
             Ontology.MEMORY_READER -> MemoryReader()
-            Ontology.HTTP_READER -> HttpReader()
+            Ontology.HTTP_READER -> HttpReader(port ?: 8080)
             else -> Log.shared.fatal("Reader $subClass not found")
           }
 
@@ -99,12 +100,13 @@ class Parser(file: File) {
     model.query("/queries/writers.sparql") {
       val subClass = it["subClass"]
       val identifier = it["writer"]
+      val endpoint: String? = it.getOptional("endpoint")?.asLiteral()?.string
       val type = Ontology.get(subClass)
 
       val writer =
           when (type) {
             Ontology.MEMORY_WRITER -> MemoryWriter()
-            Ontology.HTTP_WRITER -> HttpWriter("http://localhost:8080")
+            Ontology.HTTP_WRITER -> HttpWriter(endpoint ?: "http://localhost:8081")
             else -> Log.shared.fatal("Writer $subClass not found")
           }
 

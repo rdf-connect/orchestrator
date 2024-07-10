@@ -12,11 +12,11 @@ import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.runBlocking
 import technology.idlab.logging.Log
 
-class HttpReader : Reader {
+class HttpReader(private val port: Int) : Reader {
   private val buffer = Channel<ByteArray>(Channel.Factory.UNLIMITED)
 
   private val embeddedServer =
-      embeddedServer(Netty, port = 8080) {
+      embeddedServer(Netty, port = port) {
             routing {
               post("/") {
                 Log.shared.debug("Incoming request")
@@ -45,6 +45,7 @@ class HttpReader : Reader {
   }
 
   override fun readSync(): Reader.Result {
+    Log.shared.debug("Waiting for incoming message on port ${port}")
     return runBlocking { read() }
   }
 

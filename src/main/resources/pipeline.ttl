@@ -73,6 +73,11 @@ jvm:HttpChannelWriter rdfs:subClassOf jvm:ChannelWriter.
 []
   a sh:NodeShape;
   sh:targetClass jvm:HttpChannelReader;
+  sh:property [
+    sh:path jvm:port;
+    sh:datatype xsd:integer;
+    sh:maxCount 1;
+  ];
   sh:closed true;
   sh:ignoredProperties ( rdf:type ).
 
@@ -80,5 +85,10 @@ jvm:HttpChannelWriter rdfs:subClassOf jvm:ChannelWriter.
 []
   a sh:NodeShape;
   sh:targetClass jvm:HttpChannelWriter;
+  sh:property [
+    sh:path jvm:endpoint;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
   sh:closed true;
   sh:ignoredProperties ( rdf:type ).
