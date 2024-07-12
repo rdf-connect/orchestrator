@@ -4,11 +4,10 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
-import org.apache.jena.rdf.model.ResourceFactory.createProperty
-import org.apache.jena.rdf.model.ResourceFactory.createResource
 import org.apache.jena.shacl.vocabulary.SHACLM
 import org.apache.jena.vocabulary.RDF
 import runner.Runner
+import technology.idlab.parser.RDFC
 import technology.idlab.parser.intermediate.IRArgument
 import technology.idlab.parser.intermediate.IRDependency
 import technology.idlab.parser.intermediate.IRPackage
@@ -18,34 +17,9 @@ import technology.idlab.parser.intermediate.IRProcessor
 import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.util.Log
 
-internal class CONN {
-  companion object {
-    const val NS = "https://www.rdf-connect.com/#"
-    val NAMESPACE = createResource(NS)!!
-    val processor = createProperty("${NS}Processor")!!
-    val `package` = createProperty("${NS}Package")!!
-    val stage = createProperty("${NS}stage")!!
-    val channel = createProperty("${NS}Channel")!!
-    val target = createProperty("${NS}target")!!
-    val metadata = createProperty("${NS}metadata")!!
-    val arguments = createProperty("${NS}arguments")!!
-    val kotlinRunner = createResource("${NS}Kotlin")!!
-    val dependency = createProperty("${NS}dependency")!!
-    val version = createProperty("${NS}version")!!
-    val author = createProperty("${NS}author")!!
-    val description = createProperty("${NS}description")!!
-    val repo = createProperty("${NS}repo")!!
-    val license = createProperty("${NS}license")!!
-    val prepare = createProperty("${NS}prepare")!!
-    val processors = createProperty("${NS}processors")!!
-    val pipeline = createProperty("${NS}Pipeline")!!
-    val stages = createProperty("${NS}stages")!!
-  }
-}
-
 internal fun Resource.toRunnerTarget(): Runner.Target {
   return when (this) {
-    CONN.kotlinRunner -> Runner.Target.JVM
+    RDFC.kotlinRunner -> Runner.Target.JVM
     else -> Log.shared.fatal("Unknown runner type: $this")
   }
 }
@@ -199,7 +173,7 @@ internal fun Model.parseProcessor(processor: Resource): IRProcessor {
   val uri = processor.toString()
 
   // Determine the target runner.
-  val target = objectOfProperty(processor, CONN.target)!!.asResource().toRunnerTarget()
+  val target = objectOfProperty(processor, RDFC.target)!!.asResource().toRunnerTarget()
 
   // Parse the parameters by SHACL shape.
   val shape =
@@ -210,7 +184,7 @@ internal fun Model.parseProcessor(processor: Resource): IRProcessor {
           .toList()
           .find {
             val path = objectOfProperty(it.asResource(), SHACLM.path)?.asResource()
-            return@find path == CONN.arguments
+            return@find path == RDFC.arguments
           }
           ?.let { objectOfProperty(it.asResource(), SHACLM.node)?.asResource() }
           ?.let { parseSHACLShape(it) }
@@ -218,7 +192,7 @@ internal fun Model.parseProcessor(processor: Resource): IRProcessor {
 
   // Parse metadata.
   val metadata = mutableMapOf<String, String>()
-  for (entry in this.listObjectsOfProperty(processor, CONN.metadata)) {
+  for (entry in this.listObjectsOfProperty(processor, RDFC.metadata)) {
     val literal =
         try {
           entry.asLiteral().string
@@ -233,29 +207,29 @@ internal fun Model.parseProcessor(processor: Resource): IRProcessor {
 }
 
 internal fun Model.parseStages(pipeline: Resource): List<IRStage> {
-  return listObjectsOfProperty(pipeline, CONN.stages).toList().map { stage ->
+  return listObjectsOfProperty(pipeline, RDFC.stages).toList().map { stage ->
     val processor = objectOfProperty(stage.asResource(), RDF.type)!!.asResource()
-    val arguments = objectOfProperty(stage.asResource(), CONN.arguments)!!.asResource()
+    val arguments = objectOfProperty(stage.asResource(), RDFC.arguments)!!.asResource()
     IRStage(stage.toString(), processor.uri, parseArguments(arguments))
   }
 }
 
 internal fun Model.parseDependencies(pipeline: Resource?): List<IRDependency> {
-  return listObjectsOfProperty(pipeline, CONN.dependency).toList().map { dependency ->
+  return listObjectsOfProperty(pipeline, RDFC.dependency).toList().map { dependency ->
     IRDependency(uri = dependency.toString())
   }
 }
 
 internal fun Model.parsePackage(pkg: Resource): IRPackage {
   // Get all of its properties.
-  val version = objectOfProperty(pkg, CONN.version)
-  val author = objectOfProperty(pkg, CONN.author)
-  val description = objectOfProperty(pkg, CONN.description)
-  val repo = objectOfProperty(pkg, CONN.repo)
-  val license = objectOfProperty(pkg, CONN.license)
-  val prepare = objectOfProperty(pkg, CONN.prepare)
+  val version = objectOfProperty(pkg, RDFC.version)
+  val author = objectOfProperty(pkg, RDFC.author)
+  val description = objectOfProperty(pkg, RDFC.description)
+  val repo = objectOfProperty(pkg, RDFC.repo)
+  val license = objectOfProperty(pkg, RDFC.license)
+  val prepare = objectOfProperty(pkg, RDFC.prepare)
   val processors =
-      listObjectsOfProperty(pkg, CONN.processors).toList().map { parseProcessor(it.asResource()) }
+      listObjectsOfProperty(pkg, RDFC.processors).toList().map { parseProcessor(it.asResource()) }
 
   // Parse the properties to strings if required, and return the package IR.
   return IRPackage(
@@ -270,7 +244,7 @@ internal fun Model.parsePackage(pkg: Resource): IRPackage {
 }
 
 internal fun Model.parsePackages(): List<IRPackage> {
-  return listSubjectsWithProperty(RDF.type, CONN.`package`).toList().map { parsePackage(it) }
+  return listSubjectsWithProperty(RDF.type, RDFC.`package`).toList().map { parsePackage(it) }
 }
 
 internal fun Model.parsePipeline(pipeline: Resource): IRPipeline {
@@ -282,5 +256,5 @@ internal fun Model.parsePipeline(pipeline: Resource): IRPipeline {
 }
 
 internal fun Model.parsePipelines(): List<IRPipeline> {
-  return listSubjectsWithProperty(RDF.type, CONN.pipeline).toList().map { parsePipeline(it) }
+  return listSubjectsWithProperty(RDF.type, RDFC.pipeline).toList().map { parsePipeline(it) }
 }
