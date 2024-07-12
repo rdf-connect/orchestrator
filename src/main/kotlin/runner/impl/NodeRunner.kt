@@ -29,14 +29,14 @@ class NodeRunner(fromProcessors: Channel<Payload>, port: Int) :
     thread {
       val stream = process.inputStream.bufferedReader()
       for (line in stream.lines()) {
-        Log.shared.runtime(command, line)
+        Log.shared.info(line, command)
       }
     }
 
     thread {
       val stream = process.errorStream.bufferedReader()
       for (line in stream.lines()) {
-        Log.shared.runtimeFatal(command, line)
+        Log.shared.fatal(line, command)
       }
     }
   }

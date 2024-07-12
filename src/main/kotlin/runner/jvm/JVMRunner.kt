@@ -10,13 +10,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.kotlin.backend.common.push
 import runner.Runner
-import technology.idlab.parser.intermediate.IRArgument
-import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.intermediate.IRArgument
+import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.jvm.Arguments
 import technology.idlab.util.Log
-import technology.idlab.util.Log.Cause.*
+
+private const val STAGE_NO_CLASS = "Processor has no class key set."
+private const val REQUIRES_PROCESSOR_BASE_CLASS = "Class does not extend Processor."
 
 class JVMRunner(
     fromProcessors: Channel<Payload>,
@@ -31,13 +33,13 @@ class JVMRunner(
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
   override suspend fun load(processor: IRProcessor, stage: IRStage) {
-    /** Load the class into the JVM> */
-    val className = processor.metadata["class"] ?: Log.shared.fatal(JVM_RUNNER_STAGE_NO_CLASS)
+    /** Load the class into the JVM. */
+    val className = processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
     val clazz = Class.forName(className) as Class<*>
 
     /** Check if instantiatable. */
     if (!Processor::class.java.isAssignableFrom(clazz)) {
-      Log.shared.fatal("Processor class does not extend Processor.")
+      Log.shared.fatal(REQUIRES_PROCESSOR_BASE_CLASS)
     }
 
     /** Build the argument map. */

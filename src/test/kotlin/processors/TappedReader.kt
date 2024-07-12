@@ -4,10 +4,10 @@ import kotlinx.coroutines.channels.Channel
 import runner.Runner
 import runner.jvm.Processor
 import runner.jvm.Reader
-import technology.idlab.parser.intermediate.IRArgument
-import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.intermediate.IRArgument
+import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.jvm.Arguments
 
 /**

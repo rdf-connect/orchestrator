@@ -6,25 +6,51 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
+import org.apache.jena.rdf.model.ResourceFactory.createProperty
+import org.apache.jena.rdf.model.ResourceFactory.createResource
 import org.apache.jena.shacl.vocabulary.SHACLM
 import org.apache.jena.vocabulary.RDF
 import runner.Runner
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.subjectWithProperty
 import technology.idlab.extensions.validate
+import technology.idlab.intermediate.IRArgument
+import technology.idlab.intermediate.IRDependency
+import technology.idlab.intermediate.IRPackage
+import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.IRPipeline
+import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRStage
 import technology.idlab.parser.Parser
-import technology.idlab.parser.RDFC
-import technology.idlab.parser.intermediate.IRArgument
-import technology.idlab.parser.intermediate.IRDependency
-import technology.idlab.parser.intermediate.IRPackage
-import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.parser.intermediate.IRPipeline
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
 import technology.idlab.resolver.Resolver
 import technology.idlab.util.Log
 
-internal fun Resource.toRunnerTarget(): Runner.Target {
+private class RDFC {
+  companion object {
+    private const val NS = "https://www.rdf-connect.com/#"
+    val NAMESPACE = createResource(NS)!!
+    val processor = createProperty("${NS}Processor")!!
+    val `package` = createProperty("${NS}Package")!!
+    val stage = createProperty("${NS}stage")!!
+    val channel = createProperty("${NS}Channel")!!
+    val target = createProperty("${NS}target")!!
+    val metadata = createProperty("${NS}metadata")!!
+    val arguments = createProperty("${NS}arguments")!!
+    val kotlinRunner = createResource("${NS}Kotlin")!!
+    val dependency = createProperty("${NS}dependency")!!
+    val version = createProperty("${NS}version")!!
+    val author = createProperty("${NS}author")!!
+    val description = createProperty("${NS}description")!!
+    val repo = createProperty("${NS}repo")!!
+    val license = createProperty("${NS}license")!!
+    val prepare = createProperty("${NS}prepare")!!
+    val processors = createProperty("${NS}processors")!!
+    val pipeline = createProperty("${NS}Pipeline")!!
+    val stages = createProperty("${NS}stages")!!
+  }
+}
+
+private fun Resource.toRunnerTarget(): Runner.Target {
   return when (this) {
     RDFC.kotlinRunner -> Runner.Target.JVM
     else -> Log.shared.fatal("Unknown runner type: $this")
@@ -35,7 +61,7 @@ internal fun Resource.toRunnerTarget(): Runner.Target {
  * Maps a resource to an IRParameter.Type based on the URI. Note that this implementation is
  * actually quite slow, and we should probably use Apache Jena native APIs here.
  */
-internal fun Resource.toIRParameterType(): IRParameter.Type {
+private fun Resource.toIRParameterType(): IRParameter.Type {
   return when (this.uri) {
     "http://www.w3.org/2001/XMLSchema#boolean" -> IRParameter.Type.BOOLEAN
     "http://www.w3.org/2001/XMLSchema#byte" -> IRParameter.Type.BYTE
@@ -55,7 +81,7 @@ internal fun Resource.toIRParameterType(): IRParameter.Type {
  * Create a mapping of String to IRParameter from a SHACL property. This is a recursive
  * implementation that will automatically parse nested classes.
  */
-internal fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParameter> {
+private fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParameter> {
   // Retrieve required fields.
   val minCount = objectOfProperty(property, SHACLM.minCount)?.asLiteral()?.int
   val maxCount = objectOfProperty(property, SHACLM.maxCount)?.asLiteral()?.int
@@ -104,7 +130,7 @@ internal fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParame
  * Parse a SHACL shape into a mapping of String to IRParameter. This is a recursive implementation
  * that will automatically parse nested classes.
  */
-internal fun Model.parseSHACLShape(shape: Resource): Map<String, IRParameter> {
+private fun Model.parseSHACLShape(shape: Resource): Map<String, IRParameter> {
   val result = mutableMapOf<String, IRParameter>()
 
   for (property in listObjectsOfProperty(shape, SHACLM.property)) {
@@ -115,7 +141,7 @@ internal fun Model.parseSHACLShape(shape: Resource): Map<String, IRParameter> {
   return result
 }
 
-internal fun Model.nameOfSHACLPath(path: Resource): String {
+private fun Model.nameOfSHACLPath(path: Resource): String {
   val property =
       subjectWithProperty(SHACLM.path, path)
           ?: Log.shared.fatal("No property found for path: $path")
@@ -127,7 +153,7 @@ internal fun Model.nameOfSHACLPath(path: Resource): String {
  * Parse the arguments of a stage. This is a recursive implementation that will automatically parse
  * nested classes. Recursion will continue until all objects found are literals.
  */
-internal fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
+private fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
   val simple = mutableMapOf<String, MutableList<String>>()
   val complex = mutableMapOf<String, MutableList<Map<String, IRArgument>>>()
 
@@ -154,7 +180,7 @@ internal fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
       complex.mapValues { (_, value) -> IRArgument(complex = value) }
 }
 
-internal fun Model.parseProcessor(processor: Resource): IRProcessor {
+private fun Model.parseProcessor(processor: Resource): IRProcessor {
   val uri = processor.toString()
 
   // Determine the target runner.
@@ -191,7 +217,7 @@ internal fun Model.parseProcessor(processor: Resource): IRProcessor {
   return IRProcessor(uri, target, parameters, metadata)
 }
 
-internal fun Model.parseStages(pipeline: Resource): List<IRStage> {
+private fun Model.parseStages(pipeline: Resource): List<IRStage> {
   return listObjectsOfProperty(pipeline, RDFC.stages).toList().map { stage ->
     val processor = objectOfProperty(stage.asResource(), RDF.type)!!.asResource()
     val arguments = objectOfProperty(stage.asResource(), RDFC.arguments)!!.asResource()
@@ -199,13 +225,13 @@ internal fun Model.parseStages(pipeline: Resource): List<IRStage> {
   }
 }
 
-internal fun Model.parseDependencies(pipeline: Resource?): List<IRDependency> {
+private fun Model.parseDependencies(pipeline: Resource?): List<IRDependency> {
   return listObjectsOfProperty(pipeline, RDFC.dependency).toList().map { dependency ->
     IRDependency(uri = dependency.toString())
   }
 }
 
-internal fun Model.parsePackage(pkg: Resource): IRPackage {
+private fun Model.parsePackage(pkg: Resource): IRPackage {
   // Get all of its properties.
   val version = objectOfProperty(pkg, RDFC.version)
   val author = objectOfProperty(pkg, RDFC.author)
@@ -228,11 +254,11 @@ internal fun Model.parsePackage(pkg: Resource): IRPackage {
   )
 }
 
-internal fun Model.parsePackages(): List<IRPackage> {
+private fun Model.parsePackages(): List<IRPackage> {
   return listSubjectsWithProperty(RDF.type, RDFC.`package`).toList().map { parsePackage(it) }
 }
 
-internal fun Model.parsePipeline(pipeline: Resource): IRPipeline {
+private fun Model.parsePipeline(pipeline: Resource): IRPipeline {
   return IRPipeline(
       uri = pipeline.uri,
       stages = parseStages(pipeline),
@@ -240,11 +266,11 @@ internal fun Model.parsePipeline(pipeline: Resource): IRPipeline {
   )
 }
 
-internal fun Model.parsePipelines(): List<IRPipeline> {
+private fun Model.parsePipelines(): List<IRPipeline> {
   return listSubjectsWithProperty(RDF.type, RDFC.pipeline).toList().map { parsePipeline(it) }
 }
 
-class JenaParser(file: File) : Parser(file) {
+class JenaParser(file: File) : Parser() {
   /** The Apache Jena model. */
   private val model: Model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
 

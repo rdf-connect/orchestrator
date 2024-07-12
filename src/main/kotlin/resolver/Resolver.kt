@@ -2,7 +2,7 @@ package technology.idlab.resolver
 
 import java.io.File
 import org.jetbrains.kotlin.incremental.createDirectory
-import technology.idlab.parser.intermediate.IRDependency
+import technology.idlab.intermediate.IRDependency
 import technology.idlab.resolver.impl.GitResolver
 import technology.idlab.resolver.impl.LocalResolver
 import technology.idlab.util.Log

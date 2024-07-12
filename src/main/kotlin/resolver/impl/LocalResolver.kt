@@ -1,7 +1,7 @@
 package technology.idlab.resolver.impl
 
 import java.io.File
-import technology.idlab.parser.intermediate.IRDependency
+import technology.idlab.intermediate.IRDependency
 import technology.idlab.resolver.Resolver
 
 /** Resolve a file on the local file system. */

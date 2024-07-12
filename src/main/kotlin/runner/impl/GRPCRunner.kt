@@ -12,10 +12,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import runner.Runner
-import technology.idlab.parser.intermediate.IRArgument
-import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.intermediate.IRArgument
+import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRStage
 import technology.idlab.util.Log
 import technology.idlab.util.retries
 

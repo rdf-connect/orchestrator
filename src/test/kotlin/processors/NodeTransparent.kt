@@ -1,10 +1,10 @@
 package processors
 
 import runner.Runner
-import technology.idlab.parser.intermediate.IRArgument
-import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.intermediate.IRArgument
+import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRStage
 
 class NodeTransparent {
   companion object {

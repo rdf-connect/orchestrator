@@ -7,8 +7,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import runner.Runner
+import technology.idlab.intermediate.IRParameter
 import technology.idlab.parser.Parser
-import technology.idlab.parser.intermediate.IRParameter
 
 class ParserTest {
   private fun parse(resource: String): Parser {

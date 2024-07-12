@@ -7,10 +7,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import technology.idlab.parser.intermediate.IRArgument
-import technology.idlab.parser.intermediate.IRParameter
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.intermediate.IRArgument
+import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRStage
 import technology.idlab.util.Log
 
 abstract class RunnerTest {

@@ -1,8 +1,8 @@
 package runner
 
 import kotlinx.coroutines.channels.Channel
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRStage
 import technology.idlab.util.Log
 
 abstract class Runner(

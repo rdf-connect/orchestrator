@@ -3,13 +3,13 @@ package technology.idlab.std
 import java.io.ByteArrayOutputStream
 import java.io.File
 import org.apache.jena.graph.Graph
+import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.RiotException
 import org.apache.jena.shacl.ShaclValidator
 import runner.jvm.Processor
 import runner.jvm.Reader
 import runner.jvm.Writer
-import technology.idlab.extensions.readModelRecursively
 import technology.idlab.runner.jvm.Arguments
 import technology.idlab.util.Log
 
@@ -26,7 +26,7 @@ class RDFValidator(args: Arguments) : Processor(args) {
 
   /** Runtime fields. */
   private val shapes: Graph
-  private val model = ModelFactory.createDefaultModel()
+  private val model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
   private val validator = ShaclValidator.get()
 
   // Initialize the shape graph and validator.
@@ -36,7 +36,7 @@ class RDFValidator(args: Arguments) : Processor(args) {
 
     val shapesModel =
         try {
-          file.readModelRecursively()
+          model.read(file.toURI().toString(), "TURTLE")
         } catch (e: RiotException) {
           Log.shared.fatal("Failed to read SHACL shapes from file://$path")
         }
@@ -51,7 +51,6 @@ class RDFValidator(args: Arguments) : Processor(args) {
       val res = input.read()
 
       // Parse as a model.
-      Log.shared.assert(model.isEmpty, "Model should be empty.")
       try {
         model.read(res.inputStream(), null, "TURTLE")
       } catch (e: RiotException) {

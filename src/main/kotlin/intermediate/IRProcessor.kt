@@ -1,4 +1,4 @@
-package technology.idlab.parser.intermediate
+package technology.idlab.intermediate
 
 import runner.Runner
 

@@ -6,7 +6,7 @@ import processors.NodeTransparent
 import processors.TappedReader
 import processors.TappedWriter
 import technology.idlab.Orchestrator
-import technology.idlab.parser.intermediate.IRPipeline
+import technology.idlab.intermediate.IRPipeline
 
 val processors = listOf(TappedWriter.processor, NodeTransparent.processor, TappedReader.processor)
 

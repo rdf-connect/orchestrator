@@ -9,9 +9,9 @@ import kotlinx.coroutines.withTimeout
 import runner.Runner
 import runner.impl.NodeRunner
 import runner.jvm.JVMRunner
-import technology.idlab.parser.intermediate.IRPipeline
-import technology.idlab.parser.intermediate.IRProcessor
-import technology.idlab.parser.intermediate.IRStage
+import technology.idlab.intermediate.IRPipeline
+import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRStage
 import technology.idlab.util.Log
 
 class Orchestrator(private val pipeline: IRPipeline, processors: List<IRProcessor>) {

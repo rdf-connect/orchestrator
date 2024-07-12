@@ -8,23 +8,31 @@ import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.ShaclValidator
 import technology.idlab.util.Log
 
-/** Validates a model against the SHACL schema defined inside the model itself. */
-internal fun Model.validate(): Model {
+/**
+ * Given an Apache Jena model, run the SHACL validation engine against itself. This means that all
+ * shapes embedded in the model will be used to validate the model itself. If the validation fails,
+ * the program will exit with a fatal error.
+ */
+internal fun Model.validate() {
+  // SHACL runs against the graph, so we need to convert first. Then, simply call a new validation
+  // instance and test the graph against itself.
   val graph = this.graph
   val report = ShaclValidator.get().validate(graph, graph)
 
-  // Exit if the validation failed.
+  // Exit if the validation failed by logging the report.
   if (!report.conforms()) {
     val out = ByteArrayOutputStream()
     report.model.write(out, "TURTLE")
     Log.shared.fatal("Validation failed\n$out")
   }
-
-  return this
 }
 
 /**
  * Return the first object which corresponds to a subject and predicate. Returns null if not found.
+ *
+ * @param resource The subject of the query.
+ * @param property The predicate of the query.
+ * @return The first result of the query, or null if not found.
  */
 internal fun Model.objectOfProperty(resource: Resource, property: Property): RDFNode? {
   return try {
@@ -36,6 +44,10 @@ internal fun Model.objectOfProperty(resource: Resource, property: Property): RDF
 
 /**
  * Return the first subject which corresponds to a predicate and object. Returns null if not found.
+ *
+ * @param property The predicate of the query.
+ * @param obj The object of the query.
+ * @return The first result of the query, or null if not found.
  */
 internal fun Model.subjectWithProperty(property: Property, obj: RDFNode): Resource? {
   return try {

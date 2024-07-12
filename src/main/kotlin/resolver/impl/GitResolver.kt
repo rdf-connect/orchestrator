@@ -1,7 +1,7 @@
 package technology.idlab.resolver.impl
 
 import java.io.File
-import technology.idlab.parser.intermediate.IRDependency
+import technology.idlab.intermediate.IRDependency
 import technology.idlab.resolver.Resolver
 
 /** Resolve a Git repository by cloning it locally and reading its configuration file. */

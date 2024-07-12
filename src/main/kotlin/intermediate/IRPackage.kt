@@ -1,4 +1,4 @@
-package technology.idlab.parser.intermediate
+package technology.idlab.intermediate
 
 /** A resolved dependency, with all of its configuration parameters. */
 data class IRPackage(
