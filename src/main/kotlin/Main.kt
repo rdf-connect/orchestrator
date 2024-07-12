@@ -17,7 +17,7 @@ fun main(args: Array<String>) = runBlocking {
   val file = File(path)
 
   // Parse said config to a IRPipeline.
-  val parser = Parser(file)
+  val parser = Parser.using(file)
 
   // Parse the pipeline out of the configuration file.
   val pipeline = parser.pipelines[0]
