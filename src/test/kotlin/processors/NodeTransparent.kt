@@ -1,6 +1,5 @@
 package processors
 
-import runner.Runner
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
@@ -11,7 +10,8 @@ class NodeTransparent {
     val processor =
         IRProcessor(
             "transparent",
-            Runner.Target.NODEJS,
+            "https://rdf-connect.com/#NodeRunner",
+            "",
             mapOf(
                 "input" to
                     IRParameter(

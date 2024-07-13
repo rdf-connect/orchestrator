@@ -1,14 +1,13 @@
 package runner.jvm
 
 import arrow.core.zip
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import org.jetbrains.kotlin.backend.common.push
 import runner.Runner
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
@@ -25,9 +24,6 @@ class JVMRunner(
 ) : Runner(fromProcessors) {
   /** Map of all stages in the runner. */
   private val stages = mutableMapOf<String, Processor>()
-
-  /** All stages are ran in their own job, for cancellation purposes we keep track of them. */
-  private val jobs: MutableList<Job> = mutableListOf()
 
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
@@ -54,26 +50,28 @@ class JVMRunner(
   override suspend fun exec() = coroutineScope {
     Log.shared.info("Executing all stages.")
 
-    // Initialize a job for all processors.
-    this@JVMRunner.stages.values.forEach {
-      val job = launch { it.exec() }
-      jobs.push(job)
-    }
-
-    // Route all incoming messages.
-    Log.shared.debug("Begin routing messages in JVMRunner.")
-    while (isActive) {
-      withTimeout(1000) {
-        val message = toProcessors.receive()
-        val target = readers[message.channel]!!
-        Log.shared.info("'${message.data.decodeToString()}' -> ${message.channel}")
-        target.send(message.data)
+    // Create a new job which routes the messages.
+    val router = launch {
+      Log.shared.debug("Begin routing messages in JVMRunner.")
+      while (isActive) {
+        try {
+          withTimeout(1000) {
+            val message = toProcessors.receive()
+            val target = readers[message.channel]!!
+            Log.shared.info("'${message.data.decodeToString()}' -> ${message.channel}")
+            target.send(message.data)
+          }
+        } catch (_: TimeoutCancellationException) {}
       }
     }
-    Log.shared.debug("Ending routing messages in JVMRunner.")
 
-    // Await all processors.
-    jobs.forEach { it.cancelAndJoin() }
+    // Notify when the router is done.
+    router.invokeOnCompletion { Log.shared.debug("Ending routing messages in JVMRunner.") }
+
+    // Initialize a job for all processors.
+    this@JVMRunner.stages.values.map { launch { it.exec() } }.forEach { it.join() }
+
+    router.cancel()
   }
 
   override suspend fun exit() {
@@ -84,9 +82,6 @@ class JVMRunner(
     for (reader in this.readers.values) {
       reader.close()
     }
-
-    // Suspend all jobs.
-    jobs.map { it.apply { it.cancel() } }.forEach { it.join() }
   }
 
   private fun instantiate(

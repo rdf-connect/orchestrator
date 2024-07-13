@@ -8,6 +8,7 @@
 
 test:DummyProcessor
   a rdfc:Processor ;
+  rdfc:entrypoint "com.example.MyProcessor" ;
   rdfc:target rdfc:Kotlin .
 
 []

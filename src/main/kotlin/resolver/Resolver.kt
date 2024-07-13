@@ -21,8 +21,6 @@ abstract class Resolver {
 
   companion object {
     fun resolve(dependency: IRDependency): File {
-      Log.shared.info("Resolving dependency with URI ${dependency.uri}")
-
       return if (dependency.uri.startsWith("file://")) {
         LocalResolver().resolve(dependency)
       } else if (dependency.uri.startsWith("git://")) {

@@ -2,16 +2,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import processors.NodeTransparent
 import processors.TappedReader
 import processors.TappedWriter
 import technology.idlab.Orchestrator
 import technology.idlab.intermediate.IRPipeline
+import technology.idlab.intermediate.IRRunner
 
-val processors = listOf(TappedWriter.processor, NodeTransparent.processor, TappedReader.processor)
+val processors = listOf(TappedWriter.processor, TappedReader.processor)
 
-val stages =
-    listOf(TappedWriter.stage("in"), NodeTransparent.stage("in", "out"), TappedReader.stage("out"))
+val stages = listOf(TappedWriter.stage("channel"), TappedReader.stage("channel"))
 
 val pipeline =
     IRPipeline(
@@ -20,10 +19,16 @@ val pipeline =
         stages = stages,
     )
 
+val jvmRunner =
+    IRRunner(
+        uri = "https://rdf-connect.com/#JVMRunner",
+        type = IRRunner.Type.BUILT_IN,
+    )
+
 class OrchestratorTest {
   @Test
   fun channelTest(): Unit = runBlocking {
-    val orchestrator = Orchestrator(pipeline, processors)
+    val orchestrator = Orchestrator(pipeline, processors, listOf(jvmRunner))
 
     // Bring pipeline online.
     launch { orchestrator.exec() }

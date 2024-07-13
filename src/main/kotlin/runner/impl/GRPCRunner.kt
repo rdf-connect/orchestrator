@@ -7,6 +7,7 @@ import RunnerGrpcKt
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
@@ -104,6 +105,7 @@ private fun IRStage.toGRPC(processor: GRPC.IRProcessor): GRPC.IRStage {
 private fun IRProcessor.toGRPC(): GRPC.IRProcessor {
   val builder = GRPC.IRProcessor.newBuilder()
   builder.setUri(uri)
+  builder.setEntrypoint(entrypoint)
   builder.putAllParameters(parameters.mapValues { it.value.toGRPC() })
   builder.putAllMetadata(metadata)
   return builder.build()
@@ -118,7 +120,7 @@ abstract class GRPCRunner(
     fromProcessors: Channel<Payload>,
     host: String,
     /** The port of the GRPC server. */
-    protected val port: Int
+    private val port: Int
 ) : Runner(fromProcessors) {
   /** Create a single stub for all communication. */
   private val conn: ManagedChannel =
@@ -139,27 +141,33 @@ abstract class GRPCRunner(
   }
 
   override suspend fun exec() = coroutineScope {
+    val router = async {
+      // Create a flow for outgoing messages.
+      val toGRPCProcessors =
+          toProcessors.receiveAsFlow().map {
+            Log.shared.debug(
+                "'${it.data.decodeToString().replace("\n", "\\n")}' -> [${it.channel}]")
+            val builder = GRPCChannelData.newBuilder()
+            builder.setDestinationUri(it.channel)
+            builder.setData(ByteString.copyFrom(it.data))
+            builder.build()
+          }
+
+      // Create a flow for incoming messages.
+      Log.shared.debug("Begin routing messages in GRPCRunner.")
+      grpc
+          .channel(toGRPCProcessors)
+          .map { Payload(it.destinationUri, it.data.toByteArray()) }
+          .collect {
+            Log.shared.debug(
+                "'${it.data.decodeToString().replace("\n", "\\n")}' -> [${it.channel}]")
+            fromProcessors.send(it)
+          }
+      Log.shared.debug("Ending routing messages in GRPCRunner.")
+    }
+
     retries(5, 1000) { grpc.exec(empty) }
 
-    // Create a flow for outgoing messages.
-    val toGRPCProcessors =
-        toProcessors.receiveAsFlow().map {
-          Log.shared.debug("'${it.data.decodeToString()}' -> [${it.channel}]")
-          val builder = GRPCChannelData.newBuilder()
-          builder.setDestinationUri(it.channel)
-          builder.setData(ByteString.copyFrom(it.data))
-          builder.build()
-        }
-
-    // Create a flow for incoming messages.
-    Log.shared.debug("Begin routing messages in GRPCRunner.")
-    grpc
-        .channel(toGRPCProcessors)
-        .map { Payload(it.destinationUri, it.data.toByteArray()) }
-        .collect {
-          Log.shared.debug("'${it.data.decodeToString()}' -> [${it.channel}]")
-          fromProcessors.send(it)
-        }
-    Log.shared.debug("Ending routing messages in GRPCRunner.")
+    router.await()
   }
 }

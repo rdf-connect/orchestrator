@@ -26,13 +26,13 @@ export class ServerImplementation implements RunnerServer {
   channel(call: ServerDuplexStream<ChannelData, ChannelData>): void {
     // On incoming data, call the appropriate reader.
     call.on("data", function (payload: ChannelData) {
-      console.log("gRPC::channel::data");
+      console.log("gRPC: received data from orchestrator.");
       Runner.shared.incoming.next(payload);
     });
 
     // On outgoing data, propagate to gRPC.
     Runner.shared.outgoing.subscribe((payload) => {
-      console.log("gRPC::channel::write");
+      console.log("gRPC: writing data back to orchestrator.");
       call.write(payload);
     });
   }
@@ -45,6 +45,7 @@ export class ServerImplementation implements RunnerServer {
     call: ServerUnaryCall<IRStage, Empty>,
     callback: sendUnaryData<Empty>,
   ): void {
+    console.log("gRPC::prepareProcessor::load");
     Runner.shared
       .load(call.request)
       .then(() => {

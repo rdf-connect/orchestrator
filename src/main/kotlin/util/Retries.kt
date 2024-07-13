@@ -9,6 +9,8 @@ suspend fun <T> retries(times: Int, milliseconds: Long = 1000, block: suspend ()
         try {
           return@coroutineScope block()
         } catch (e: Exception) {
+          Log.shared.severe(
+              "An exception occurred: ${e.message}. Retrying in $milliseconds milliseconds.")
           delay(milliseconds)
         }
       }

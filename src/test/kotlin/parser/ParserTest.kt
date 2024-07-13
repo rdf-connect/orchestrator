@@ -6,7 +6,6 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import runner.Runner
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.parser.Parser
 
@@ -29,7 +28,7 @@ class ParserTest {
   @Test
   fun packages() {
     // Parse the package in the file.
-    val parser = parse("/packages/dummy/index.ttl")
+    val parser = parse("/pipelines/dummy/index.ttl")
     val pkg = parser.packages[0]
 
     // Check the contents of the data class.
@@ -39,9 +38,14 @@ class ParserTest {
     assertEquals("https://example.com.git", pkg.repo)
     assertEquals("MIT", pkg.license)
     assertEquals("make", pkg.prepare)
+
+    // Check the processors.
     assertEquals(1, pkg.processors.size)
-    assertEquals(Runner.Target.JVM, pkg.processors[0].target)
     assertEquals(IRParameter.Count.SINGLE, pkg.processors[0].parameters["message"]?.count)
+
+    // Check the runners.
+    assertEquals(1, pkg.runners.size)
+    assertEquals("command", pkg.runners[0].entrypoint)
   }
 
   @Test
@@ -59,7 +63,6 @@ class ParserTest {
         "MyProcessor",
         processor.metadata["class"],
         "Processor should have a 'class' key with value 'MyProcessor'.")
-    assertEquals(Runner.Target.JVM, processor.target, "processor processor should target JVM.")
     assertEquals(3, processor.parameters.size, "processor processor should have two parameters.")
 
     // Check its arguments.

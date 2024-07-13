@@ -6,7 +6,7 @@ import runner.RunnerTest
 import runner.jvm.JVMRunner
 
 class JVMRunnerTest : RunnerTest() {
-  override val target: Runner.Target = Runner.Target.JVM
+  override val target = "https://rdf-connect.com/#/JVMRunner"
 
   override val metadata: Map<String, String> = mapOf("class" to "technology.idlab.std.Transparent")
 

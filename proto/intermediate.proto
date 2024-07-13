@@ -38,8 +38,9 @@ message IRParameter {
 
 message IRProcessor {
   string uri = 1;
-  map<string, IRParameter> parameters = 2;
-  map<string, string> metadata = 3;
+  string entrypoint = 2;
+  map<string, IRParameter> parameters = 3;
+  map<string, string> metadata = 4;
 }
 
 message IRArgumentSimple {

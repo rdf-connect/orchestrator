@@ -1,0 +1,32 @@
+@prefix test: <https://www.rdf-connect.com/test#> .
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+test:channel a rdfc:Channel .
+
+test:NodePipeline
+  a rdfc:Pipeline ;
+  rdfc:name "Node.js Testing Pipeline" ;
+  rdfc:description "Pipeline for end-to-end testing of the Node.js runner." ;
+  rdfc:stages test:FileReader, test:FileWriter ;
+  rdfc:dependency
+    <../../../../runners/nodejs> ,
+    <../../../../processors/file-utils-ts> .
+
+test:FileReader
+  a rdfc:FileReaderTS ;
+  rdfc:arguments [
+    rdfc:path "/tmp/rdfc-testing/input.txt" ;
+    rdfc:outgoing test:channel ;
+  ] .
+
+test:FileWriter
+  a rdfc:FileWriterTS ;
+  rdfc:arguments [
+    rdfc:path "/tmp/rdfc-testing/output.txt" ;
+    rdfc:incoming test:channel ;
+  ] .

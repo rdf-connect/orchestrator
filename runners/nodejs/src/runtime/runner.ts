@@ -150,7 +150,9 @@ export class Runner {
 
     // If the argument is a single value, we can parse it directly.
     if (arg.simple && param.simple) {
-      const params = param.simple ?? RunnerError.inconsistency();
+      const params =
+        param.simple ??
+        RunnerError.inconsistency("Expected simple parameter, found complex.");
 
       // Recursively call for each value.
       return arg.simple.value.map((value) =>
@@ -159,7 +161,7 @@ export class Runner {
     }
 
     // If the argument is not simple or complex, we throw an error.
-    RunnerError.inconsistency();
+    RunnerError.inconsistency("Expected simple or complex argument.");
   }
 
   /**
@@ -180,7 +182,7 @@ export class Runner {
     // Simply go over all arguments and instantiate them, recursively
     // if required.
     for (const [name, arg] of args) {
-      const param = params.get(name) ?? RunnerError.inconsistency();
+      const param = params.get(name) ?? RunnerError.missingParameter(name);
       const parsed = this.parseArgument(arg, param);
 
       // Set the argument.
@@ -197,13 +199,22 @@ export class Runner {
    * @param stage The stage to be instantiated.
    */
   async load(stage: IRStage): Promise<void> {
+    console.log(`Loading stage: ${stage.uri}`);
+
+    let path = stage.processor!.entrypoint;
+    if (path.startsWith("file://")) {
+      path = path.substring(7);
+    }
+
     // Load the processor into Node.js.
-    const absolutePath = path.resolve(stage.processor!.metadata.import);
-    const processor = await import(absolutePath);
+    console.log(`Importing processor: ${path}`);
+    const processor = await import(path);
     const constructor = processor.default;
 
     // Parse the stage's arguments.
-    const params = stage.processor?.parameters ?? RunnerError.inconsistency();
+    console.log("Parsing arguments.");
+    const params =
+      stage.processor?.parameters ?? RunnerError.missingParameters();
     const rawArguments = asMap(stage.arguments);
     const parsedArguments = this.parseComplexArgument(
       rawArguments,
@@ -211,11 +222,13 @@ export class Runner {
     );
 
     // Instantiate the processor with the parsed arguments.
+    console.log("Instantiating processor.");
     const instance = tryOrPanic(() => {
       return new constructor(new Arguments(parsedArguments));
     });
 
     // Keep track of it in the stages map.
+    console.log("Loading stage done.");
     this.stages.set(stage.uri, instance);
   }
 

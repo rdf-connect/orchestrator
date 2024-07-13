@@ -8,6 +8,7 @@
 test:BasicProcessor
   a rdfc:Processor ;
   rdfc:target rdfc:Kotlin ;
+  rdfc:entrypoint "com.example.MyProcessor" ;
   rdfc:metadata "class:MyProcessor" .
 
 [] a sh:NodeShape ;

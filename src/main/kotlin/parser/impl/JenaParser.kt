@@ -10,7 +10,6 @@ import org.apache.jena.rdf.model.ResourceFactory.createProperty
 import org.apache.jena.rdf.model.ResourceFactory.createResource
 import org.apache.jena.shacl.vocabulary.SHACLM
 import org.apache.jena.vocabulary.RDF
-import runner.Runner
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.subjectWithProperty
 import technology.idlab.extensions.validate
@@ -20,6 +19,7 @@ import technology.idlab.intermediate.IRPackage
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRPipeline
 import technology.idlab.intermediate.IRProcessor
+import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
 import technology.idlab.parser.Parser
 import technology.idlab.resolver.Resolver
@@ -44,16 +44,14 @@ private class RDFC {
     val repo = createProperty("${NS}repo")!!
     val license = createProperty("${NS}license")!!
     val prepare = createProperty("${NS}prepare")!!
+    val runners = createProperty("${NS}runners")!!
     val processors = createProperty("${NS}processors")!!
     val pipeline = createProperty("${NS}Pipeline")!!
     val stages = createProperty("${NS}stages")!!
-  }
-}
-
-private fun Resource.toRunnerTarget(): Runner.Target {
-  return when (this) {
-    RDFC.kotlinRunner -> Runner.Target.JVM
-    else -> Log.shared.fatal("Unknown runner type: $this")
+    val entrypoint = createProperty("${NS}entrypoint")!!
+    val reader = createResource("${NS}Reader")!!
+    val writer = createResource("${NS}Writer")!!
+    val grpcRunner = createResource("${NS}GRPCRunner")!!
   }
 }
 
@@ -71,8 +69,8 @@ private fun Resource.toIRParameterType(): IRParameter.Type {
     "http://www.w3.org/2001/XMLSchema#int" -> IRParameter.Type.INT
     "http://www.w3.org/2001/XMLSchema#long" -> IRParameter.Type.LONG
     "http://www.w3.org/2001/XMLSchema#string" -> IRParameter.Type.STRING
-    "http://www.rdf-connect.com/#/writer" -> IRParameter.Type.WRITER
-    "http://www.rdf-connect.com/#/reader" -> IRParameter.Type.READER
+    "https://www.rdf-connect.com/#Writer" -> IRParameter.Type.WRITER
+    "https://www.rdf-connect.com/#Reader" -> IRParameter.Type.READER
     else -> Log.shared.fatal("Unknown datatype: ${this.uri}")
   }
 }
@@ -87,6 +85,7 @@ private fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParamet
   val maxCount = objectOfProperty(property, SHACLM.maxCount)?.asLiteral()?.int
   val node = objectOfProperty(property, SHACLM.node)?.asResource()
   val datatype = objectOfProperty(property, SHACLM.datatype)?.asResource()
+  val clazz = objectOfProperty(property, SHACLM.class_)?.asResource()
 
   // Retrieve the path of the property.
   val path =
@@ -114,7 +113,9 @@ private fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParamet
 
   // Create a new parameter object.
   val parameter =
-      if (datatype != null) {
+      if (clazz != null) {
+        IRParameter(simple = clazz.toIRParameterType(), presence = presence, count = count)
+      } else if (datatype != null) {
         IRParameter(simple = datatype.toIRParameterType(), presence = presence, count = count)
       } else if (node != null) {
         IRParameter(complex = parseSHACLShape(node), presence = presence, count = count)
@@ -160,19 +161,32 @@ private fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
   // Go over each triple of the resource. If it is a literal, add it to the simple list. Otherwise,
   // call recursively and add it to the complex list.
   for (triple in listStatements(node, null, null as RDFNode?)) {
+    if (triple.predicate == RDF.type) {
+      continue
+    }
+
     val key = nameOfSHACLPath(triple.predicate)
     val value = triple.`object`
 
+    // If the value is a literal, it is always simple.
     if (value.isLiteral) {
       val list = simple.getOrPut(key) { mutableListOf() }
       list.add(value.asLiteral().string)
-    } else if (value.isResource) {
-      val list = complex.getOrPut(key) { mutableListOf() }
-      val nested = parseArguments(value.asResource())
-      list.add(nested)
-    } else {
-      Log.shared.fatal("Unknown RDFNode type: $value")
+      continue
     }
+
+    // If the value is a resource, pointing to a Reader or Writer, it is always simple as well.
+    val type = objectOfProperty(value.asResource(), RDF.type)
+    if (type == RDFC.channel || type == RDFC.writer || type == RDFC.reader) {
+      val list = simple.getOrPut(key) { mutableListOf() }
+      list.add(value.toString())
+      continue
+    }
+
+    // Else, parse it as a complex argument.
+    val list = complex.getOrPut(key) { mutableListOf() }
+    val nested = parseArguments(value.asResource())
+    list.add(nested)
   }
 
   // Combine both simple and complex mappings as a single map to IRArguments.
@@ -180,11 +194,27 @@ private fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
       complex.mapValues { (_, value) -> IRArgument(complex = value) }
 }
 
+private fun Model.parseRunner(directory: File, runner: Resource): IRRunner {
+  Log.shared.debug("Parsing runner: $runner")
+
+  val entrypoint = objectOfProperty(runner, RDFC.entrypoint)?.toString()
+  val type =
+      objectOfProperty(runner, RDF.type) ?: Log.shared.fatal("No type found for runner: $runner")
+
+  if (type == RDFC.grpcRunner) {
+    return IRRunner(runner.toString(), directory, entrypoint, IRRunner.Type.GRPC)
+  } else {
+    Log.shared.fatal("Unknown runner type: $type")
+  }
+}
+
 private fun Model.parseProcessor(processor: Resource): IRProcessor {
+  Log.shared.debug("Parsing processor: $processor")
+
   val uri = processor.toString()
 
   // Determine the target runner.
-  val target = objectOfProperty(processor, RDFC.target)!!.asResource().toRunnerTarget()
+  val target = objectOfProperty(processor, RDFC.target)!!.toString()
 
   // Parse the parameters by SHACL shape.
   val shape =
@@ -214,7 +244,10 @@ private fun Model.parseProcessor(processor: Resource): IRProcessor {
     metadata[key.trim()] = value.trim()
   }
 
-  return IRProcessor(uri, target, parameters, metadata)
+  // Get entrypoint.
+  val entrypoint = objectOfProperty(processor, RDFC.entrypoint)!!.toString()
+
+  return IRProcessor(uri, target, entrypoint, parameters, metadata)
 }
 
 private fun Model.parseStages(pipeline: Resource): List<IRStage> {
@@ -231,7 +264,9 @@ private fun Model.parseDependencies(pipeline: Resource?): List<IRDependency> {
   }
 }
 
-private fun Model.parsePackage(pkg: Resource): IRPackage {
+private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
+  Log.shared.debug("Parsing package: $pkg")
+
   // Get all of its properties.
   val version = objectOfProperty(pkg, RDFC.version)
   val author = objectOfProperty(pkg, RDFC.author)
@@ -241,9 +276,14 @@ private fun Model.parsePackage(pkg: Resource): IRPackage {
   val prepare = objectOfProperty(pkg, RDFC.prepare)
   val processors =
       listObjectsOfProperty(pkg, RDFC.processors).toList().map { parseProcessor(it.asResource()) }
+  val runners =
+      listObjectsOfProperty(pkg, RDFC.runners).toList().map {
+        parseRunner(directory, it.asResource())
+      }
 
   // Parse the properties to strings if required, and return the package IR.
   return IRPackage(
+      directory = directory,
       version = version?.toString(),
       author = author?.toString(),
       description = description.toString(),
@@ -251,14 +291,19 @@ private fun Model.parsePackage(pkg: Resource): IRPackage {
       license = license.toString(),
       prepare = prepare.toString(),
       processors = processors,
+      runners = runners,
   )
 }
 
-private fun Model.parsePackages(): List<IRPackage> {
-  return listSubjectsWithProperty(RDF.type, RDFC.`package`).toList().map { parsePackage(it) }
+private fun Model.parsePackages(directory: File): List<IRPackage> {
+  return listSubjectsWithProperty(RDF.type, RDFC.`package`).toList().map {
+    parsePackage(directory, it)
+  }
 }
 
 private fun Model.parsePipeline(pipeline: Resource): IRPipeline {
+  Log.shared.debug("Parsing pipeline: $pipeline")
+
   return IRPipeline(
       uri = pipeline.uri,
       stages = parseStages(pipeline),
@@ -283,6 +328,9 @@ class JenaParser(file: File) : Parser() {
   /** List of all known processors. */
   override val processors: List<IRProcessor>
 
+  /** List of all known runners. */
+  override val runners: List<IRRunner>
+
   init {
     // Load the RDF-Connect ontology.
     val resource = this::class.java.getResource("/pipeline.ttl")
@@ -296,28 +344,30 @@ class JenaParser(file: File) : Parser() {
     val dependencies = this.dependencies()
 
     // Resolve all dependencies.
-    dependencies.forEach {
-      val path = Resolver.resolve(it)
-      this.load(path.toString())
-    }
+    this.packages =
+        dependencies
+            .map {
+              val path = Resolver.resolve(it)
+              val mdl = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
+              mdl.read(path.toString(), "TURTLE")
+              val result = mdl.parsePackages(path.parentFile)
+              model.add(mdl)
+              result
+            }
+            .flatten()
 
     // Since we updated the model, we will once again check if the SHACL shapes are valid.
     this.model.validate()
 
     // Parse the file.
     this.pipelines = this.pipelines()
-    this.packages = this.packages()
     this.processors = this.packages.map { it.processors }.flatten()
+    this.runners = this.packages.map { it.runners }.flatten()
   }
 
   /** Parse the file as a list of pipelines, returning its containing stages and dependencies. */
   private fun pipelines(): List<IRPipeline> {
     return model.parsePipelines()
-  }
-
-  /** Parse the model as a list of packages, returning the provided processors inside. */
-  private fun packages(): List<IRPackage> {
-    return model.parsePackages()
   }
 
   /** Retrieve all dependencies in a given file. */

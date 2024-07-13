@@ -1,7 +1,6 @@
 package processors
 
 import kotlinx.coroutines.channels.Channel
-import runner.Runner
 import runner.jvm.Processor
 import runner.jvm.Writer
 import technology.idlab.intermediate.IRArgument
@@ -21,9 +20,8 @@ class TappedWriter(args: Arguments) : Processor(args) {
 
   /** Continuously read data from the global channel and write it to the output. */
   override suspend fun exec() {
-    while (true) {
-      output.push(input.receive())
-    }
+    output.push(input.receive())
+    input.close()
   }
 
   companion object {
@@ -34,7 +32,8 @@ class TappedWriter(args: Arguments) : Processor(args) {
     val processor =
         IRProcessor(
             "tapped_writer",
-            Runner.Target.JVM,
+            "https://rdf-connect.com/#JVMRunner",
+            "",
             mapOf(
                 "output" to
                     IRParameter(

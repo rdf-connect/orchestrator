@@ -4,12 +4,20 @@ export class RunnerError extends Error {
     this.name = "RunnerError";
   }
 
+  static missingParameters(): never {
+    throw new RunnerError("No parameters provided.");
+  }
+
   static inconsistency(message: string | null = null): never {
     let msg = "An error occurred while parsing incoming data.";
     if (message) {
       msg += "\n" + message;
     }
     throw new RunnerError(msg);
+  }
+
+  static missingParameter(key: string): never {
+    throw new RunnerError(`Missing parameter: ${key}`);
   }
 
   static missingArgument(key: string): never {

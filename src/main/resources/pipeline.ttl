@@ -1,19 +1,22 @@
-@prefix conn: <http://www.rdf-connect.com/#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-[] a sh:NodeShape ;
-    sh:closed false ;
-    sh:property [
-      sh:datatype xsd:string ;
-      sh:maxCount 1 ;
-      sh:minCount 1 ;
-      sh:path conn:target
-    ] ;
-    sh:targetClass conn:Processor .
+rdfc:Writer
+  a rdfs:Class.
 
-[] a sh:NodeShape ;
-    sh:closed true ;
-    sh:ignoredProperties ( rdf:type ) ;
-    sh:targetClass conn:Channel .
+rdfc:Reader
+  a rdfs:Class.
+
+rdfc:Channel
+  a rdfs:Class ;
+  rdfs:label "Channel" ;
+  rdfs:comment "A channel is a communication medium that connects a writer to a reader." .
+
+rdfc:Channel
+  rdfs:subClassOf rdfc:Writer .
+
+rdfc:Channel
+  rdfs:subClassOf rdfc:Reader .

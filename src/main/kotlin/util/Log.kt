@@ -16,10 +16,11 @@ private const val MESSAGE_PADDING = 50
  * errors that will cause the program to exit. At the moment of writing, all levels are outputted to
  * the console regardless of the debug flag.
  */
-class Log private constructor(val header: Boolean = true) {
+class Log private constructor(header: Boolean = true) {
   private enum class Level {
     DEBUG,
     INFO,
+    SEVERE,
     FATAL,
   }
 
@@ -65,8 +66,19 @@ class Log private constructor(val header: Boolean = true) {
             ?: run {
               val call = Throwable().stackTrace[3]
               val clazz = call.className.substringAfterLast(".").substringBefore("$")
-              "${clazz}::${call.methodName}::${call.lineNumber}"
+              val method = call.methodName.substringBefore("$")
+              "${clazz}::${method}::${call.lineNumber}"
             }
+
+    // If the message is of level debug, set color to gray.
+    if (level == Level.DEBUG) {
+      print("\u001B[90m")
+    }
+
+    // If the message is severe, set the color to red.
+    if (level == Level.SEVERE) {
+      print("\u001B[31m")
+    }
 
     // Print to the console.
     print(time.padEnd(TIME_PADDING, ' '))
@@ -74,6 +86,11 @@ class Log private constructor(val header: Boolean = true) {
     print(levelCode.padEnd(LEVEL_PADDING, ' '))
     print(usedLocation.padEnd(LOCATION_PADDING, ' '))
     println(message)
+
+    // Reset coloring.
+    if (level == Level.DEBUG || level == Level.SEVERE) {
+      print("\u001B[0m")
+    }
   }
 
   /**
@@ -114,6 +131,15 @@ class Log private constructor(val header: Boolean = true) {
    */
   fun debug(message: () -> String) {
     debug(message())
+  }
+
+  /**
+   * Print a severe message, which will be colored red in the console.
+   *
+   * @param message The message to print.
+   */
+  fun severe(message: String, location: String? = null) {
+    output(message, Level.SEVERE, location = location)
   }
 
   companion object {

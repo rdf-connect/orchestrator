@@ -1,0 +1,7 @@
+@prefix test: <https://www.rdf-connect.com/test#> .
+
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+
+test:DummyRunner
+  a rdfc:GRPCRunner ;
+  rdfc:entrypoint "command" .

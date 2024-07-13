@@ -14,7 +14,7 @@ import technology.idlab.intermediate.IRStage
 import technology.idlab.util.Log
 
 abstract class RunnerTest {
-  abstract val target: Runner.Target
+  abstract val target: String
   abstract val metadata: Map<String, String>
 
   abstract fun createRunner(): Runner
@@ -71,6 +71,7 @@ abstract class RunnerTest {
     return IRProcessor(
         "transparent",
         this.target,
+        "",
         mapOf(
             "input" to this.paramInput,
             "output" to this.paramOutput,

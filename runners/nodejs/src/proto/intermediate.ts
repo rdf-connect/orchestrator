@@ -174,6 +174,7 @@ export interface IRParameter {
 
 export interface IRProcessor {
   uri: string;
+  entrypoint: string;
   parameters: { [key: string]: IRParameter };
   metadata: { [key: string]: string };
 }
@@ -527,7 +528,7 @@ export const IRParameter = {
 };
 
 function createBaseIRProcessor(): IRProcessor {
-  return { uri: "", parameters: {}, metadata: {} };
+  return { uri: "", entrypoint: "", parameters: {}, metadata: {} };
 }
 
 export const IRProcessor = {
@@ -538,16 +539,19 @@ export const IRProcessor = {
     if (message.uri !== "") {
       writer.uint32(10).string(message.uri);
     }
+    if (message.entrypoint !== "") {
+      writer.uint32(18).string(message.entrypoint);
+    }
     Object.entries(message.parameters).forEach(([key, value]) => {
       IRProcessor_ParametersEntry.encode(
         { key: key as any, value },
-        writer.uint32(18).fork(),
+        writer.uint32(26).fork(),
       ).ldelim();
     });
     Object.entries(message.metadata).forEach(([key, value]) => {
       IRProcessor_MetadataEntry.encode(
         { key: key as any, value },
-        writer.uint32(26).fork(),
+        writer.uint32(34).fork(),
       ).ldelim();
     });
     return writer;
@@ -573,25 +577,32 @@ export const IRProcessor = {
             break;
           }
 
-          const entry2 = IRProcessor_ParametersEntry.decode(
-            reader,
-            reader.uint32(),
-          );
-          if (entry2.value !== undefined) {
-            message.parameters[entry2.key] = entry2.value;
-          }
+          message.entrypoint = reader.string();
           continue;
         case 3:
           if (tag !== 26) {
             break;
           }
 
-          const entry3 = IRProcessor_MetadataEntry.decode(
+          const entry3 = IRProcessor_ParametersEntry.decode(
             reader,
             reader.uint32(),
           );
           if (entry3.value !== undefined) {
-            message.metadata[entry3.key] = entry3.value;
+            message.parameters[entry3.key] = entry3.value;
+          }
+          continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          const entry4 = IRProcessor_MetadataEntry.decode(
+            reader,
+            reader.uint32(),
+          );
+          if (entry4.value !== undefined) {
+            message.metadata[entry4.key] = entry4.value;
           }
           continue;
       }
@@ -606,6 +617,9 @@ export const IRProcessor = {
   fromJSON(object: any): IRProcessor {
     return {
       uri: isSet(object.uri) ? globalThis.String(object.uri) : "",
+      entrypoint: isSet(object.entrypoint)
+        ? globalThis.String(object.entrypoint)
+        : "",
       parameters: isObject(object.parameters)
         ? Object.entries(object.parameters).reduce<{
             [key: string]: IRParameter;
@@ -630,6 +644,9 @@ export const IRProcessor = {
     const obj: any = {};
     if (message.uri !== "") {
       obj.uri = message.uri;
+    }
+    if (message.entrypoint !== "") {
+      obj.entrypoint = message.entrypoint;
     }
     if (message.parameters) {
       const entries = Object.entries(message.parameters);
@@ -660,6 +677,7 @@ export const IRProcessor = {
   ): IRProcessor {
     const message = createBaseIRProcessor();
     message.uri = object.uri ?? "";
+    message.entrypoint = object.entrypoint ?? "";
     message.parameters = Object.entries(object.parameters ?? {}).reduce<{
       [key: string]: IRParameter;
     }>((acc, [key, value]) => {

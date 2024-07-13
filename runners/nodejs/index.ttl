@@ -1,0 +1,15 @@
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+
+rdfc:NodePackage
+  a rdfc:Package ;
+  rdfc:version "0.0.1" ;
+  rdfc:author "Jens Pots" ;
+  rdfc:description "A gRPC based Node.js runner." ;
+  rdfc:repo "https://github.com/rdf-connect/orchestrator" ;
+  rdfc:license "MIT" ;
+  rdfc:prepare "npm run build" ;
+  rdfc:runners rdfc:NodeRunner .
+
+rdfc:NodeRunner
+  a rdfc:GRPCRunner ;
+  rdfc:entrypoint "node build/runtime localhost 5000" .

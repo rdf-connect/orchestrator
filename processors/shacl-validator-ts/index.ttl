@@ -1,5 +1,5 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfc: <http://www.rdf-connect.com/#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -11,18 +11,18 @@
   rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
   rdfc:license "MIT" ;
   rdfc:prepare "npm run build" ;
-  rdfc:processors <Validator> .
+  rdfc:processors rdfc:SHACLValidatorTS .
 
-<Validator>
+rdfc:SHACLValidatorTS
   a rdfc:Processor ;
-  rdfc:target rdfc:node ;
-  rdfc:entrypoint "build/index.js" .
+  rdfc:target rdfc:NodeRunner ;
+  rdfc:entrypoint <./build/index.js> .
 
 []
   a sh:NodeShape ;
   sh:closed true ;
   sh:ignoredProperties ( rdf:type ) ;
-  sh:targetClass <Validator> ;
+  sh:targetClass rdfc:SHACLValidatorTS ;
   sh:property [
     sh:maxCount 1 ;
     sh:minCount 1 ;
@@ -33,32 +33,32 @@
         sh:maxCount 1 ;
         sh:minCount 1 ;
         sh:name "incoming" ;
-        sh:path <Validator/incoming> ;
-        sh:class rdfc:Reader;
+        sh:path rdfc:incoming ;
+        sh:class rdfc:Reader ;
       ], [
         sh:maxCount 1 ;
         sh:minCount 1 ;
         sh:name "outgoing" ;
-        sh:path <Validator/outgoing> ;
-        sh:class rdfc:Writer;
+        sh:path rdfc:outgoing ;
+        sh:class rdfc:Writer ;
       ], [
         sh:maxCount 1 ;
         sh:minCount 0 ;
         sh:name "report" ;
-        sh:path <Validator/report> ;
-        sh:class rdfc:Writer;
+        sh:path rdfc:report ;
+        sh:class rdfc:Writer ;
       ], [
         sh:maxCount 1 ;
         sh:minCount 0 ;
         sh:name "mime" ;
-        sh:path <Validator/mime> ;
-        sh:datatype xsd:string;
+        sh:path rdfc:mime ;
+        sh:datatype xsd:string ;
       ], [
         sh:maxCount 1 ;
         sh:minCount 0 ;
         sh:name "validation_is_fatal" ;
-        sh:path <Validator/validation_is_fatal> ;
-        sh:datatype xsd:bool;
+        sh:path rdfc:fatal ;
+        sh:datatype xsd:boolean ;
       ] ;
     ] ;
   ].

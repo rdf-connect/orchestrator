@@ -1,7 +1,11 @@
 package technology.idlab.intermediate
 
+import java.io.File
+
 /** A resolved dependency, with all of its configuration parameters. */
 data class IRPackage(
+    /** The location of the package on disk. */
+    val directory: File,
     /** The package's version. */
     val version: String? = null,
     /** The package's author. */
@@ -15,5 +19,7 @@ data class IRPackage(
     /** The preparation command, which is run before loading the processor. */
     val prepare: String? = null,
     /** The processors inside the package. */
-    val processors: List<IRProcessor>
+    val processors: List<IRProcessor> = emptyList(),
+    /** The runners inside the package. */
+    val runners: List<IRRunner> = emptyList(),
 )

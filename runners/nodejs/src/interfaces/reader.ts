@@ -11,7 +11,7 @@ export class Reader {
   async read(): Promise<Uint8Array> {
     try {
       const result = await firstValueFrom(this.channel.pipe());
-      console.log(`[unknown] -> '${result.toString()}'`);
+      console.log(`[unknown] -> '${result.toString().replace("\n", "\\n")}'`);
       return result;
     } catch (error) {
       throw RunnerError.channelError();
