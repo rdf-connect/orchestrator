@@ -1,9 +1,9 @@
 package technology.idlab.std
 
-import runner.jvm.Processor
-import runner.jvm.Reader
-import runner.jvm.Writer
-import technology.idlab.runner.jvm.Arguments
+import technology.idlab.runner.impl.jvm.Arguments
+import technology.idlab.runner.impl.jvm.Processor
+import technology.idlab.runner.impl.jvm.Reader
+import technology.idlab.runner.impl.jvm.Writer
 
 class Transparent(args: Arguments) : Processor(args) {
   private val input: Reader = arguments["input"]

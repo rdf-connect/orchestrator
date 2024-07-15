@@ -1,4 +1,4 @@
-package technology.idlab.runner.jvm
+package technology.idlab.runner.impl.jvm
 
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
@@ -116,7 +116,7 @@ data class Arguments(
             list.map { arg ->
               if (arg::class.isSubclassOf(Map::class)) {
                 if (safeCast(typeOf<Map<String, List<Any>>>(), arg)) {
-                  @Suppress("UNCHECKED_CAST") Arguments.from(arg as Map<String, List<Any>>)
+                  @Suppress("UNCHECKED_CAST") (from(arg as Map<String, List<Any>>))
                 } else {
                   Log.shared.fatal("Cannot have raw maps in arguments.")
                 }

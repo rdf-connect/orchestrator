@@ -1,13 +1,13 @@
 package processors
 
 import kotlinx.coroutines.channels.Channel
-import runner.jvm.Processor
-import runner.jvm.Reader
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
-import technology.idlab.runner.jvm.Arguments
+import technology.idlab.runner.impl.jvm.Arguments
+import technology.idlab.runner.impl.jvm.Processor
+import technology.idlab.runner.impl.jvm.Reader
 
 /**
  * The TappedReader processor provides a convenient way to read data from the pipeline during

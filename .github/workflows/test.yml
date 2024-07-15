@@ -30,11 +30,8 @@ jobs:
         with:
           node-version: '21'
 
-      - name: Install NPM dependencies
-        run: npm install --prefix runners/nodejs
-
-      - name: Build NPM runner
-        run: npm run build --prefix runners/nodejs
+      - name: Build
+        run: ./gradlew installDist --console=plain --warning-mode all
 
       - name: Run tests
-        run: ./gradlew test
+        run: ./gradlew test --console=plain --warning-mode all

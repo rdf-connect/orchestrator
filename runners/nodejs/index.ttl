@@ -14,4 +14,4 @@ rdfc:NodePackage
 
 rdfc:NodeRunner
   a rdfc:GRPCRunner ;
-  rdfc:entrypoint "node build/runtime localhost 5000" .
+  rdfc:entrypoint "node build/runtime" .

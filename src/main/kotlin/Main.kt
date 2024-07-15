@@ -1,12 +1,35 @@
 package technology.idlab
 
 import java.io.File
-import kotlin.concurrent.thread
 import kotlinx.coroutines.runBlocking
 import technology.idlab.extensions.rawPath
+import technology.idlab.intermediate.IRPackage
 import technology.idlab.parser.Parser
 import technology.idlab.util.Log
+import technology.idlab.util.ManagedProcess
 
+/**
+ * Execute the preparation commands in a package. If no such commands exists, the function will
+ * return immediately.
+ */
+internal fun prepare(pkg: IRPackage) {
+  Log.shared.debug { "Preparing package: file://${pkg.directory.rawPath()}" }
+
+  pkg.prepare?.forEach { stmt ->
+    // Create processor builder.
+    val builder = ProcessBuilder(stmt.split(" "))
+    builder.directory(File(pkg.directory.rawPath()))
+    builder.environment()["PATH"] = System.getenv("PATH")
+
+    // Execute and await the process.
+    val exitCode = ManagedProcess.from(builder).waitFor()
+    if (exitCode != 0) {
+      Log.shared.fatal("Failed to prepare package in ${pkg.directory.rawPath()}.")
+    }
+  }
+}
+
+/** Execute a pipeline at a given path. */
 internal suspend fun exec(path: String) {
   Log.shared.info("Starting the RDF-Connect orchestrator.")
 
@@ -28,51 +51,7 @@ internal suspend fun exec(path: String) {
   }
 
   // For each package, run the preparation command if it exists.
-  parser.packages.forEach { pkg ->
-    if (pkg.prepare?.isNotEmpty() == true) {
-      Log.shared.info("Preparing package in ${pkg.directory.rawPath()}")
-      pkg.prepare.forEach { stmt ->
-        Log.shared.info("Executing preparation command: ${pkg.prepare}")
-
-        // Create processor builder.
-        val builder = ProcessBuilder(stmt.split(" "))
-        builder.directory(File(pkg.directory.rawPath()))
-        builder.environment()["PATH"] = System.getenv("PATH")
-
-        // Start process.
-        val process = builder.start()
-
-        val input = thread {
-          val stream = process.inputStream.bufferedReader()
-          for (line in stream.lines()) {
-            Log.shared.info(line)
-          }
-        }
-
-        val output = thread {
-          val stream = process.errorStream.bufferedReader()
-          for (line in stream.lines()) {
-            Log.shared.fatal(line)
-          }
-        }
-
-        val exitCode =
-            try {
-              process.waitFor()
-            } catch (e: InterruptedException) {
-              Log.shared.fatal("Preparation command was interrupted due to ${e.message}")
-            }
-
-        if (exitCode != 0) {
-          Log.shared.fatal("Preparation command failed with exit code $exitCode.")
-        }
-
-        // Quit listening, process is done.
-        input.interrupt()
-        output.interrupt()
-      }
-    }
-  }
+  parser.packages.forEach { prepare(it) }
 
   // Start the orchestrator.
   Log.shared.debug("Invoking orchestrator.")

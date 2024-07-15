@@ -1,6 +1,5 @@
-package runner.jvm
+package technology.idlab.runner.impl.jvm
 
-import technology.idlab.runner.jvm.Arguments
 import technology.idlab.util.Log
 
 abstract class Processor(

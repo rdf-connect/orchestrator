@@ -1,4 +1,4 @@
-package runner.jvm
+package technology.idlab.runner.impl.jvm
 
 import kotlinx.coroutines.channels.Channel
 import runner.Runner.Payload

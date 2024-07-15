@@ -6,9 +6,9 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import runner.jvm.Processor
-import runner.jvm.Writer
-import technology.idlab.runner.jvm.Arguments
+import technology.idlab.runner.impl.jvm.Arguments
+import technology.idlab.runner.impl.jvm.Processor
+import technology.idlab.runner.impl.jvm.Writer
 
 class HttpFetch(args: Arguments) : Processor(args) {
   /** Meta configuration. */

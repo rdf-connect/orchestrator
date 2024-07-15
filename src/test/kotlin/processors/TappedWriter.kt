@@ -1,13 +1,13 @@
 package processors
 
 import kotlinx.coroutines.channels.Channel
-import runner.jvm.Processor
-import runner.jvm.Writer
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
-import technology.idlab.runner.jvm.Arguments
+import technology.idlab.runner.impl.jvm.Arguments
+import technology.idlab.runner.impl.jvm.Processor
+import technology.idlab.runner.impl.jvm.Writer
 
 /**
  * The TappedWriter processor provides a convenient way to write data into the pipeline during

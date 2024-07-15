@@ -31,7 +31,11 @@ tasks.shadowJar {
 }
 
 /** Use JUnit for testing. */
-tasks.test { useJUnitPlatform() }
+tasks.test {
+  useJUnitPlatform()
+
+  testLogging { showStandardStreams = true }
+}
 
 /** We define these explicitly due to the reliance on Protobuf and gRPC. */
 sourceSets { main { proto { srcDir("proto") } } }

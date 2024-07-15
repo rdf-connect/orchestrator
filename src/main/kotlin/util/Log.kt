@@ -2,6 +2,7 @@ package technology.idlab.util
 
 import java.time.format.DateTimeFormatter
 import java.util.*
+import technology.idlab.exception.RunnerException
 
 private const val TIME_PADDING = 15
 private const val THREAD_PADDING = 8
@@ -26,16 +27,19 @@ class Log private constructor(header: Boolean = true) {
 
   init {
     if (header) {
-      print("TIME".padEnd(TIME_PADDING, ' '))
-      print("THREAD".padEnd(THREAD_PADDING, ' '))
-      print("LEVEL".padEnd(LEVEL_PADDING, ' '))
-      print("LOCATION".padEnd(LOCATION_PADDING, ' '))
-      println("MESSAGE".padEnd(MESSAGE_PADDING, ' '))
-      print("----".padEnd(TIME_PADDING, ' '))
-      print("------".padEnd(THREAD_PADDING, ' '))
-      print("-----".padEnd(LEVEL_PADDING, ' '))
-      print("--------".padEnd(LOCATION_PADDING, ' '))
-      println("-------")
+      val builder = StringBuilder()
+      builder.append("TIME".padEnd(TIME_PADDING, ' '))
+      builder.append("THREAD".padEnd(THREAD_PADDING, ' '))
+      builder.append("LEVEL".padEnd(LEVEL_PADDING, ' '))
+      builder.append("LOCATION".padEnd(LOCATION_PADDING, ' '))
+      builder.append("MESSAGE".padEnd(MESSAGE_PADDING, ' '))
+      builder.append("\n----".padEnd(TIME_PADDING, ' '))
+      builder.append("------".padEnd(THREAD_PADDING, ' '))
+      builder.append("-----".padEnd(LEVEL_PADDING, ' '))
+      builder.append("--------".padEnd(LOCATION_PADDING, ' '))
+      builder.append("-------\n")
+
+      synchronized(System.out) { print(builder) }
     }
 
     Runtime.getRuntime().addShutdownHook(Thread { info("The JVM is shutting down.") })
@@ -70,27 +74,34 @@ class Log private constructor(header: Boolean = true) {
               "${clazz}::${method}::${call.lineNumber}"
             }
 
+    // Build the message.
+    val builder = StringBuilder()
+
     // If the message is of level debug, set color to gray.
     if (level == Level.DEBUG) {
-      print("\u001B[90m")
+      builder.append("\u001B[90m")
     }
 
     // If the message is severe, set the color to red.
     if (level == Level.SEVERE) {
-      print("\u001B[31m")
+      builder.append("\u001B[31m")
     }
 
-    // Print to the console.
-    print(time.padEnd(TIME_PADDING, ' '))
-    print(thread.padEnd(THREAD_PADDING, ' '))
-    print(levelCode.padEnd(LEVEL_PADDING, ' '))
-    print(usedLocation.padEnd(LOCATION_PADDING, ' '))
-    println(message)
+    // The actual message.
+    builder.append(time.padEnd(TIME_PADDING, ' '))
+    builder.append(thread.padEnd(THREAD_PADDING, ' '))
+    builder.append(levelCode.padEnd(LEVEL_PADDING, ' '))
+    builder.append(usedLocation.padEnd(LOCATION_PADDING, ' '))
+    builder.append(message)
+    builder.append("\n")
 
     // Reset coloring.
     if (level == Level.DEBUG || level == Level.SEVERE) {
-      print("\u001B[0m")
+      builder.append("\u001B[0m")
     }
+
+    // Print to the console, thread safe.
+    synchronized(System.out) { print(builder) }
   }
 
   /**
@@ -109,8 +120,7 @@ class Log private constructor(header: Boolean = true) {
    */
   fun fatal(message: String, location: String? = null): Nothing {
     output(message, Level.FATAL, location = location)
-    Runtime.getRuntime().exit(1)
-    throw Exception("This exception cannot be reached, but the Kotlin compiler doesn't know that.")
+    throw RunnerException()
   }
 
   /**
@@ -130,7 +140,7 @@ class Log private constructor(header: Boolean = true) {
    * @param message A function determining the message to print.
    */
   fun debug(message: () -> String) {
-    debug(message())
+    output(message(), Level.DEBUG)
   }
 
   /**

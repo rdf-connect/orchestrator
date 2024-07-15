@@ -1,9 +1,9 @@
-package runner.impl
+package runner.impl.jvm
 
 import kotlinx.coroutines.channels.Channel
 import runner.Runner
 import runner.RunnerTest
-import runner.jvm.JVMRunner
+import technology.idlab.runner.impl.jvm.JVMRunner
 
 class JVMRunnerTest : RunnerTest() {
   override val target = "https://rdf-connect.com/#/JVMRunner"

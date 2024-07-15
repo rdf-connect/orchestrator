@@ -1,11 +1,11 @@
 package runner
 
 import kotlinx.coroutines.channels.Channel
-import runner.impl.HostedGRPCRunner
-import runner.jvm.JVMRunner
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
+import technology.idlab.runner.impl.grpc.HostedGRPCRunner
+import technology.idlab.runner.impl.jvm.JVMRunner
 import technology.idlab.util.Log
 
 abstract class Runner(
@@ -42,7 +42,7 @@ abstract class Runner(
       if (runner.type == IRRunner.Type.GRPC) {
         runner.entrypoint ?: Log.shared.fatal("No entrypoint provided for GRPCRunner.")
         runner.directory ?: Log.shared.fatal("No directory provided for GRPCRunner.")
-        return HostedGRPCRunner(runner.entrypoint, runner.directory, channel)
+        return HostedGRPCRunner.create(runner.entrypoint, runner.directory, channel)
       } else if (runner.uri == "https://rdf-connect.com/#JVMRunner") {
         return JVMRunner(channel)
       } else {
