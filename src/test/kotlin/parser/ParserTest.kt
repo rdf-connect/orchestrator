@@ -37,7 +37,8 @@ class ParserTest {
     assertEquals("A simple description.", pkg.description)
     assertEquals("https://example.com.git", pkg.repo)
     assertEquals("MIT", pkg.license)
-    assertEquals("make", pkg.prepare)
+    assertEquals(1, pkg.prepare?.size)
+    assertEquals("make", pkg.prepare?.get(0))
 
     // Check the processors.
     assertEquals(1, pkg.processors.size)

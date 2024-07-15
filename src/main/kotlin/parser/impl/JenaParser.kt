@@ -273,13 +273,14 @@ private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
   val description = objectOfProperty(pkg, RDFC.description)
   val repo = objectOfProperty(pkg, RDFC.repo)
   val license = objectOfProperty(pkg, RDFC.license)
-  val prepare = objectOfProperty(pkg, RDFC.prepare)
   val processors =
       listObjectsOfProperty(pkg, RDFC.processors).toList().map { parseProcessor(it.asResource()) }
   val runners =
       listObjectsOfProperty(pkg, RDFC.runners).toList().map {
         parseRunner(directory, it.asResource())
       }
+
+  val prepare = listObjectsOfProperty(pkg, RDFC.prepare).toList().map { it.toString() }
 
   // Parse the properties to strings if required, and return the package IR.
   return IRPackage(
@@ -289,7 +290,7 @@ private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
       description = description.toString(),
       repo = repo.toString(),
       license = license.toString(),
-      prepare = prepare.toString(),
+      prepare = prepare,
       processors = processors,
       runners = runners,
   )

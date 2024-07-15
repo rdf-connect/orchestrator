@@ -7,7 +7,9 @@ rdfc:NodePackage
   rdfc:description "A gRPC based Node.js runner." ;
   rdfc:repo "https://github.com/rdf-connect/orchestrator" ;
   rdfc:license "MIT" ;
-  rdfc:prepare "npm run build" ;
+  rdfc:prepare
+    "npm install" ,
+    "npm run build" ;
   rdfc:runners rdfc:NodeRunner .
 
 rdfc:NodeRunner

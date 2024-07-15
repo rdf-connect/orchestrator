@@ -10,7 +10,9 @@
   rdfc:description "A SHACL Validator processor, written in TypeScript." ;
   rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
   rdfc:license "MIT" ;
-  rdfc:prepare "npm run build" ;
+  rdfc:prepare
+    "npm install" ,
+    "npm run build" ;
   rdfc:processors rdfc:SHACLValidatorTS .
 
 rdfc:SHACLValidatorTS

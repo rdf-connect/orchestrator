@@ -17,7 +17,7 @@ data class IRPackage(
     /** Source license of the package. */
     val license: String? = null,
     /** The preparation command, which is run before loading the processor. */
-    val prepare: String? = null,
+    val prepare: List<String>? = null,
     /** The processors inside the package. */
     val processors: List<IRProcessor> = emptyList(),
     /** The runners inside the package. */

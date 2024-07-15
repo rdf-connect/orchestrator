@@ -31,44 +31,46 @@ internal suspend fun exec(path: String) {
   parser.packages.forEach { pkg ->
     if (pkg.prepare?.isNotEmpty() == true) {
       Log.shared.info("Preparing package in ${pkg.directory.rawPath()}")
-      Log.shared.info("Executing preparation command: ${pkg.prepare}")
+      pkg.prepare.forEach { stmt ->
+        Log.shared.info("Executing preparation command: ${pkg.prepare}")
 
-      // Create processor builder.
-      val builder = ProcessBuilder(pkg.prepare.split(" "))
-      builder.directory(File(pkg.directory.rawPath()))
-      builder.environment()["PATH"] = System.getenv("PATH")
+        // Create processor builder.
+        val builder = ProcessBuilder(stmt.split(" "))
+        builder.directory(File(pkg.directory.rawPath()))
+        builder.environment()["PATH"] = System.getenv("PATH")
 
-      // Start process.
-      val process = builder.start()
+        // Start process.
+        val process = builder.start()
 
-      val input = thread {
-        val stream = process.inputStream.bufferedReader()
-        for (line in stream.lines()) {
-          Log.shared.info(line)
-        }
-      }
-
-      val output = thread {
-        val stream = process.errorStream.bufferedReader()
-        for (line in stream.lines()) {
-          Log.shared.fatal(line)
-        }
-      }
-
-      val exitCode =
-          try {
-            process.waitFor()
-          } catch (e: InterruptedException) {
-            Log.shared.fatal("Preparation command was interrupted due to ${e.message}")
+        val input = thread {
+          val stream = process.inputStream.bufferedReader()
+          for (line in stream.lines()) {
+            Log.shared.info(line)
           }
+        }
 
-      if (exitCode != 0) {
-        Log.shared.fatal("Preparation command failed with exit code $exitCode.")
+        val output = thread {
+          val stream = process.errorStream.bufferedReader()
+          for (line in stream.lines()) {
+            Log.shared.fatal(line)
+          }
+        }
+
+        val exitCode =
+            try {
+              process.waitFor()
+            } catch (e: InterruptedException) {
+              Log.shared.fatal("Preparation command was interrupted due to ${e.message}")
+            }
+
+        if (exitCode != 0) {
+          Log.shared.fatal("Preparation command failed with exit code $exitCode.")
+        }
+
+        // Quit listening, process is done.
+        input.interrupt()
+        output.interrupt()
       }
-
-      // Quit listening, process is done.
-      input.interrupt()
-      output.interrupt()
     }
   }
 
