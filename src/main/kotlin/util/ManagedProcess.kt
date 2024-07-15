@@ -38,7 +38,7 @@ class ManagedProcess(private val process: Process, private val name: String) {
   private val incoming = thread {
     val stream = process.inputStream.bufferedReader()
     for (line in stream.lines()) {
-      Log.shared.info(line, location = name)
+      Log.shared.command(line, location = name, pid = process.pid())
     }
   }
 

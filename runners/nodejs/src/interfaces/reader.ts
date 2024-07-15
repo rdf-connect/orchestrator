@@ -1,5 +1,6 @@
 import { firstValueFrom, Observable } from "rxjs";
 import { RunnerError } from "../error";
+import { Log } from "./log";
 
 export class Reader {
   private channel: Observable<Uint8Array>;
@@ -11,7 +12,12 @@ export class Reader {
   async read(): Promise<Uint8Array> {
     try {
       const result = await firstValueFrom(this.channel.pipe());
-      console.log(`[unknown] -> '${result.toString().replace("\n", "\\n")}'`);
+
+      Log.shared.debug(() => {
+        const serialized = result.toString().replace("\n", "\\n");
+        return `[unknown] -> '${serialized}`;
+      });
+
       return result;
     } catch (error) {
       throw RunnerError.channelError();

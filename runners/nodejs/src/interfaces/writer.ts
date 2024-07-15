@@ -1,4 +1,5 @@
 import { Observer } from "rxjs";
+import { Log } from "./log";
 
 export class Writer {
   private channel: Observer<Uint8Array>;
@@ -8,7 +9,11 @@ export class Writer {
   }
 
   write(bytes: Uint8Array): void {
-    console.log(`'${bytes.toString().replace("\n", "\\n")}' -> [unknown]`);
+    Log.shared.debug(() => {
+      const serialized = bytes.toString().replace("\n", "\\n");
+      return `'${serialized}' -> [unknown]`;
+    });
+
     this.channel.next(bytes);
   }
 }

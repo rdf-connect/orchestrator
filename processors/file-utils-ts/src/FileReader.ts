@@ -1,4 +1,4 @@
-import { Processor } from "jvm-runner-ts";
+import { Processor, Log } from "jvm-runner-ts";
 import * as fs from "node:fs";
 
 export default class FileWriter extends Processor {
@@ -15,7 +15,7 @@ export default class FileWriter extends Processor {
   });
 
   async exec(): Promise<void> {
-    console.log(`Reading file: ${this.path}`);
+    Log.shared.debug(() => `Reading file: ${this.path}`);
     const data = fs.readFileSync(this.path);
     this.outgoing.write(data);
   }

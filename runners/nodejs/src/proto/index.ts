@@ -11,8 +11,10 @@ import {
   Client,
   ClientDuplexStream,
   type ClientOptions,
+  ClientReadableStream,
   type ClientUnaryCall,
   handleBidiStreamingCall,
+  handleServerStreamingCall,
   type handleUnaryCall,
   makeGenericClientConstructor,
   Metadata,
@@ -25,9 +27,60 @@ import { IRStage } from "./intermediate";
 
 export const protobufPackage = "";
 
+export enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  SEVERE = 2,
+  FATAL = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function logLevelFromJSON(object: any): LogLevel {
+  switch (object) {
+    case 0:
+    case "DEBUG":
+      return LogLevel.DEBUG;
+    case 1:
+    case "INFO":
+      return LogLevel.INFO;
+    case 2:
+    case "SEVERE":
+      return LogLevel.SEVERE;
+    case 3:
+    case "FATAL":
+      return LogLevel.FATAL;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return LogLevel.UNRECOGNIZED;
+  }
+}
+
+export function logLevelToJSON(object: LogLevel): string {
+  switch (object) {
+    case LogLevel.DEBUG:
+      return "DEBUG";
+    case LogLevel.INFO:
+      return "INFO";
+    case LogLevel.SEVERE:
+      return "SEVERE";
+    case LogLevel.FATAL:
+      return "FATAL";
+    case LogLevel.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export interface ChannelData {
   destinationUri: string;
   data: Uint8Array;
+}
+
+export interface LogEntry {
+  message: string;
+  location: string;
+  level: LogLevel;
 }
 
 function createBaseChannelData(): ChannelData {
@@ -114,6 +167,101 @@ export const ChannelData = {
   },
 };
 
+function createBaseLogEntry(): LogEntry {
+  return { message: "", location: "", level: 0 };
+}
+
+export const LogEntry = {
+  encode(
+    message: LogEntry,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    if (message.location !== "") {
+      writer.uint32(18).string(message.location);
+    }
+    if (message.level !== 0) {
+      writer.uint32(24).int32(message.level);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): LogEntry {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLogEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.location = reader.string();
+          continue;
+        case 3:
+          if (tag !== 24) {
+            break;
+          }
+
+          message.level = reader.int32() as any;
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LogEntry {
+    return {
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+      location: isSet(object.location)
+        ? globalThis.String(object.location)
+        : "",
+      level: isSet(object.level) ? logLevelFromJSON(object.level) : 0,
+    };
+  },
+
+  toJSON(message: LogEntry): unknown {
+    const obj: any = {};
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
+    if (message.location !== "") {
+      obj.location = message.location;
+    }
+    if (message.level !== 0) {
+      obj.level = logLevelToJSON(message.level);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<LogEntry>, I>>(base?: I): LogEntry {
+    return LogEntry.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<LogEntry>, I>>(object: I): LogEntry {
+    const message = createBaseLogEntry();
+    message.message = object.message ?? "";
+    message.location = object.location ?? "";
+    message.level = object.level ?? 0;
+    return message;
+  },
+};
+
 export type RunnerService = typeof RunnerService;
 export const RunnerService = {
   load: {
@@ -149,12 +297,24 @@ export const RunnerService = {
       Buffer.from(ChannelData.encode(value).finish()),
     responseDeserialize: (value: Buffer) => ChannelData.decode(value),
   },
+  log: {
+    path: "/Runner/log",
+    requestStream: false,
+    responseStream: true,
+    requestSerialize: (value: Empty) =>
+      Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
+    responseSerialize: (value: LogEntry) =>
+      Buffer.from(LogEntry.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => LogEntry.decode(value),
+  },
 } as const;
 
 export interface RunnerServer extends UntypedServiceImplementation {
   load: handleUnaryCall<IRStage, Empty>;
   exec: handleUnaryCall<Empty, Empty>;
   channel: handleBidiStreamingCall<ChannelData, ChannelData>;
+  log: handleServerStreamingCall<Empty, LogEntry>;
 }
 
 export interface RunnerClient extends Client {
@@ -196,6 +356,15 @@ export interface RunnerClient extends Client {
     metadata: Metadata,
     options?: Partial<CallOptions>,
   ): ClientDuplexStream<ChannelData, ChannelData>;
+  log(
+    request: Empty,
+    options?: Partial<CallOptions>,
+  ): ClientReadableStream<LogEntry>;
+  log(
+    request: Empty,
+    metadata?: Metadata,
+    options?: Partial<CallOptions>,
+  ): ClientReadableStream<LogEntry>;
 }
 
 export const RunnerClient = makeGenericClientConstructor(

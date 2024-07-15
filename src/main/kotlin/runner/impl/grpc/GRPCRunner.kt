@@ -4,11 +4,13 @@ import RunnerGrpcKt
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
+import kotlin.concurrent.thread
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import runner.Runner
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
@@ -42,6 +44,23 @@ abstract class GRPCRunner(
 
   // Create a gRPC stub.
   private val grpc = RunnerGrpcKt.RunnerCoroutineStub(conn)
+
+  // Map the incoming log messages to the shared logger.
+  private val logger =
+      thread(isDaemon = true) {
+        runBlocking {
+          grpc.log(empty).collect {
+            when (it.level ?: Index.LogLevel.UNRECOGNIZED) {
+              Index.LogLevel.DEBUG -> Log.shared.debug(it.message, location = it.location)
+              Index.LogLevel.INFO -> Log.shared.info(it.message, location = it.location)
+              Index.LogLevel.SEVERE -> Log.shared.severe(it.message, location = it.location)
+              Index.LogLevel.FATAL -> Log.shared.fatal(it.message, location = it.location)
+              Index.LogLevel.UNRECOGNIZED ->
+                  Log.shared.fatal("Unknown log level.", location = it.location)
+            }
+          }
+        }
+      }
 
   override suspend fun exit() {
     Log.shared.debug("Exiting GRPCRunner.")

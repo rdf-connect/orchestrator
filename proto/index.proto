@@ -8,8 +8,22 @@ message ChannelData {
   bytes data = 2;
 }
 
+enum LogLevel {
+  DEBUG = 0;
+  INFO = 1;
+  SEVERE = 2;
+  FATAL = 3;
+}
+
+message LogEntry {
+  string message = 1;
+  string location = 2;
+  LogLevel level = 3;
+}
+
 service Runner {
   rpc load(IRStage) returns (Empty);
   rpc exec(Empty) returns (Empty);
   rpc channel(stream ChannelData) returns (stream ChannelData);
+  rpc log(Empty) returns (stream LogEntry);
 }

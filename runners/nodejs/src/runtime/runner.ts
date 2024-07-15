@@ -4,7 +4,7 @@ import {
   IRParameterType,
   IRStage,
 } from "../proto/intermediate";
-import { ChannelData } from "../proto";
+import { ChannelData, LogEntry } from "../proto";
 import { Subject, Subscription } from "rxjs";
 import { Processor } from "../interfaces/processor";
 import * as path from "node:path";
@@ -13,6 +13,7 @@ import { Writer } from "../interfaces/writer";
 import { RunnerError } from "../error";
 import { asMap, tryOrPanic } from "./util";
 import { Arguments } from "./arguments";
+import { Log } from "../interfaces/log";
 
 /**
  * The actual implementation of the runner, and the core of the program. It is
@@ -199,20 +200,18 @@ export class Runner {
    * @param stage The stage to be instantiated.
    */
   async load(stage: IRStage): Promise<void> {
-    console.log(`Loading stage: ${stage.uri}`);
-
+    // Get the path of the processor.
     let path = stage.processor!.entrypoint;
     if (path.startsWith("file://")) {
       path = path.substring(7);
     }
 
     // Load the processor into Node.js.
-    console.log(`Importing processor: ${path}`);
+    Log.shared.debug(() => `Importing processor: file://${path}`);
     const processor = await import(path);
     const constructor = processor.default;
 
     // Parse the stage's arguments.
-    console.log("Parsing arguments.");
     const params =
       stage.processor?.parameters ?? RunnerError.missingParameters();
     const rawArguments = asMap(stage.arguments);
@@ -221,15 +220,18 @@ export class Runner {
       asMap(params),
     );
 
-    // Instantiate the processor with the parsed arguments.
-    console.log("Instantiating processor.");
-    const instance = tryOrPanic(() => {
-      return new constructor(new Arguments(parsedArguments));
-    });
+    try {
+      // Instantiate the processor with the parsed arguments.
+      Log.shared.debug(() => `Instantiating stage: ${stage.uri}`);
+      const instance = tryOrPanic(() => {
+        return new constructor(new Arguments(parsedArguments));
+      });
 
-    // Keep track of it in the stages map.
-    console.log("Loading stage done.");
-    this.stages.set(stage.uri, instance);
+      // Keep track of it in the stages map.
+      this.stages.set(stage.uri, instance);
+    } catch (e) {
+      Log.shared.fatal(`Could not instantiate stage: ${stage.uri}`);
+    }
   }
 
   /**
@@ -238,13 +240,14 @@ export class Runner {
    * all executions have been started.
    */
   async exec(): Promise<void> {
-    console.log("Executing stages.");
+    Log.shared.info("Execution started.");
+
     this.stages.forEach((stage) => {
       new Promise(() => {
         try {
           return stage.exec();
         } catch (e) {
-          console.error(e);
+          Log.shared.fatal("Error while executing stage.");
           throw e;
         }
       });

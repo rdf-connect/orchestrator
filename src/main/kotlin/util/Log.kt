@@ -5,10 +5,11 @@ import java.util.*
 import technology.idlab.exception.RunnerException
 
 private const val TIME_PADDING = 15
-private const val THREAD_PADDING = 8
+private const val TASK_PADDING = 8
 private const val LEVEL_PADDING = 7
 private const val LOCATION_PADDING = 35
-private const val MESSAGE_PADDING = 50
+private const val SHIFT = TIME_PADDING + TASK_PADDING + LEVEL_PADDING + LOCATION_PADDING
+private const val MESSAGE_PADDING = 87
 
 /**
  * A simple logging class that prints messages to the console. The class is a singleton, and all
@@ -19,6 +20,7 @@ private const val MESSAGE_PADDING = 50
  */
 class Log private constructor(header: Boolean = true) {
   private enum class Level {
+    CMD,
     DEBUG,
     INFO,
     SEVERE,
@@ -28,13 +30,16 @@ class Log private constructor(header: Boolean = true) {
   init {
     if (header) {
       val builder = StringBuilder()
+      builder.append("\u001B[1m")
       builder.append("TIME".padEnd(TIME_PADDING, ' '))
-      builder.append("THREAD".padEnd(THREAD_PADDING, ' '))
+      builder.append("TASK".padEnd(TASK_PADDING, ' '))
       builder.append("LEVEL".padEnd(LEVEL_PADDING, ' '))
       builder.append("LOCATION".padEnd(LOCATION_PADDING, ' '))
       builder.append("MESSAGE".padEnd(MESSAGE_PADDING, ' '))
-      builder.append("\n----".padEnd(TIME_PADDING, ' '))
-      builder.append("------".padEnd(THREAD_PADDING, ' '))
+      builder.append("\n")
+      builder.append("\u001B[0m")
+      builder.append("----".padEnd(TIME_PADDING, ' '))
+      builder.append("----".padEnd(TASK_PADDING, ' '))
       builder.append("-----".padEnd(LEVEL_PADDING, ' '))
       builder.append("--------".padEnd(LOCATION_PADDING, ' '))
       builder.append("-------\n")
@@ -51,7 +56,7 @@ class Log private constructor(header: Boolean = true) {
    * @param message The message to print.
    * @param level The level of the message.
    */
-  private fun output(message: String, level: Level, location: String? = null) {
+  private fun output(message: String, level: Level, location: String? = null, pid: Long? = null) {
     // Get the current time.
     val instant = Date().toInstant()
     val tz = instant.atZone(TimeZone.getDefault().toZoneId())
@@ -59,7 +64,7 @@ class Log private constructor(header: Boolean = true) {
     val time = tz.format(iso)
 
     // Get the thread ID.
-    val thread = Thread.currentThread().id.toString()
+    val thread = (pid ?: Thread.currentThread().id).toString()
 
     // Get the level.
     val levelCode = level.name
@@ -79,7 +84,12 @@ class Log private constructor(header: Boolean = true) {
 
     // If the message is of level debug, set color to gray.
     if (level == Level.DEBUG) {
-      builder.append("\u001B[90m")
+      builder.append("\u001B[37m")
+    }
+
+    // If the message is of level command, set color to muted yellow.
+    if (level == Level.CMD) {
+      builder.append("\u001B[38;5;180m")
     }
 
     // If the message is severe, set the color to red.
@@ -89,14 +99,14 @@ class Log private constructor(header: Boolean = true) {
 
     // The actual message.
     builder.append(time.padEnd(TIME_PADDING, ' '))
-    builder.append(thread.padEnd(THREAD_PADDING, ' '))
+    builder.append(thread.padEnd(TASK_PADDING, ' '))
     builder.append(levelCode.padEnd(LEVEL_PADDING, ' '))
     builder.append(usedLocation.padEnd(LOCATION_PADDING, ' '))
     builder.append(message)
     builder.append("\n")
 
     // Reset coloring.
-    if (level == Level.DEBUG || level == Level.SEVERE) {
+    if (level == Level.DEBUG || level == Level.SEVERE || level == Level.CMD) {
       builder.append("\u001B[0m")
     }
 
@@ -129,8 +139,8 @@ class Log private constructor(header: Boolean = true) {
    *
    * @param message The message to print.
    */
-  fun debug(message: String) {
-    output(message, Level.DEBUG)
+  fun debug(message: String, location: String? = null) {
+    output(message, Level.DEBUG, location = location)
   }
 
   /**
@@ -150,6 +160,10 @@ class Log private constructor(header: Boolean = true) {
    */
   fun severe(message: String, location: String? = null) {
     output(message, Level.SEVERE, location = location)
+  }
+
+  fun command(message: String, pid: Long, location: String) {
+    output(message, Level.CMD, location = location, pid = pid)
   }
 
   companion object {
