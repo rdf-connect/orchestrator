@@ -10,9 +10,10 @@ rdfc:FileUtilsTS
   rdfc:description "Utility processors for interacting with the file system." ;
   rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
   rdfc:license "MIT" ;
-  rdfc:prepare
-    "npm install" ,
-    "npm run build" ;
+  rdfc:prepare (
+    "npm install"
+    "npm run build"
+  ) ;
   rdfc:processors
     rdfc:FileReaderTS ,
     rdfc:FileWriterTS .

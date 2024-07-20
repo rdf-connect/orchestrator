@@ -299,6 +299,18 @@ private fun Model.parseDependencies(pipeline: Resource?): List<IRDependency> {
   }
 }
 
+private fun Model.getCollection(resource: Resource): List<RDFNode> {
+  val first =
+      objectOfProperty(resource, RDF.first) ?: Log.shared.fatal("No first element: $resource")
+  val rest = objectOfProperty(resource, RDF.rest) ?: Log.shared.fatal("No rest element: $resource")
+
+  return if (rest != RDF.nil) {
+    listOf(first) + getCollection(rest.asResource())
+  } else {
+    listOf(first)
+  }
+}
+
 private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
   Log.shared.debug("Parsing package: $pkg")
 
@@ -315,7 +327,13 @@ private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
         parseRunner(directory, it.asResource())
       }
 
-  val prepare = listObjectsOfProperty(pkg, RDFC.prepare).toList().map { it.toString() }
+  val prepareCollection = objectOfProperty(pkg, RDFC.prepare)
+  val prepare =
+      if (prepareCollection != null) {
+        getCollection(prepareCollection.asResource()).map { it.toString() }
+      } else {
+        emptyList()
+      }
 
   // Parse the properties to strings if required, and return the package IR.
   return IRPackage(

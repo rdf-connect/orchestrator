@@ -16,6 +16,11 @@ test:DummyPackage
   rdfc:description "A simple description." ;
   rdfc:repo "https://example.com.git" ;
   rdfc:license "MIT" ;
-  rdfc:prepare "make" ;
+  rdfc:prepare (
+    "make"
+    "make install"
+    "make test"
+    "make clean"
+  ) ;
   rdfc:processors test:DummyProcessor ;
   rdfc:runners test:DummyRunner .
