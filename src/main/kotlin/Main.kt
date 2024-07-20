@@ -51,7 +51,7 @@ internal suspend fun exec(path: String) {
   }
 
   // For each package, run the preparation command if it exists.
-  parser.packages.forEach { prepare(it) }
+  parser.packages.sortedBy { it.runners.size * -1 }.forEach { prepare(it) }
 
   // Start the orchestrator.
   Log.shared.debug("Invoking orchestrator.")
