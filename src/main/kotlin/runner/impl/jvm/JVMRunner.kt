@@ -2,17 +2,16 @@ package technology.idlab.runner.impl.jvm
 
 import arrow.core.zip
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import runner.Runner
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
+import technology.idlab.runner.Runner
 import technology.idlab.util.Log
 
 private const val STAGE_NO_CLASS = "Processor has no class key set."

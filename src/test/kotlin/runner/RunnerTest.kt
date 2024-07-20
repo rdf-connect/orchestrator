@@ -11,6 +11,7 @@ import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
+import technology.idlab.runner.Runner
 import technology.idlab.util.Log
 
 abstract class RunnerTest {

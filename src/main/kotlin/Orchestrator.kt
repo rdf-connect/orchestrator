@@ -1,18 +1,17 @@
 package technology.idlab
 
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import runner.Runner
 import technology.idlab.intermediate.IRPipeline
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
+import technology.idlab.runner.Runner
 import technology.idlab.util.Log
 
 class Orchestrator(

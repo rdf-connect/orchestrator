@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import runner.Runner
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
+import technology.idlab.runner.Runner
 import technology.idlab.util.Log
 
 /**

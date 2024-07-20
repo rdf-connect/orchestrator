@@ -1,4 +1,4 @@
-package runner
+package technology.idlab.runner
 
 import kotlinx.coroutines.channels.Channel
 import technology.idlab.intermediate.IRProcessor

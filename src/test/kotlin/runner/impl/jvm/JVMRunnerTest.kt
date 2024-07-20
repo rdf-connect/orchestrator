@@ -1,8 +1,8 @@
 package runner.impl.jvm
 
 import kotlinx.coroutines.channels.Channel
-import runner.Runner
 import runner.RunnerTest
+import technology.idlab.runner.Runner
 import technology.idlab.runner.impl.jvm.JVMRunner
 
 class JVMRunnerTest : RunnerTest() {

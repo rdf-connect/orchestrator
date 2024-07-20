@@ -5,6 +5,7 @@ import kotlin.random.Random
 import kotlin.random.nextUInt
 import kotlinx.coroutines.channels.Channel
 import technology.idlab.extensions.rawPath
+import technology.idlab.runner.Runner
 import technology.idlab.util.ManagedProcess
 
 /**
@@ -14,7 +15,7 @@ import technology.idlab.util.ManagedProcess
 class HostedGRPCRunner
 private constructor(
     /** The channel to send messages to. */
-    fromProcessors: Channel<Payload>,
+    fromProcessors: Channel<Runner.Payload>,
     /** The process which contains the gRPC server. */
     process: ManagedProcess,
     /** The configuration of the gRPC server. */
