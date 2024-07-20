@@ -1,13 +1,13 @@
 package processors
 
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.impl.jvm.Arguments
 import technology.idlab.runner.impl.jvm.Processor
-import technology.idlab.runner.impl.jvm.Writer
 
 /**
  * The TappedWriter processor provides a convenient way to write data into the pipeline during
@@ -16,11 +16,11 @@ import technology.idlab.runner.impl.jvm.Writer
  */
 class TappedWriter(args: Arguments) : Processor(args) {
   /** Writer which is exposed to the pipeline. */
-  private val output: Writer = arguments["output"]
+  private val output: SendChannel<ByteArray> = arguments["output"]
 
   /** Continuously read data from the global channel and write it to the output. */
   override suspend fun exec() {
-    output.push(input.receive())
+    output.send(input.receive())
     input.close()
   }
 

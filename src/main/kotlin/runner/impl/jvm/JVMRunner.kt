@@ -1,12 +1,16 @@
 package technology.idlab.runner.impl.jvm
 
 import arrow.core.zip
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import technology.idlab.extensions.map
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
@@ -20,6 +24,10 @@ private const val REQUIRES_PROCESSOR_BASE_CLASS = "Class does not extend Process
 class JVMRunner(
     fromProcessors: Channel<Payload>,
 ) : Runner(fromProcessors) {
+  /** A shared coroutine scope. */
+  private val job = Job()
+  private val scope = CoroutineScope(Dispatchers.Default + job)
+
   /** Map of all stages in the runner. */
   private val stages = mutableMapOf<String, Processor>()
 
@@ -47,6 +55,8 @@ class JVMRunner(
 
   override suspend fun exec() = coroutineScope {
     Log.shared.info("Executing all stages.")
+
+    job.start()
 
     // Create a new job which routes the messages.
     val router = launch {
@@ -109,11 +119,13 @@ class JVMRunner(
       IRParameter.Type.INT -> value.toInt()
       IRParameter.Type.LONG -> value.toLong()
       IRParameter.Type.STRING -> value
-      IRParameter.Type.WRITER -> return Writer(this.fromProcessors, value)
+      IRParameter.Type.WRITER -> {
+        this.fromProcessors.map<Payload, ByteArray>(scope) { Payload(value, it) }
+      }
       IRParameter.Type.READER -> {
         val channel = this.readers[value] ?: Channel()
         this.readers[value] = channel
-        return Reader(channel, value)
+        return channel
       }
     }
   }

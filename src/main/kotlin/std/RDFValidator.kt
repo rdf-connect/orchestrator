@@ -2,6 +2,8 @@ package technology.idlab.std
 
 import java.io.ByteArrayOutputStream
 import java.io.File
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.SendChannel
 import org.apache.jena.graph.Graph
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
@@ -9,8 +11,6 @@ import org.apache.jena.riot.RiotException
 import org.apache.jena.shacl.ShaclValidator
 import technology.idlab.runner.impl.jvm.Arguments
 import technology.idlab.runner.impl.jvm.Processor
-import technology.idlab.runner.impl.jvm.Reader
-import technology.idlab.runner.impl.jvm.Writer
 import technology.idlab.util.Log
 
 class RDFValidator(args: Arguments) : Processor(args) {
@@ -21,8 +21,8 @@ class RDFValidator(args: Arguments) : Processor(args) {
   /** Arguments. */
   private val errorIsFatal: Boolean? = arguments["error_is_fatal"]
   private val printReport: Boolean? = arguments["print_report"]
-  private val input: Reader = arguments["input"]
-  private val output: Writer = arguments["output"]
+  private val input: ReceiveChannel<ByteArray> = arguments["input"]
+  private val output: SendChannel<ByteArray> = arguments["output"]
 
   /** Runtime fields. */
   private val shapes: Graph
@@ -46,13 +46,10 @@ class RDFValidator(args: Arguments) : Processor(args) {
 
   /** Read incoming data, validate it, and output it. */
   override suspend fun exec() {
-    while (true) {
-      // Read incoming data.
-      val res = input.read()
-
+    for (data in input) {
       // Parse as a model.
       try {
-        model.read(res.inputStream(), null, "TURTLE")
+        model.read(data.inputStream(), null, "TURTLE")
       } catch (e: RiotException) {
         Log.shared.fatal("Failed to read incoming RDF data.")
       }
@@ -62,7 +59,7 @@ class RDFValidator(args: Arguments) : Processor(args) {
 
       if (report.conforms()) {
         // Propagate to the output.
-        output.push(res)
+        output.send(data)
       } else {
         // Print the report if required.
         if (printReport ?: printReportDefault) {

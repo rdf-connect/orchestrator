@@ -1,13 +1,13 @@
 package processors
 
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.impl.jvm.Arguments
 import technology.idlab.runner.impl.jvm.Processor
-import technology.idlab.runner.impl.jvm.Reader
 
 /**
  * The TappedReader processor provides a convenient way to read data from the pipeline during
@@ -16,11 +16,11 @@ import technology.idlab.runner.impl.jvm.Reader
  */
 class TappedReader(args: Arguments) : Processor(args) {
   /** The channel which is exposed to the pipeline. */
-  private val input: Reader = arguments["input"]
+  private val input: ReceiveChannel<ByteArray> = arguments["input"]
 
   /** Continuously read data from the input and write it to the global channel. */
   override suspend fun exec() {
-    output.send(input.read())
+    output.send(input.receive())
     output.close()
   }
 

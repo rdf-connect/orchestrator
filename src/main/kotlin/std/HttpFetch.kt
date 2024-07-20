@@ -6,9 +6,9 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.channels.SendChannel
 import technology.idlab.runner.impl.jvm.Arguments
 import technology.idlab.runner.impl.jvm.Processor
-import technology.idlab.runner.impl.jvm.Writer
 
 class HttpFetch(args: Arguments) : Processor(args) {
   /** Meta configuration. */
@@ -16,7 +16,7 @@ class HttpFetch(args: Arguments) : Processor(args) {
 
   /** Parameters. */
   private val endpoint: String = arguments["endpoint"]
-  private val output: Writer = arguments["output"]
+  private val output: SendChannel<ByteArray> = arguments["output"]
   private val headers: Array<String> = arguments["headers"]
   private val method: String = arguments.get<String?>("method") ?: "GET"
 
@@ -45,7 +45,7 @@ class HttpFetch(args: Arguments) : Processor(args) {
 
     // Push the result to the output.
     val bytes = res.readBytes()
-    output.push(bytes)
+    output.send(bytes)
   }
 
   internal fun overwriteEngine(engine: HttpClientEngine) {
