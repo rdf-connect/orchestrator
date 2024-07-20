@@ -1,6 +1,7 @@
 package runner.impl.jvm
 
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import technology.idlab.exception.RunnerException
@@ -8,6 +9,11 @@ import technology.idlab.runner.impl.jvm.Arguments
 import technology.idlab.util.Log
 
 class ArgumentsTest {
+  @BeforeEach
+  fun setup() {
+    Log.shared.setFatalMode(Log.FatalMode.EXCEPTION)
+  }
+
   @Test
   fun single() {
     val args = Arguments(mapOf("key" to listOf("value")))
@@ -98,9 +104,6 @@ class ArgumentsTest {
 
   @Test
   fun inheritance() {
-    // Do not exit on fatal messages.
-    Log.shared.setFatalMode(Log.FatalMode.EXCEPTION)
-
     // The base class.
     open class A
 

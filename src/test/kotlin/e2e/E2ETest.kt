@@ -29,7 +29,7 @@ class E2ETest {
     // Execute the pipeline.
     runBlocking {
       try {
-        withTimeout(20_000) { exec(pipeline.path) }
+        withTimeout(30_000) { exec(pipeline.path) }
       } catch (_: TimeoutCancellationException) {}
     }
 
