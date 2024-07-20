@@ -1,4 +1,4 @@
-import { Arguments, Processor } from "jvm-runner-ts";
+import { Arguments, Log, Processor } from "jvm-runner-ts";
 import rdf, { PrefixMapFactory } from "rdf-ext";
 import Serializer from "@rdfjs/serializer-turtle";
 import formatsPretty from "@rdfjs/formats/pretty.js";
@@ -6,7 +6,7 @@ import { Validator } from "shacl-engine";
 import { Readable } from "stream";
 
 export default class SHACLValidator extends Processor {
-  private incoming = this.args.get("input", {
+  private incoming = this.args.get("incoming", {
     type: "reader",
     list: "false",
     nullable: "false",
@@ -24,7 +24,7 @@ export default class SHACLValidator extends Processor {
     nullable: "true",
   });
 
-  private path = this.args.get("path", {
+  private path = this.args.get("shapes", {
     type: "string",
     list: "false",
     nullable: "false",
@@ -66,11 +66,12 @@ export default class SHACLValidator extends Processor {
     // Create a new validator.
     const res = await rdf.fetch(this.path);
     if (!res.ok) {
-      throw Error("Could not parse SHACL path.");
+      Log.shared.fatal("Could not fetch SHACL file.");
     }
 
-    const shapes = await res.dataset().catch(() => {
-      throw Error("Could not parse SHACL file.");
+    // Read the shapes file.
+    const shapes = await res.dataset().catch((e) => {
+      Log.shared.fatal(`Could not parse SHACL file: ${e}`);
     });
 
     // Parse input stream using shape stream.
@@ -78,16 +79,18 @@ export default class SHACLValidator extends Processor {
     const validator = new Validator(shapes, { factory: rdf });
 
     // eslint-ignore no-constant-condition
-    while (true) {
-      // Parse data into a dataset.
+    while (!this.incoming.isClosed()) {
+      // Convert incoming data to a quad stream.
       const data = await this.incoming.read();
       const rawStream = Readable.from(data);
       const quadStream = parser.import(rawStream);
+
+      // Create a new dataset.
       const dataset = await rdf
         .dataset()
         .import(quadStream)
         .catch(() => {
-          throw new Error("The incoming data could not be parsed");
+          Log.shared.fatal("The incoming data could not be parsed");
         });
 
       // Run through validator.
@@ -95,13 +98,18 @@ export default class SHACLValidator extends Processor {
 
       // Pass through data if valid.
       if (result.conforms) {
+        Log.shared.debug("Validation passed.");
         this.outgoing.write(data);
       } else if (this.validationIsFatal) {
-        throw new Error("Validation failed");
+        Log.shared.fatal("Validation failed and is fatal.");
       } else if (this.report) {
+        Log.shared.debug("Validation failed.");
         const resultRaw = serializer.transform(result.dataset);
         this.report.write(new TextEncoder().encode(resultRaw));
       }
     }
+
+    this.outgoing.close();
+    this.report?.close();
   }
 }

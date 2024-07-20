@@ -15,12 +15,15 @@
 import { Writer } from "../interfaces/writer";
 import { Reader } from "../interfaces/reader";
 import { RunnerError } from "../error";
+import { Channel } from "../interfaces/channel";
+import { CallbackChannel } from "../interfaces/callback_channel";
+import { BufferedCallbackChannel } from "../interfaces/buffered_callback_channel";
 
 /**
  * Argument types supported by RDF-Connect. These are enumerated as strings, in
  * order to support usage at runtime through literals.
  */
-type Type =
+export type Type =
   | "boolean"
   | "byte"
   | "date"
@@ -53,9 +56,9 @@ type GetType<T extends Type> = T extends "boolean"
               : T extends "string"
                 ? string
                 : T extends "writer"
-                  ? Writer
+                  ? Writer<Uint8Array>
                   : T extends "reader"
-                    ? Reader
+                    ? Reader<Uint8Array>
                     : T extends "map"
                       ? Arguments
                       : never;
@@ -84,9 +87,13 @@ function conforms(value: unknown, type: Type): boolean {
     case "string":
       return typeof value === "string";
     case "writer":
-      return value instanceof Writer;
+      return (
+        value instanceof Channel ||
+        value instanceof CallbackChannel ||
+        value instanceof BufferedCallbackChannel
+      );
     case "reader":
-      return value instanceof Reader;
+      return value instanceof Channel;
     case "map":
       return value instanceof Arguments;
     default:
@@ -97,12 +104,12 @@ function conforms(value: unknown, type: Type): boolean {
 /**
  * Literal type which indicates if the requested type is a singleton or a list.
  */
-type List = "true" | "false";
+export type List = "true" | "false";
 
 /**
  * Literal type which indicate if the requested type is a nullable or not.
  */
-type Nullable = "true" | "false";
+export type Nullable = "true" | "false";
 
 /**
  * Given a type `T`, return either `T` or `T[]` based on a `List` value.
@@ -125,7 +132,7 @@ type GetNullable<T, N extends Nullable | undefined> = N extends undefined
 /**
  * Describes the return type of a returned argument function.
  */
-type Options<
+export type Options<
   T extends Type,
   L extends List | undefined,
   N extends Nullable | undefined,

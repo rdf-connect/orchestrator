@@ -58,11 +58,11 @@ class Orchestrator(
         try {
           withTimeout(1000) {
             val message = channel.receive()
-            val target = readers[message.channel]!!
-            Log.shared.info(
-                "Brokering message '${
-                  message.data.decodeToString().replace("\n", "\\n")
-                }' to ${message.channel}.")
+            val target =
+                readers[message.channel] ?: Log.shared.fatal("Unknown reader: ${message.channel}")
+
+            Log.shared.debug { "'${message.channel}' <> [${message.data.size} bytes]" }
+
             target.toProcessors.send(message)
           }
         } catch (_: TimeoutCancellationException) {}

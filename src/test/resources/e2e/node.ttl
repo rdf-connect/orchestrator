@@ -6,27 +6,54 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-test:channel a rdfc:Channel .
+test:report a rdfc:Channel .
+test:validated a rdfc:Channel .
+test:unvalidated a rdfc:Channel .
 
 test:NodePipeline
   a rdfc:Pipeline ;
   rdfc:name "Node.js Testing Pipeline" ;
   rdfc:description "Pipeline for end-to-end testing of the Node.js runner." ;
-  rdfc:stages test:FileReader, test:FileWriter ;
+  rdfc:stages
+    test:FileReader ,
+    test:SHACLValidator ,
+    test:FileWriter ,
+    test:ReportWriter ;
   rdfc:dependency
     <../../../../runners/nodejs> ,
-    <../../../../processors/file-utils-ts> .
+    <../../../../processors/file-utils-ts> ,
+    <../../../../processors/shacl-validator-ts> .
 
 test:FileReader
   a rdfc:FileReaderTS ;
   rdfc:arguments [
-    rdfc:path "/tmp/rdfc-testing/input.txt" ;
-    rdfc:outgoing test:channel ;
+    rdfc:paths
+      <./data/valid.ttl> ,
+      <./data/invalid.ttl> ;
+    rdfc:outgoing test:unvalidated ;
+  ] .
+
+test:SHACLValidator
+  a rdfc:SHACLValidatorTS ;
+  rdfc:arguments [
+    rdfc:incoming test:unvalidated ;
+    rdfc:outgoing test:validated ;
+    rdfc:report test:report ;
+    rdfc:shapes <./shacl/shapes.ttl> ;
+    rdfc:mime "text/turtle" ;
+    rdfc:fatal "false"^^xsd:boolean ;
   ] .
 
 test:FileWriter
   a rdfc:FileWriterTS ;
   rdfc:arguments [
-    rdfc:path "/tmp/rdfc-testing/output.txt" ;
-    rdfc:incoming test:channel ;
+    rdfc:path </tmp/rdfc-testing/valid.ttl> ;
+    rdfc:incoming test:validated ;
+  ] .
+
+test:ReportWriter
+  a rdfc:FileWriterTS ;
+  rdfc:arguments [
+    rdfc:path </tmp/rdfc-testing/report.ttl> ;
+    rdfc:incoming test:report ;
   ] .

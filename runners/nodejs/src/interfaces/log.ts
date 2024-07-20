@@ -1,5 +1,6 @@
 import { Subject } from "rxjs";
 import { LogEntry, LogLevel } from "../proto";
+import { RunnerError } from "../error";
 
 /**
  * Simple wrapper class which exposes an observable to which log messages are
@@ -23,6 +24,13 @@ export class Log {
   }
 
   /**
+   * Write a fatal message to the log stream and do not return.
+   */
+  fatal(message: string): never {
+    throw RunnerError.stageError(message);
+  }
+
+  /**
    * Write a message to the log stream with the DEBUG level.
    * @param message The message to write, either as literal or a function
    */
@@ -40,14 +48,6 @@ export class Log {
    */
   severe(message: string): void {
     this.push({ level: LogLevel.SEVERE, message });
-  }
-
-  /**
-   * Write a fatal message, indicating that the program must halt afterward.
-   * @param message The message to write.
-   */
-  fatal(message: string): void {
-    this.push({ level: LogLevel.FATAL, message });
   }
 
   /**

@@ -4,16 +4,17 @@ import {
   IRParameterType,
   IRStage,
 } from "../proto/intermediate";
-import { ChannelData, LogEntry } from "../proto";
-import { Subject, Subscription } from "rxjs";
+import { ChannelData } from "../proto";
 import { Processor } from "../interfaces/processor";
-import * as path from "node:path";
 import { Reader } from "../interfaces/reader";
 import { Writer } from "../interfaces/writer";
 import { RunnerError } from "../error";
-import { asMap, tryOrPanic } from "./util";
+import { asMap } from "./util";
 import { Arguments } from "./arguments";
 import { Log } from "../interfaces/log";
+import { Channel } from "../interfaces/channel";
+import { CallbackChannel } from "../interfaces/callback_channel";
+import { BufferedCallbackChannel } from "../interfaces/buffered_callback_channel";
 
 /**
  * The actual implementation of the runner, and the core of the program. It is
@@ -27,30 +28,21 @@ import { Log } from "../interfaces/log";
 export class Runner {
   // The incoming channel is bound to by an external object. Whenever data is
   // written to it, it is handled by the runner as an incoming message.
-  public incoming = new Subject<ChannelData>();
+  public incoming = new CallbackChannel<ChannelData>((data) => {
+    this.handleMessage(data);
+  });
 
   // All writers are bound to the outgoing channel, and after it is written to,
   // the runner will delegate the messages to the server implementation.
-  public outgoing = new Subject<ChannelData>();
-
-  // The handler for incoming message. Note that this value is not used, but
-  // kept as a reference to ensure the subscription is not dropped.
-  private incomingSubscription: Subscription;
+  public outgoing = new BufferedCallbackChannel<ChannelData>();
 
   // Maps the URIs of channels to their corresponding readers. We use this map
   // to route incoming messages to their correct receiver.
-  private readers: Map<String, Subject<Uint8Array>> = new Map();
+  private readers: Map<String, Channel<Uint8Array>> = new Map();
 
   // We keep track of the stages that are loaded into the runner by URI. These
   // are instantiated beforehand and can be executed or interrupted.
   private stages: Map<String, Processor> = new Map();
-
-  // The constructor binds the handler to the incoming message stream.
-  constructor() {
-    this.incomingSubscription = this.incoming.subscribe((x) =>
-      this.handleMessage(x),
-    );
-  }
 
   /**
    * Handle an incoming message by routing it to the correct reader. This is
@@ -63,7 +55,7 @@ export class Runner {
     if (!reader) {
       throw new Error(`Reader not found for payload ${payload.destinationUri}`);
     }
-    reader.next(payload.data);
+    reader.write(payload.data);
   }
 
   /**
@@ -73,15 +65,13 @@ export class Runner {
    * @param channelURI The channel to write to as a URI.
    * @private
    */
-  private createWriter(channelURI: string): Writer {
-    const subject = new Subject<Uint8Array>();
-    subject.subscribe((data) => {
-      this.outgoing.next({
+  private createWriter(channelURI: string): Writer<Uint8Array> {
+    return new CallbackChannel((data) => {
+      this.outgoing.write({
         destinationUri: channelURI,
         data: data,
       });
     });
-    return new Writer(subject);
   }
 
   /**
@@ -91,10 +81,10 @@ export class Runner {
    * @param channelURI The channel to read from as a URI.
    * @private
    */
-  private createReader(channelURI: string): Reader {
-    const subject = new Subject<Uint8Array>();
-    this.readers.set(channelURI, subject);
-    return new Reader(subject);
+  private createReader(channelURI: string): Reader<Uint8Array> {
+    const channel = new Channel<Uint8Array>();
+    this.readers.set(channelURI, channel);
+    return channel;
   }
 
   /**
@@ -106,6 +96,8 @@ export class Runner {
    * @private
    */
   private parseSimpleArgument(type: IRParameterType, value: string): unknown {
+    Log.shared.debug(() => `Parsing '${value}' as ${IRParameterType[type]}`);
+
     if (type == IRParameterType.BOOLEAN) {
       return value == "true";
     } else if (type == IRParameterType.BYTE) {
@@ -134,12 +126,17 @@ export class Runner {
   /**
    * Parse a single parameter, either simple or complex, into its native Node.js
    * representation.
+   * @param name The nam eof the argument.
    * @param arg The arguments to parse.
    * @param param The parameter to parse.
    */
-  private parseArgument(arg: IRArgument, param: IRParameter): unknown[] {
+  private parseArgument(
+    name: string,
+    arg: IRArgument,
+    param: IRParameter,
+  ): unknown[] {
     // If the argument is complex, we need to recursively parse the arguments.
-    if (arg.complex && param.complex) {
+    if (arg.complex != undefined && param.complex != undefined) {
       const params = asMap(param.complex.parameters);
 
       // Recursively call for each value.
@@ -150,14 +147,10 @@ export class Runner {
     }
 
     // If the argument is a single value, we can parse it directly.
-    if (arg.simple && param.simple) {
-      const params =
-        param.simple ??
-        RunnerError.inconsistency("Expected simple parameter, found complex.");
-
+    if (arg.simple != undefined && param.simple != undefined) {
       // Recursively call for each value.
       return arg.simple.value.map((value) =>
-        this.parseSimpleArgument(params, value),
+        this.parseSimpleArgument(param.simple!, value),
       );
     }
 
@@ -184,7 +177,7 @@ export class Runner {
     // if required.
     for (const [name, arg] of args) {
       const param = params.get(name) ?? RunnerError.missingParameter(name);
-      const parsed = this.parseArgument(arg, param);
+      const parsed = this.parseArgument(name, arg, param);
 
       // Set the argument.
       result.set(name, parsed);
@@ -220,18 +213,13 @@ export class Runner {
       asMap(params),
     );
 
-    try {
-      // Instantiate the processor with the parsed arguments.
-      Log.shared.debug(() => `Instantiating stage: ${stage.uri}`);
-      const instance = tryOrPanic(() => {
-        return new constructor(new Arguments(parsedArguments));
-      });
+    // Instantiate the processor with the parsed arguments.
+    Log.shared.debug(() => `Instantiating stage: ${stage.uri}`);
+    const args = new Arguments(parsedArguments);
+    const instance = new constructor(args);
 
-      // Keep track of it in the stages map.
-      this.stages.set(stage.uri, instance);
-    } catch (e) {
-      Log.shared.fatal(`Could not instantiate stage: ${stage.uri}`);
-    }
+    // Keep track of it in the stages map.
+    this.stages.set(stage.uri, instance);
   }
 
   /**
@@ -242,16 +230,15 @@ export class Runner {
   async exec(): Promise<void> {
     Log.shared.info("Execution started.");
 
-    this.stages.forEach((stage) => {
-      new Promise(() => {
-        try {
-          return stage.exec();
-        } catch (e) {
-          Log.shared.fatal("Error while executing stage.");
-          throw e;
-        }
-      });
+    // Execute all stations.
+    const execs = [...this.stages.entries()].map(async ([uri, stage]) => {
+      Log.shared.debug(() => `Executing stage: ${uri}`);
+      await stage.exec();
+      Log.shared.debug(() => `Finished stage: ${uri}`);
     });
+
+    // Discard results.
+    return Promise.all(execs).then(() => {});
   }
 
   /**

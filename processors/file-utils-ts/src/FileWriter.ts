@@ -15,9 +15,21 @@ export default class FileWriter extends Processor {
   });
 
   async exec(): Promise<void> {
-    while (true) {
+    // Remove the file prefix, since that is not valid in Node.js.
+    if (this.path.startsWith("file://")) {
+      this.path = this.path.slice(7);
+    }
+
+    // Remove file.
+    try {
+      fs.unlinkSync(this.path);
+    } catch (e) {
+      Log.shared.debug(() => `Could not remove file: ${this.path}`);
+    }
+
+    while (!this.incoming.isClosed()) {
       const data = await this.incoming.read();
-      Log.shared.debug(() => `Writing to ${this.path}: ${data.toString()}`);
+      Log.shared.debug(() => `Writing file: ${this.path}`);
       fs.writeFileSync(this.path, data, { flag: "a" });
     }
   }

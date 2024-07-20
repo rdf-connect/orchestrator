@@ -4,7 +4,9 @@ import RunnerGrpcKt
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
+import io.grpc.StatusException
 import kotlin.concurrent.thread
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
@@ -15,7 +17,6 @@ import runner.Runner
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 import technology.idlab.util.Log
-import technology.idlab.util.retries
 
 /**
  * This runner has GRPC built-in, so the only configuration that an extending class needs to provide
@@ -72,17 +73,19 @@ abstract class GRPCRunner(
 
   override suspend fun load(processor: IRProcessor, stage: IRStage) {
     val payload = stage.toGRPC(processor.toGRPC())
-    retries(5, 1000) { grpc.load(payload) }
+
+    try {
+      grpc.load(payload)
+    } catch (e: StatusException) {
+      Log.shared.fatal("Failed to load stage: ${e.message}")
+    }
   }
 
   override suspend fun exec() = coroutineScope {
     // Create a flow for outgoing messages.
     val toGRPCProcessors =
         toProcessors.receiveAsFlow().map {
-          Log.shared.debug {
-            val value = it.data.decodeToString().replace("\n", "\\n")
-            "'$value' -> [${it.channel}]"
-          }
+          Log.shared.debug { "'${it.channel}' -> [${it.data.size} bytes]" }
 
           val builder = Index.ChannelData.newBuilder()
           builder.setDestinationUri(it.channel)
@@ -99,18 +102,24 @@ abstract class GRPCRunner(
           .channel(toGRPCProcessors)
           .map { Payload(it.destinationUri, it.data.toByteArray()) }
           .collect {
-            Log.shared.debug {
-              val value = it.data.decodeToString().replace("\n", "\\n")
-              "'$value' -> [${it.channel}]"
+            Log.shared.debug { "'${it.channel}' <- [${it.data.size} bytes]" }
+
+            try {
+              fromProcessors.send(it)
+            } catch (e: CancellationException) {
+              Log.shared.debug("Cancellation exception: ${e.message}")
             }
-            fromProcessors.send(it)
           }
 
       Log.shared.debug("Ending routing messages in GRPCRunner.")
     }
 
     // Attempt to execute the pipelines.
-    retries(5, 1000) { grpc.exec(empty) }
+    try {
+      grpc.exec(empty)
+    } catch (e: StatusException) {
+      Log.shared.fatal("Failed to execute pipeline: ${e.message}")
+    }
 
     // Wait for the router to finish.
     router.join()

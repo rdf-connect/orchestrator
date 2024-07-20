@@ -8,6 +8,7 @@
     "test": "vitest run --coverage --coverage.include src",
     "format": "eslint --fix . && prettier --write ."
   },
+  "type": "module",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "files": [

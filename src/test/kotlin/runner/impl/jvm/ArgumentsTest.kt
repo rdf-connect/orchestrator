@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import technology.idlab.exception.RunnerException
 import technology.idlab.runner.impl.jvm.Arguments
+import technology.idlab.util.Log
 
 class ArgumentsTest {
   @Test
@@ -97,6 +98,9 @@ class ArgumentsTest {
 
   @Test
   fun inheritance() {
+    // Do not exit on fatal messages.
+    Log.shared.setFatalMode(Log.FatalMode.EXCEPTION)
+
     // The base class.
     open class A
 

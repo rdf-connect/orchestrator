@@ -34,6 +34,12 @@ rdfc:SHACLValidatorTS
       sh:property [
         sh:maxCount 1 ;
         sh:minCount 1 ;
+        sh:name "shapes" ;
+        sh:path rdfc:shapes ;
+        sh:nodeKind sh:IRIOrLiteral ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
         sh:name "incoming" ;
         sh:path rdfc:incoming ;
         sh:class rdfc:Reader ;

@@ -1,0 +1,14 @@
+@prefix test: <https://www.rdf-connect.com/test#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# The coordinates should be given as floats, but are given as integers instead.
+<Ghent>
+  a test:Coordinate ;
+  test:latitude "51"^^xsd:int ;
+  test:longitude "3"^^xsd:int .
+
+# The coordinates are given by the incorrect URI.
+<Barcelona>
+  a test:Coordinate ;
+  test:lat "41.39"^^xsd:float ;
+  test:lon "2.14"^^xsd:float .

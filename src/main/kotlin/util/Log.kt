@@ -2,6 +2,7 @@ package technology.idlab.util
 
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.system.exitProcess
 import technology.idlab.exception.RunnerException
 
 private const val TIME_PADDING = 15
@@ -26,6 +27,18 @@ class Log private constructor(header: Boolean = true) {
     SEVERE,
     FATAL,
   }
+
+  /**
+   * The mode in which the logger will handle fatal messages. If the mode is set to EXCEPTION, the
+   * logger will throw an exception. If the mode is set to EXIT, the logger will exit the program.
+   */
+  internal enum class FatalMode {
+    EXCEPTION,
+    EXIT,
+  }
+
+  /** The mode in which the logger will handle fatal messages. The default mode is set to EXIT. */
+  private var fatalMode = FatalMode.EXIT
 
   init {
     if (header) {
@@ -97,6 +110,11 @@ class Log private constructor(header: Boolean = true) {
       builder.append("\u001B[31m")
     }
 
+    // Color the background red in fatal cases.
+    if (level == Level.FATAL) {
+      builder.append("\u001B[97m\u001B[48;5;52m")
+    }
+
     // The actual message.
     builder.append(time.padEnd(TIME_PADDING, ' '))
     builder.append(thread.padEnd(TASK_PADDING, ' '))
@@ -106,9 +124,7 @@ class Log private constructor(header: Boolean = true) {
     builder.append("\n")
 
     // Reset coloring.
-    if (level == Level.DEBUG || level == Level.SEVERE || level == Level.CMD) {
-      builder.append("\u001B[0m")
-    }
+    builder.append("\u001B[0m")
 
     // Print to the console, thread safe.
     synchronized(System.out) { print(builder) }
@@ -130,7 +146,11 @@ class Log private constructor(header: Boolean = true) {
    */
   fun fatal(message: String, location: String? = null): Nothing {
     output(message, Level.FATAL, location = location)
-    throw RunnerException()
+
+    when (this.fatalMode) {
+      FatalMode.EXCEPTION -> throw RunnerException()
+      FatalMode.EXIT -> exitProcess(1)
+    }
   }
 
   /**
@@ -164,6 +184,10 @@ class Log private constructor(header: Boolean = true) {
 
   fun command(message: String, pid: Long, location: String) {
     output(message, Level.CMD, location = location, pid = pid)
+  }
+
+  internal fun setFatalMode(fatalMode: Log.FatalMode) {
+    this.fatalMode = fatalMode
   }
 
   companion object {

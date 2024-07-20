@@ -11,7 +11,7 @@ export abstract class Processor {
   }
 
   /* The actual implementation of the processor must be overridden here. */
-  public exec(): void {
+  public async exec(): Promise<void> {
     throw RunnerError.missingImplementation();
   }
 }

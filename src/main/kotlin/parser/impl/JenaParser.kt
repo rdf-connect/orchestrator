@@ -86,6 +86,7 @@ private fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParamet
   val node = objectOfProperty(property, SHACLM.node)?.asResource()
   val datatype = objectOfProperty(property, SHACLM.datatype)?.asResource()
   val clazz = objectOfProperty(property, SHACLM.class_)?.asResource()
+  val kind = objectOfProperty(property, SHACLM.nodeKind)?.asResource()
 
   // Retrieve the path of the property.
   val path =
@@ -113,7 +114,9 @@ private fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParamet
 
   // Create a new parameter object.
   val parameter =
-      if (clazz != null) {
+      if (kind != null) {
+        IRParameter(simple = IRParameter.Type.STRING, presence = presence, count = count)
+      } else if (clazz != null) {
         IRParameter(simple = clazz.toIRParameterType(), presence = presence, count = count)
       } else if (datatype != null) {
         IRParameter(simple = datatype.toIRParameterType(), presence = presence, count = count)
@@ -142,6 +145,38 @@ private fun Model.parseSHACLShape(shape: Resource): Map<String, IRParameter> {
   return result
 }
 
+private fun Model.isSimpleSHACLShape(path: Resource): Boolean {
+  val property =
+      subjectWithProperty(SHACLM.path, path)
+          ?: Log.shared.fatal("No property found for path: $path")
+
+  val datatype = objectOfProperty(property, SHACLM.datatype)?.asResource()
+  val clazz = objectOfProperty(property, SHACLM.class_)?.asResource()
+  val kind = objectOfProperty(property, SHACLM.nodeKind)?.asResource()
+
+  if (listOfNotNull(datatype, clazz, kind).size > 1) {
+    Log.shared.fatal("Cannot combine sh:datatype, sh:class or sh:nodeKind.")
+  }
+
+  // A datatype always points to a literal.
+  if (datatype != null) {
+    return true
+  }
+
+  // Specific classes are always simple.
+  if (clazz != null && listOf(RDFC.channel, RDFC.reader, RDFC.writer).contains(clazz)) {
+    return true
+  }
+
+  // If the kind can optionally be a literal, it should be handled as such.
+  if (kind != null && kind == SHACLM.IRIOrLiteral) {
+    return true
+  }
+
+  // Default case: it is a complex object.
+  return false
+}
+
 private fun Model.nameOfSHACLPath(path: Resource): String {
   val property =
       subjectWithProperty(SHACLM.path, path)
@@ -161,32 +196,32 @@ private fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
   // Go over each triple of the resource. If it is a literal, add it to the simple list. Otherwise,
   // call recursively and add it to the complex list.
   for (triple in listStatements(node, null, null as RDFNode?)) {
+    // The predicate must equal the SHACL path.
+    val path = triple.predicate
+
+    // Skip the type predicate, if it is given.
     if (triple.predicate == RDF.type) {
       continue
     }
 
-    val key = nameOfSHACLPath(triple.predicate)
+    // Get the name of the argument.
+    val key = nameOfSHACLPath(path)
     val value = triple.`object`
 
-    // If the value is a literal, it is always simple.
-    if (value.isLiteral) {
+    if (isSimpleSHACLShape(path)) {
       val list = simple.getOrPut(key) { mutableListOf() }
-      list.add(value.asLiteral().string)
-      continue
+      val v =
+          if (value.isLiteral) {
+            value.asLiteral().value
+          } else {
+            value.asResource()
+          }
+      list.add(v.toString())
+    } else {
+      val list = complex.getOrPut(key) { mutableListOf() }
+      val nested = parseArguments(value.asResource())
+      list.add(nested)
     }
-
-    // If the value is a resource, pointing to a Reader or Writer, it is always simple as well.
-    val type = objectOfProperty(value.asResource(), RDF.type)
-    if (type == RDFC.channel || type == RDFC.writer || type == RDFC.reader) {
-      val list = simple.getOrPut(key) { mutableListOf() }
-      list.add(value.toString())
-      continue
-    }
-
-    // Else, parse it as a complex argument.
-    val list = complex.getOrPut(key) { mutableListOf() }
-    val nested = parseArguments(value.asResource())
-    list.add(nested)
   }
 
   // Combine both simple and complex mappings as a single map to IRArguments.

@@ -43,4 +43,8 @@ export class RunnerError extends Error {
   static unexpectedBehaviour(): never {
     throw new RunnerError("Unexpected behaviour");
   }
+
+  static stageError(message: string): never {
+    throw new RunnerError(message);
+  }
 }

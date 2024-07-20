@@ -45,11 +45,10 @@ rdfc:FileWriterTS
         sh:path rdfc:outgoing ;
         sh:class rdfc:Writer;
       ], [
-        sh:maxCount 1 ;
         sh:minCount 1 ;
-        sh:name "path" ;
-        sh:path rdfc:path ;
-        sh:datatype xsd:string ;
+        sh:name "paths" ;
+        sh:path rdfc:paths ;
+        sh:nodeKind sh:IRIOrLiteral ;
       ] ;
     ] ;
   ].
@@ -76,7 +75,7 @@ rdfc:FileWriterTS
         sh:minCount 1 ;
         sh:name "path" ;
         sh:path rdfc:path ;
-        sh:datatype xsd:string ;
+        sh:nodeKind sh:IRIOrLiteral ;
       ] ;
     ] ;
   ].

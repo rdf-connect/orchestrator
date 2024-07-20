@@ -46,7 +46,7 @@ class ManagedProcess(private val process: Process, private val name: String) {
   private val outgoing = thread {
     val stream = process.errorStream.bufferedReader()
     for (line in stream.lines()) {
-      Log.shared.fatal(line, location = name)
+      Log.shared.severe(line, location = name)
     }
   }
 

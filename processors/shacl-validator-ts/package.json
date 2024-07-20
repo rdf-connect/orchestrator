@@ -15,6 +15,7 @@
   "keywords": [
     "rdf-connect"
   ],
+  "type": "module",
   "author": "Jens Pots",
   "license": "MIT",
   "bugs": {

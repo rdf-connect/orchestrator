@@ -21,9 +21,9 @@ import {
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
-import * as _m0 from "protobufjs/minimal";
-import { Empty } from "./empty";
-import { IRStage } from "./intermediate";
+import _m0 from "protobufjs/minimal.js";
+import { Empty } from "./empty.js";
+import { IRStage } from "./intermediate.js";
 
 export const protobufPackage = "";
 
