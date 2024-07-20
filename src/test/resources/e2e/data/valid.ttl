@@ -1,0 +1,14 @@
+@prefix test: <https://www.rdf-connect.com/test#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Correct entry.
+<Ghent>
+  a test:Coordinate ;
+  test:latitude "51.05"^^xsd:float ;
+  test:longitude "3.73"^^xsd:float .
+
+# Correct entry.
+<Barcelona>
+  a test:Coordinate ;
+  test:latitude "41.39"^^xsd:float ;
+  test:longitude "2.14"^^xsd:float .
