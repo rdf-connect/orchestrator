@@ -32,8 +32,8 @@ class TappedWriter(args: Arguments) : Processor(args) {
     val processor =
         IRProcessor(
             "tapped_writer",
-            "https://rdf-connect.com/#JVMRunner",
-            "",
+            "https://www.rdf-connect.com/#JVMRunner",
+            null,
             mapOf(
                 "output" to
                     IRParameter(

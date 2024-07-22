@@ -1,12 +1,8 @@
 syntax = "proto3";
 
+import "channel.proto";
 import "empty.proto";
 import "intermediate.proto";
-
-message ChannelData {
-  string destination_uri = 1;
-  bytes data = 2;
-}
 
 enum LogLevel {
   DEBUG = 0;
@@ -24,6 +20,6 @@ message LogEntry {
 service Runner {
   rpc load(IRStage) returns (Empty);
   rpc exec(Empty) returns (Empty);
-  rpc channel(stream ChannelData) returns (stream ChannelData);
+  rpc channel(stream ChannelMessage) returns (stream ChannelMessage);
   rpc log(Empty) returns (stream LogEntry);
 }

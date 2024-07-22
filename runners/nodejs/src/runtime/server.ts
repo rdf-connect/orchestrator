@@ -1,4 +1,4 @@
-import { ChannelData, LogEntry, RunnerServer } from "../proto";
+import { LogEntry, RunnerServer } from "../proto";
 import {
   sendUnaryData,
   ServerDuplexStream,
@@ -10,6 +10,7 @@ import { IRStage } from "../proto/intermediate";
 import { Empty } from "../proto/empty";
 import { Runner } from "./runner";
 import { Log } from "../interfaces/log";
+import { ChannelMessage } from "../proto/channel";
 
 /**
  * The implementation of the gRPC server. This class binds the incoming server
@@ -25,12 +26,9 @@ export class ServerImplementation implements RunnerServer {
    * implemented by gRPC as callbacks, but can be easily bound to the runners
    * internal handlers.
    */
-  channel(call: ServerDuplexStream<ChannelData, ChannelData>): void {
+  channel(call: ServerDuplexStream<ChannelMessage, ChannelMessage>): void {
     // On incoming data, call the appropriate reader.
-    call.on("data", function (payload: ChannelData) {
-      Log.shared.debug(
-        () => `'${payload.destinationUri} -> [${payload.data.length} bytes]'`,
-      );
+    call.on("data", function (payload: ChannelMessage) {
       Runner.shared.incoming.write(payload);
     });
 

@@ -12,7 +12,14 @@ export class CallbackChannel<T> implements Writer<T> {
    * The callback that is called whenever a value is written to the channel.
    * @private
    */
-  private readonly callback: (value: T) => void | Promise<void>;
+  private readonly onWrite: (value: T) => Promise<void>;
+
+  /**
+   * A callback to execute when the channel is closed. Note that this will wait
+   * for the remaining data to be written before closing the channel.
+   * @private
+   */
+  private readonly onClose: null | (() => Promise<void>) = null;
 
   /**
    * Whether the channel has been closed or not.
@@ -22,26 +29,43 @@ export class CallbackChannel<T> implements Writer<T> {
 
   /**
    * Create a new callback channel with a specific callback.
-   * @param callback The callback to call whenever a value is written to the
+   * @param onWrite The callback to call whenever a value is written to the
+   * @param onClose An optional callback to execute when the channel is closed.
    * channel.
    */
-  constructor(callback: (value: T) => void | Promise<void>) {
-    this.callback = callback;
+  constructor(
+    onWrite: (value: T) => Promise<void>,
+    onClose: (() => Promise<void>) | null = null,
+  ) {
+    this.onWrite = onWrite;
+    this.onClose = onClose;
   }
 
-  close(): void {
+  close(): Promise<void> {
+    // Channels cannot be closed twice.
+    if (this.closed) {
+      RunnerError.channelError();
+    }
+
     this.closed = true;
+
+    // Execute the callback.
+    if (this.onClose) {
+      return this.onClose();
+    } else {
+      return Promise.resolve();
+    }
   }
 
   isClosed(): boolean {
-    return false;
+    return this.closed;
   }
 
-  write(data: T): void {
+  write(data: T): Promise<void> {
     if (!this.closed) {
-      this.callback(data);
+      return this.onWrite(data);
     } else {
-      RunnerError.channelError();
+      throw RunnerError.channelError();
     }
   }
 }

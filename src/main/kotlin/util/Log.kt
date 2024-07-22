@@ -86,7 +86,7 @@ class Log private constructor(header: Boolean = true) {
     val usedLocation =
         location
             ?: run {
-              val call = Throwable().stackTrace[3]
+              val call = Throwable().stackTrace[4]
               val clazz = call.className.substringAfterLast(".").substringBefore("$")
               val method = call.methodName.substringBefore("$")
               "${clazz}::${method}::${call.lineNumber}"

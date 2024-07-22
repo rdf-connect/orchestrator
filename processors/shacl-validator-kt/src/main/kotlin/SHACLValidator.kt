@@ -1,7 +1,6 @@
 package technology.idlab.validator
 
 import java.io.ByteArrayOutputStream
-import java.io.File
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import org.apache.jena.graph.Graph
@@ -31,12 +30,11 @@ class SHACLValidator(args: Arguments) : Processor(args) {
   init {
     // Initialize the shape graph and validator.
     Log.shared.debug { "Loading: $path" }
-    val file = File(path)
 
     // Create a new model with the SHACL shapes.
     val model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
     try {
-      model.read(file.toURI().toString(), "TURTLE")
+      model.read(path, "TURTLE")
     } catch (e: RiotException) {
       Log.shared.fatal("Failed to read SHACL shapes from file://$path")
     }

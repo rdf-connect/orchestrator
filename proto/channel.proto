@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+message Channel {
+  string uri = 1;
+}
+
+message ChannelData {
+  bytes bytes = 1;
+}
+
+enum ChannelMessageType {
+  DATA = 0;
+  CLOSE = 1;
+}
+
+message ChannelMessage {
+  Channel channel = 1;
+  ChannelMessageType type = 2;
+  optional ChannelData data = 3;
+}

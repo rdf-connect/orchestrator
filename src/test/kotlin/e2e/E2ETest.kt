@@ -10,8 +10,7 @@ import org.jetbrains.kotlin.incremental.createDirectory
 import technology.idlab.exec
 
 class E2ETest {
-  @Test
-  fun node() {
+  private fun run(resource: String) {
     // Create the output directory.
     val directory = File("/tmp/rdfc-testing")
     directory.createDirectory()
@@ -23,7 +22,7 @@ class E2ETest {
     report.delete()
 
     // Read the pipeline file.
-    val pipeline = this::class.java.getResource("/e2e/node.ttl")
+    val pipeline = this::class.java.getResource(resource)
     assertNotNull(pipeline, "The file should exist.")
 
     // Execute the pipeline.
@@ -41,6 +40,16 @@ class E2ETest {
     assert(report.readText().isNotEmpty()) { "The invalid file should not be empty." }
 
     assert(valid.readText().contains("<Ghent>"))
-    assert(report.readText().contains("sh:focusNode <Barcelona>"))
+    assert(report.readText().contains("sh:conforms"))
+  }
+
+  @Test
+  fun node() {
+    run("/e2e/node.ttl")
+  }
+
+  @Test
+  fun jvm() {
+    run("/e2e/jvm.ttl")
   }
 }

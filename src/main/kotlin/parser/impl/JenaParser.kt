@@ -52,6 +52,7 @@ private class RDFC {
     val reader = createResource("${NS}Reader")!!
     val writer = createResource("${NS}Writer")!!
     val grpcRunner = createResource("${NS}GRPCRunner")!!
+    val builtInRunner = createResource("${NS}BuiltInRunner")!!
   }
 }
 
@@ -236,10 +237,20 @@ private fun Model.parseRunner(directory: File, runner: Resource): IRRunner {
   val type =
       objectOfProperty(runner, RDF.type) ?: Log.shared.fatal("No type found for runner: $runner")
 
-  if (type == RDFC.grpcRunner) {
-    return IRRunner(runner.toString(), directory, entrypoint, IRRunner.Type.GRPC)
-  } else {
-    Log.shared.fatal("Unknown runner type: $type")
+  when (type) {
+    RDFC.grpcRunner -> {
+      return IRRunner(runner.toString(), directory, entrypoint, IRRunner.Type.GRPC)
+    }
+    RDFC.builtInRunner -> {
+      if (entrypoint != null) {
+        Log.shared.fatal("Built in runner $runner has entrypoint, but will be discarded.")
+      }
+
+      return IRRunner(runner.toString(), directory, null, IRRunner.Type.BUILT_IN)
+    }
+    else -> {
+      Log.shared.fatal("Unknown runner type: $type")
+    }
   }
 }
 
@@ -416,7 +427,19 @@ class JenaParser(file: File) : Parser() {
     // Parse the file.
     this.pipelines = this.pipelines()
     this.processors = this.packages.map { it.processors }.flatten()
-    this.runners = this.packages.map { it.runners }.flatten()
+
+    // Packaged runners.
+    val runners = this.packages.map { it.runners }.toMutableList()
+
+    // Retrieve built in runners.
+    val builtInRunners =
+        this.model.listSubjectsWithProperty(RDF.type, RDFC.builtInRunner).toList().map {
+          IRRunner(it.toString(), type = IRRunner.Type.BUILT_IN)
+        }
+    runners.add(builtInRunners)
+
+    // Combine both runner types.
+    this.runners = runners.flatten()
   }
 
   /** Parse the file as a list of pipelines, returning its containing stages and dependencies. */

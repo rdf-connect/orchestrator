@@ -32,8 +32,8 @@ class TappedReader(args: Arguments) : Processor(args) {
     val processor =
         IRProcessor(
             "tapped_reader",
-            "https://rdf-connect.com/#JVMRunner",
-            "",
+            "https://www.rdf-connect.com/#JVMRunner",
+            null,
             mapOf(
                 "input" to
                     IRParameter(

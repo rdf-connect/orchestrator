@@ -17,14 +17,15 @@
 
 rdfc:SHACLValidatorKT
   a rdfc:Processor ;
-  rdfc:target rdfc:KotlinRunner ;
-  rdfc:entrypoint <./build/libs/shacl-validator-kt-1.0-SNAPSHOT.jar> .
+  rdfc:target rdfc:JVMRunner ;
+  rdfc:entrypoint <./build/libs/shacl-validator-kt-1.0-SNAPSHOT.jar> ;
+  rdfc:metadata "class: technology.idlab.validator.SHACLValidator".
 
 []
   a sh:NodeShape ;
   sh:closed true ;
   sh:ignoredProperties ( rdf:type ) ;
-  sh:targetClass rdfc:SHACLValidatorTS ;
+  sh:targetClass rdfc:SHACLValidatorKT ;
   sh:property [
     sh:maxCount 1 ;
     sh:minCount 1 ;
@@ -61,6 +62,12 @@ rdfc:SHACLValidatorKT
         sh:name "validation_is_fatal" ;
         sh:path rdfc:fatal ;
         sh:datatype xsd:boolean ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "mime" ;
+        sh:path rdfc:mime ;
+        sh:datatype xsd:string ;
       ] ;
     ] ;
   ].

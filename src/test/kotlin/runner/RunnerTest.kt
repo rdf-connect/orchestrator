@@ -72,7 +72,7 @@ abstract class RunnerTest {
     return IRProcessor(
         "transparent",
         this.target,
-        "",
+        null,
         mapOf(
             "input" to this.paramInput,
             "output" to this.paramOutput,

@@ -36,17 +36,28 @@ abstract class Runner(
   }
 
   companion object {
+    private fun builtIn(uri: String, channel: Channel<Payload>): Runner {
+      return when (uri) {
+        "https://www.rdf-connect.com/#JVMRunner" -> JVMRunner(channel)
+        else -> Log.shared.fatal("Unknown built in runner: $uri")
+      }
+    }
+
     fun from(runner: IRRunner, channel: Channel<Payload>): Runner {
       Log.shared.info("Creating runner: ${runner.uri}")
 
-      if (runner.type == IRRunner.Type.GRPC) {
-        runner.entrypoint ?: Log.shared.fatal("No entrypoint provided for GRPCRunner.")
-        runner.directory ?: Log.shared.fatal("No directory provided for GRPCRunner.")
-        return HostedGRPCRunner.create(runner.entrypoint, runner.directory, channel)
-      } else if (runner.uri == "https://rdf-connect.com/#JVMRunner") {
-        return JVMRunner(channel)
-      } else {
-        Log.shared.fatal("Unknown runner type: ${runner.type}")
+      when (runner.type) {
+        IRRunner.Type.GRPC -> {
+          runner.entrypoint ?: Log.shared.fatal("No entrypoint provided for GRPCRunner.")
+          runner.directory ?: Log.shared.fatal("No directory provided for GRPCRunner.")
+          return HostedGRPCRunner.create(runner.entrypoint, runner.directory, channel)
+        }
+        IRRunner.Type.BUILT_IN -> {
+          return builtIn(runner.uri, channel)
+        }
+        else -> {
+          Log.shared.fatal("Unknown runner type: ${runner.type}")
+        }
       }
     }
   }

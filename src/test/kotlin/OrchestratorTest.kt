@@ -21,7 +21,7 @@ val pipeline =
 
 val jvmRunner =
     IRRunner(
-        uri = "https://rdf-connect.com/#JVMRunner",
+        uri = "https://www.rdf-connect.com/#JVMRunner",
         type = IRRunner.Type.BUILT_IN,
     )
 

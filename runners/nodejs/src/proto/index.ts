@@ -22,6 +22,7 @@ import {
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
 import _m0 from "protobufjs/minimal.js";
+import { ChannelMessage } from "./channel.js";
 import { Empty } from "./empty.js";
 import { IRStage } from "./intermediate.js";
 
@@ -72,100 +73,11 @@ export function logLevelToJSON(object: LogLevel): string {
   }
 }
 
-export interface ChannelData {
-  destinationUri: string;
-  data: Uint8Array;
-}
-
 export interface LogEntry {
   message: string;
   location: string;
   level: LogLevel;
 }
-
-function createBaseChannelData(): ChannelData {
-  return { destinationUri: "", data: new Uint8Array(0) };
-}
-
-export const ChannelData = {
-  encode(
-    message: ChannelData,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    if (message.destinationUri !== "") {
-      writer.uint32(10).string(message.destinationUri);
-    }
-    if (message.data.length !== 0) {
-      writer.uint32(18).bytes(message.data);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ChannelData {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseChannelData();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.destinationUri = reader.string();
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.data = reader.bytes();
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ChannelData {
-    return {
-      destinationUri: isSet(object.destinationUri)
-        ? globalThis.String(object.destinationUri)
-        : "",
-      data: isSet(object.data)
-        ? bytesFromBase64(object.data)
-        : new Uint8Array(0),
-    };
-  },
-
-  toJSON(message: ChannelData): unknown {
-    const obj: any = {};
-    if (message.destinationUri !== "") {
-      obj.destinationUri = message.destinationUri;
-    }
-    if (message.data.length !== 0) {
-      obj.data = base64FromBytes(message.data);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<ChannelData>, I>>(base?: I): ChannelData {
-    return ChannelData.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<ChannelData>, I>>(
-    object: I,
-  ): ChannelData {
-    const message = createBaseChannelData();
-    message.destinationUri = object.destinationUri ?? "";
-    message.data = object.data ?? new Uint8Array(0);
-    return message;
-  },
-};
 
 function createBaseLogEntry(): LogEntry {
   return { message: "", location: "", level: 0 };
@@ -290,12 +202,12 @@ export const RunnerService = {
     path: "/Runner/channel",
     requestStream: true,
     responseStream: true,
-    requestSerialize: (value: ChannelData) =>
-      Buffer.from(ChannelData.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => ChannelData.decode(value),
-    responseSerialize: (value: ChannelData) =>
-      Buffer.from(ChannelData.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => ChannelData.decode(value),
+    requestSerialize: (value: ChannelMessage) =>
+      Buffer.from(ChannelMessage.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => ChannelMessage.decode(value),
+    responseSerialize: (value: ChannelMessage) =>
+      Buffer.from(ChannelMessage.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => ChannelMessage.decode(value),
   },
   log: {
     path: "/Runner/log",
@@ -313,7 +225,7 @@ export const RunnerService = {
 export interface RunnerServer extends UntypedServiceImplementation {
   load: handleUnaryCall<IRStage, Empty>;
   exec: handleUnaryCall<Empty, Empty>;
-  channel: handleBidiStreamingCall<ChannelData, ChannelData>;
+  channel: handleBidiStreamingCall<ChannelMessage, ChannelMessage>;
   log: handleServerStreamingCall<Empty, LogEntry>;
 }
 
@@ -348,14 +260,14 @@ export interface RunnerClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
-  channel(): ClientDuplexStream<ChannelData, ChannelData>;
+  channel(): ClientDuplexStream<ChannelMessage, ChannelMessage>;
   channel(
     options: Partial<CallOptions>,
-  ): ClientDuplexStream<ChannelData, ChannelData>;
+  ): ClientDuplexStream<ChannelMessage, ChannelMessage>;
   channel(
     metadata: Metadata,
     options?: Partial<CallOptions>,
-  ): ClientDuplexStream<ChannelData, ChannelData>;
+  ): ClientDuplexStream<ChannelMessage, ChannelMessage>;
   log(
     request: Empty,
     options?: Partial<CallOptions>,
@@ -379,31 +291,6 @@ export const RunnerClient = makeGenericClientConstructor(
   service: typeof RunnerService;
   serviceName: string;
 };
-
-function bytesFromBase64(b64: string): Uint8Array {
-  if ((globalThis as any).Buffer) {
-    return Uint8Array.from(globalThis.Buffer.from(b64, "base64"));
-  } else {
-    const bin = globalThis.atob(b64);
-    const arr = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; ++i) {
-      arr[i] = bin.charCodeAt(i);
-    }
-    return arr;
-  }
-}
-
-function base64FromBytes(arr: Uint8Array): string {
-  if ((globalThis as any).Buffer) {
-    return globalThis.Buffer.from(arr).toString("base64");
-  } else {
-    const bin: string[] = [];
-    arr.forEach((byte) => {
-      bin.push(globalThis.String.fromCharCode(byte));
-    });
-    return globalThis.btoa(bin.join(""));
-  }
-}
 
 type Builtin =
   | Date

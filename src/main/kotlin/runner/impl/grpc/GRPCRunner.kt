@@ -1,14 +1,19 @@
 package technology.idlab.runner.impl.grpc
 
 import RunnerGrpcKt
+import channel
+import channelData
+import channelMessage
 import com.google.protobuf.ByteString
+import dataOrNull
+import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusException
 import kotlin.concurrent.thread
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -17,6 +22,7 @@ import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.Runner
 import technology.idlab.util.Log
+import technology.idlab.util.retries
 
 /**
  * This runner has GRPC built-in, so the only configuration that an extending class needs to provide
@@ -46,6 +52,50 @@ abstract class GRPCRunner(
   // Create a gRPC stub.
   private val grpc = RunnerGrpcKt.RunnerCoroutineStub(conn)
 
+  init {
+    Log.shared.debug { "Waiting for connection." }
+
+    runBlocking {
+      retries(5) {
+        if (conn.getState(true) != ConnectivityState.READY) {
+          throw Exception("gRPC connection not ready.")
+        }
+      }
+    }
+  }
+
+  /**
+   * This flow collector is used to route messages from the gRPC server to the main orchestrator. It
+   * maps the incoming `ChannelMessage` to a payload, and sends it to the broker. Note that this
+   * flow collector is not a coroutine, but a lambda that is called by the gRPC server.
+   */
+  private val fromProcessorsCollector =
+      FlowCollector<ChannelOuterClass.ChannelMessage> {
+        if (it.type == ChannelOuterClass.ChannelMessageType.CLOSE) {
+          Log.shared.debug { "Channel closing: ${it.channel.uri}" }
+          return@FlowCollector
+        }
+
+        if (it.type == ChannelOuterClass.ChannelMessageType.UNRECOGNIZED) {
+          Log.shared.fatal("Channel '${it.channel.uri}' received an unrecognized message type.")
+        }
+
+        // We can now assume that the message is of type DATA.
+        assert(it.type == ChannelOuterClass.ChannelMessageType.DATA)
+
+        // If no data was received, log an error and substitute an empty byte array.
+        val data =
+            it.dataOrNull?.bytes?.toByteArray()
+                ?: run {
+                  Log.shared.severe("Channel '${it.channel.uri}' received a message with no data.")
+                  return@run "".toByteArray()
+                }
+
+        // Send message to the broker.
+        val payload = Payload(it.channel.uri, data)
+        fromProcessors.send(payload)
+      }
+
   // Map the incoming log messages to the shared logger.
   private val logger =
       thread(isDaemon = true) {
@@ -72,12 +122,13 @@ abstract class GRPCRunner(
   }
 
   override suspend fun load(processor: IRProcessor, stage: IRStage) {
-    val payload = stage.toGRPC(processor.toGRPC())
+    Log.shared.debug { "Loading stage '${stage.uri}'." }
 
+    val payload = stage.toGRPC(processor.toGRPC())
     try {
       grpc.load(payload)
     } catch (e: StatusException) {
-      Log.shared.fatal("Failed to load stage: ${e.message}")
+      Log.shared.fatal("Failed to load stage: ${e.cause}")
     }
   }
 
@@ -87,30 +138,16 @@ abstract class GRPCRunner(
         toProcessors.receiveAsFlow().map {
           Log.shared.debug { "'${it.channel}' -> [${it.data.size} bytes]" }
 
-          val builder = Index.ChannelData.newBuilder()
-          builder.setDestinationUri(it.channel)
-          builder.setData(ByteString.copyFrom(it.data))
-          builder.build()
+          channelMessage {
+            channel = channel { uri = it.channel }
+            data = channelData { bytes = ByteString.copyFrom(it.data) }
+          }
         }
 
     // Route messages from and into the gRPC server.
     val router = launch {
       Log.shared.debug("Begin routing messages in GRPCRunner.")
-
-      // Create a flow for incoming messages.
-      grpc
-          .channel(toGRPCProcessors)
-          .map { Payload(it.destinationUri, it.data.toByteArray()) }
-          .collect {
-            Log.shared.debug { "'${it.channel}' <- [${it.data.size} bytes]" }
-
-            try {
-              fromProcessors.send(it)
-            } catch (e: CancellationException) {
-              Log.shared.debug("Cancellation exception: ${e.message}")
-            }
-          }
-
+      grpc.channel(toGRPCProcessors).collect(this@GRPCRunner.fromProcessorsCollector)
       Log.shared.debug("Ending routing messages in GRPCRunner.")
     }
 

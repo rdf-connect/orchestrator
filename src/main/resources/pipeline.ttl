@@ -20,3 +20,6 @@ rdfc:Channel
 
 rdfc:Channel
   rdfs:subClassOf rdfc:Reader .
+
+rdfc:JVMRunner
+  a rdfc:BuiltInRunner .

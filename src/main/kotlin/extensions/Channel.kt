@@ -14,10 +14,10 @@ internal fun <E, R> Channel<E>.map(scope: CoroutineScope, func: (R) -> E): SendC
     for (data in result) {
       this@map.send(func(data))
     }
-  }
 
-  // Close the new channel if required.
-  this.invokeOnClose { result.close() }
+    // If the new channel is closed, close the old one.
+    this@map.close()
+  }
 
   // Return the new channel.
   return result

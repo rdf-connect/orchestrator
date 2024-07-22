@@ -1,6 +1,9 @@
 package technology.idlab.runner.impl.jvm
 
 import arrow.core.zip
+import java.net.MalformedURLException
+import java.net.URL
+import java.net.URLClassLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,9 +38,23 @@ class JVMRunner(
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
   override suspend fun load(processor: IRProcessor, stage: IRStage) {
+    val loader =
+        if (processor.entrypoint == null) {
+          ClassLoader.getSystemClassLoader()
+        } else {
+          val entrypoint =
+              try {
+                URL(processor.entrypoint)
+              } catch (e: MalformedURLException) {
+                Log.shared.fatal("Invalid entrypoint '${processor.entrypoint}' for processor.")
+              }
+
+          URLClassLoader(listOf(entrypoint).toTypedArray())
+        }
+
     /** Load the class into the JVM. */
-    val className = processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
-    val clazz = Class.forName(className) as Class<*>
+    val name = processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
+    val clazz = Class.forName(name, true, loader) as Class<*>
 
     /** Check if instantiatable. */
     if (!Processor::class.java.isAssignableFrom(clazz)) {
@@ -66,7 +83,7 @@ class JVMRunner(
           withTimeout(1000) {
             val message = toProcessors.receive()
             val target = readers[message.channel]!!
-            Log.shared.info("'${message.data.decodeToString()}' -> ${message.channel}")
+            Log.shared.info("'${message.channel}' -> ${message.data.size}")
             target.send(message.data)
           }
         } catch (_: TimeoutCancellationException) {}
