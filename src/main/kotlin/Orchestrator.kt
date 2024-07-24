@@ -1,13 +1,10 @@
 package technology.idlab
 
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
-import technology.idlab.intermediate.IRPipeline
+import technology.idlab.broker.Broker
+import technology.idlab.broker.Mode
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
@@ -15,71 +12,58 @@ import technology.idlab.runner.Runner
 import technology.idlab.util.Log
 
 class Orchestrator(
-    private val pipeline: IRPipeline,
+    /** All stages in the pipeline. */
+    stages: List<IRStage>,
+    /** All available processors. */
     processors: List<IRProcessor>,
+    /** List of all runners. */
     runners: List<IRRunner>
 ) {
-  /** An exhaustive list of all runners. */
-  private val channel = Channel<Runner.Payload>()
+  /** Message broker. */
+  private val broker = Broker<ByteArray>()
 
-  private val runners = runners.associateBy { it.uri }.mapValues { Runner.from(it.value, channel) }
+  /** Stages by URI. */
+  private val stages = stages.associateBy { it.uri }
 
+  /** Runners by URI. */
+  private val runners =
+      runners.associateBy { it.uri }.mapValues { (_, runner) -> Runner.from(runner, broker) }
+
+  /** Processors by URI. */
   private val processors = processors.associateBy { it.uri }
 
-  /** A map of all channel URIs and their readers. */
-  private val readers = mutableMapOf<String, Runner>()
-
+  /** Load all stages into their respective runners. */
   init {
-    Log.shared.info("Bringing runners online")
-  }
+    runBlocking {
+      for ((_, stage) in this@Orchestrator.stages) {
+        // Load stage.
+        val processor = this@Orchestrator.processors[stage.processorURI]!!
+        val runner = this@Orchestrator.runners[processor.target]!!
+        runner.load(processor, stage)
 
-  init {
-    runBlocking { pipeline.stages.forEach { prepare(it) } }
-  }
+        // Register readers.
+        for (reader in stage.getReaders(processor)) {
+          broker.register(reader, runner, Mode.READ)
+        }
 
-  /** Prepare a stage inside of it's corresponding runtime. */
-  private suspend fun prepare(stage: IRStage) {
-    // Get the corresponding runner.
-    val processor = this.processors[stage.processorURI]!!
-    val runner = getRuntime(processor.target)
-    runner.load(processor, stage)
-
-    // Find all the readers in the stage.
-    stage.getReaders(processor).forEach { this.readers[it] = runner }
+        // Register writers.
+        for (writer in stage.getWriters(processor)) {
+          broker.register(writer, runner, Mode.WRITE)
+        }
+      }
+    }
   }
 
   /** Execute all stages in all the runtimes. */
   suspend fun exec() = coroutineScope {
-    // Route messages.
-    val router = launch {
-      Log.shared.info("Begin routing messages between runners.")
-      while (isActive) {
-        try {
-          withTimeout(1000) {
-            val message = channel.receive()
-            val target =
-                readers[message.channel] ?: Log.shared.fatal("Unknown reader: ${message.channel}")
-
-            Log.shared.debug { "'${message.channel}' <> [${message.data.size} bytes]" }
-
-            target.toProcessors.send(message)
+    runners.values
+        .map {
+          launch {
+            Log.shared.debug { "Executing: ${it.uri}" }
+            it.exec()
+            Log.shared.debug { "Execution finished: ${it.uri}" }
           }
-        } catch (_: TimeoutCancellationException) {}
-      }
-    }
-
-    // Notify when the router exits.
-    router.invokeOnCompletion { Log.shared.debug("End routing messages between runners.") }
-
-    // Execute all stages.
-    Log.shared.info("Bringing all stages online.")
-    runners.values.map { launch { it.exec() } }.forEach { it.join() }
-
-    router.cancel()
-  }
-
-  /** Get a lazy evaluated runner. */
-  private fun getRuntime(uri: String): Runner {
-    return this.runners[uri] ?: Log.shared.fatal("Unknown runner: $uri")
+        }
+        .forEach { it.join() }
   }
 }

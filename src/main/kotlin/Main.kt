@@ -56,7 +56,7 @@ internal suspend fun exec(path: String) {
   // Start the orchestrator.
   Log.shared.debug("Invoking orchestrator.")
   val pipeline = parser.pipelines[0]
-  val orchestrator = Orchestrator(pipeline, parser.processors, parser.runners)
+  val orchestrator = Orchestrator(pipeline.stages, parser.processors, parser.runners)
   orchestrator.exec()
 }
 

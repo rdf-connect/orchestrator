@@ -1,15 +1,22 @@
-import { Subject } from "rxjs";
-import { LogEntry, LogLevel } from "../proto";
 import { RunnerError } from "../error";
+
+const TIME_PADDING = 15
+const LEVEL_PADDING = 10
+const FILE_PADDING = 39
+const MESSAGE_PADDING = 87
+
+enum LogLevel {
+  DEBUG,
+  INFO,
+  SEVERE,
+  FATAL,
+}
 
 /**
  * Simple wrapper class which exposes an observable to which log messages are
  * written.
  */
 export class Log {
-  // Internal stream to which log messages are written.
-  private stream = new Subject<LogEntry>();
-
   /**
    * Write a message to the log stream with the INFO level.
    * @param message The message to write, either as literal or a function
@@ -51,24 +58,18 @@ export class Log {
   }
 
   /**
-   * Add a new subscriber to the log stream.
-   * @param next The callback to call when a new log message is pushed.
-   */
-  subscribe(next: (value: LogEntry) => void): void {
-    this.stream.subscribe(next);
-  }
-
-  /**
    * Push a new log message to the stream. Automatically retrieves the function
    * name and line number.
    * @param value The log message to push.
    * @private
    */
   private push(value: { level: LogLevel; message: string }): void {
-    this.stream.next({
-      ...value,
-      location: this.getCaller(),
-    });
+    const time = new Date().toISOString().slice(11, 22).padEnd(TIME_PADDING, ' ')
+    const level = LogLevel[value.level].padEnd(LEVEL_PADDING, ' ')
+    const caller = this.getCaller().padEnd(FILE_PADDING, ' ')
+    const message = value.message
+
+    console.log(`${time}${level}${caller}${message}`)
   }
 
   /**
@@ -94,9 +95,9 @@ export class Log {
     }
 
     // Retrieve the function name and line number
-    const func = match[1].replace(".", "::");
+    const file = match[2].split("/").pop();
     const line = match[3];
-    return `${func}::${line}`;
+    return `${file}:${line}`;
   }
 
   // A shared log instance makes it easy to log messages from anywhere in the code.

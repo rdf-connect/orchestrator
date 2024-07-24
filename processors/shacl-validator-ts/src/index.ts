@@ -79,9 +79,8 @@ export default class SHACLValidator extends Processor {
     const validator = new Validator(shapes, { factory: rdf });
 
     // eslint-ignore no-constant-condition
-    while (!this.incoming.isClosed()) {
+    for await (const data of this.incoming) {
       // Convert incoming data to a quad stream.
-      const data = await this.incoming.read();
       const rawStream = Readable.from(data);
       const quadStream = parser.import(rawStream);
 

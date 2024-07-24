@@ -1,9 +1,8 @@
-import { LogEntry, RunnerServer } from "../proto";
+import { RunnerServer } from "../proto";
 import {
   sendUnaryData,
   ServerDuplexStream,
   ServerUnaryCall,
-  ServerWritableStream,
   UntypedHandleCall,
 } from "@grpc/grpc-js";
 import { IRStage } from "../proto/intermediate";
@@ -33,8 +32,10 @@ export class ServerImplementation implements RunnerServer {
     });
 
     // On outgoing data, write it to the stream.
-    Runner.shared.outgoing.setCallback(async (data) => {
-      call.write(data);
+    new Promise(async () => {
+      for await (const data of Runner.shared.outgoing) {
+        call.write(data)
+      }
     });
   }
 
@@ -74,14 +75,5 @@ export class ServerImplementation implements RunnerServer {
         callback(null, {});
       },
     );
-  }
-
-  /**
-   * Handle all incoming log messages and send them to the client.
-   */
-  log(call: ServerWritableStream<Empty, LogEntry>): void {
-    Log.shared.subscribe((entry) => {
-      call.write(entry);
-    });
   }
 }

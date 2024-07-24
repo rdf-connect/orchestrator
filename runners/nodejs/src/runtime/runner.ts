@@ -13,7 +13,6 @@ import { Arguments } from "./arguments";
 import { Log } from "../interfaces/log";
 import { Channel } from "../interfaces/channel";
 import { CallbackChannel } from "../interfaces/callback_channel";
-import { BufferedCallbackChannel } from "../interfaces/buffered_callback_channel";
 import { ChannelMessage, ChannelMessageType } from "../proto/channel";
 import assert from "node:assert";
 
@@ -35,7 +34,7 @@ export class Runner {
 
   // All writers are bound to the outgoing channel, and after it is written to,
   // the runner will delegate the messages to the server implementation.
-  public outgoing = new BufferedCallbackChannel<ChannelMessage>();
+  public outgoing = new Channel<ChannelMessage>();
 
   // Maps the URIs of channels to their corresponding readers. We use this map
   // to route incoming messages to their correct receiver.
@@ -61,7 +60,6 @@ export class Runner {
     // reader and remove it from the map.
     if (payload.type == ChannelMessageType.CLOSE) {
       reader.close();
-      this.readers.delete(payload.channel!.uri!);
       return;
     }
 
@@ -124,8 +122,6 @@ export class Runner {
    * @private
    */
   private parseSimpleArgument(type: IRParameterType, value: string): unknown {
-    Log.shared.debug(() => `Parsing '${value}' as ${IRParameterType[type]}`);
-
     if (type == IRParameterType.BOOLEAN) {
       return value == "true";
     } else if (type == IRParameterType.BYTE) {
@@ -256,9 +252,7 @@ export class Runner {
    * all executions have been started.
    */
   async exec(): Promise<void> {
-    Log.shared.info("Execution started.");
-
-    // Execute all stations.
+    // Execute all stages.
     const execs = [...this.stages.entries()].map(async ([uri, stage]) => {
       Log.shared.debug(() => `Executing stage: ${uri}`);
       await stage.exec();

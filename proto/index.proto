@@ -4,22 +4,8 @@ import "channel.proto";
 import "empty.proto";
 import "intermediate.proto";
 
-enum LogLevel {
-  DEBUG = 0;
-  INFO = 1;
-  SEVERE = 2;
-  FATAL = 3;
-}
-
-message LogEntry {
-  string message = 1;
-  string location = 2;
-  LogLevel level = 3;
-}
-
 service Runner {
   rpc load(IRStage) returns (Empty);
   rpc exec(Empty) returns (Empty);
   rpc channel(stream ChannelMessage) returns (stream ChannelMessage);
-  rpc log(Empty) returns (stream LogEntry);
 }

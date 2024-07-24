@@ -5,19 +5,11 @@ import kotlinx.coroutines.runBlocking
 import processors.TappedReader
 import processors.TappedWriter
 import technology.idlab.Orchestrator
-import technology.idlab.intermediate.IRPipeline
 import technology.idlab.intermediate.IRRunner
 
 val processors = listOf(TappedWriter.processor, TappedReader.processor)
 
 val stages = listOf(TappedWriter.stage("channel"), TappedReader.stage("channel"))
-
-val pipeline =
-    IRPipeline(
-        uri = "pipeline",
-        dependencies = emptyList(),
-        stages = stages,
-    )
 
 val jvmRunner =
     IRRunner(
@@ -28,7 +20,7 @@ val jvmRunner =
 class OrchestratorTest {
   @Test
   fun channelTest(): Unit = runBlocking {
-    val orchestrator = Orchestrator(pipeline, processors, listOf(jvmRunner))
+    val orchestrator = Orchestrator(stages, processors, listOf(jvmRunner))
 
     // Bring pipeline online.
     launch { orchestrator.exec() }

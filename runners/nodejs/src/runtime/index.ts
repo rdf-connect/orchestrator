@@ -1,6 +1,7 @@
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { ServerImplementation } from "./server";
 import { RunnerService } from "../proto";
+import {Log} from "../interfaces/log";
 
 /** The socket at which gRPC binds is decided by the orchestrator. */
 const host = process.argv[2];
@@ -20,7 +21,7 @@ server.bindAsync(
     if (error) {
       return console.error(error);
     } else {
-      console.log(`gRPC up and running (port=${port})`);
+      Log.shared.debug(() => `gRPC up and running (port=${port})`);
     }
   },
 );

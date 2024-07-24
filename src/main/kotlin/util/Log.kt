@@ -6,10 +6,8 @@ import kotlin.system.exitProcess
 import technology.idlab.exception.RunnerException
 
 private const val TIME_PADDING = 15
-private const val TASK_PADDING = 8
-private const val LEVEL_PADDING = 7
-private const val LOCATION_PADDING = 35
-private const val SHIFT = TIME_PADDING + TASK_PADDING + LEVEL_PADDING + LOCATION_PADDING
+private const val LEVEL_PADDING = 10
+private const val FILE_PADDING = 39
 private const val MESSAGE_PADDING = 87
 
 /**
@@ -45,16 +43,14 @@ class Log private constructor(header: Boolean = true) {
       val builder = StringBuilder()
       builder.append("\u001B[1m")
       builder.append("TIME".padEnd(TIME_PADDING, ' '))
-      builder.append("TASK".padEnd(TASK_PADDING, ' '))
       builder.append("LEVEL".padEnd(LEVEL_PADDING, ' '))
-      builder.append("LOCATION".padEnd(LOCATION_PADDING, ' '))
+      builder.append("FILE".padEnd(FILE_PADDING, ' '))
       builder.append("MESSAGE".padEnd(MESSAGE_PADDING, ' '))
       builder.append("\n")
       builder.append("\u001B[0m")
       builder.append("----".padEnd(TIME_PADDING, ' '))
-      builder.append("----".padEnd(TASK_PADDING, ' '))
       builder.append("-----".padEnd(LEVEL_PADDING, ' '))
-      builder.append("--------".padEnd(LOCATION_PADDING, ' '))
+      builder.append("----".padEnd(FILE_PADDING, ' '))
       builder.append("-------\n")
 
       synchronized(System.out) { print(builder) }
@@ -74,22 +70,15 @@ class Log private constructor(header: Boolean = true) {
     val instant = Date().toInstant()
     val tz = instant.atZone(TimeZone.getDefault().toZoneId())
     val iso = DateTimeFormatter.ISO_LOCAL_TIME
+
     val time = tz.format(iso)
-
-    // Get the thread ID.
-    val thread = (pid ?: Thread.currentThread().id).toString()
-
-    // Get the level.
     val levelCode = level.name
 
-    // Get the location.
-    val usedLocation =
+    val file =
         location
             ?: run {
-              val call = Throwable().stackTrace[4]
-              val clazz = call.className.substringAfterLast(".").substringBefore("$")
-              val method = call.methodName.substringBefore("$")
-              "${clazz}::${method}::${call.lineNumber}"
+              val stack = Throwable().stackTrace[4]
+              "${stack.fileName ?: "Unknown"}:${stack.lineNumber ?: "??"}"
             }
 
     // Build the message.
@@ -117,9 +106,8 @@ class Log private constructor(header: Boolean = true) {
 
     // The actual message.
     builder.append(time.padEnd(TIME_PADDING, ' '))
-    builder.append(thread.padEnd(TASK_PADDING, ' '))
     builder.append(levelCode.padEnd(LEVEL_PADDING, ' '))
-    builder.append(usedLocation.padEnd(LOCATION_PADDING, ' '))
+    builder.append(file.padEnd(FILE_PADDING, ' '))
     builder.append(message)
     builder.append("\n")
 
@@ -186,7 +174,7 @@ class Log private constructor(header: Boolean = true) {
     output(message, Level.CMD, location = location, pid = pid)
   }
 
-  internal fun setFatalMode(fatalMode: Log.FatalMode) {
+  internal fun setFatalMode(fatalMode: FatalMode) {
     this.fatalMode = fatalMode
   }
 

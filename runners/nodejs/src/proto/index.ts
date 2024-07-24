@@ -11,168 +11,19 @@ import {
   Client,
   ClientDuplexStream,
   type ClientOptions,
-  ClientReadableStream,
   type ClientUnaryCall,
   handleBidiStreamingCall,
-  handleServerStreamingCall,
   type handleUnaryCall,
   makeGenericClientConstructor,
   Metadata,
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
-import _m0 from "protobufjs/minimal.js";
 import { ChannelMessage } from "./channel.js";
 import { Empty } from "./empty.js";
 import { IRStage } from "./intermediate.js";
 
 export const protobufPackage = "";
-
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  SEVERE = 2,
-  FATAL = 3,
-  UNRECOGNIZED = -1,
-}
-
-export function logLevelFromJSON(object: any): LogLevel {
-  switch (object) {
-    case 0:
-    case "DEBUG":
-      return LogLevel.DEBUG;
-    case 1:
-    case "INFO":
-      return LogLevel.INFO;
-    case 2:
-    case "SEVERE":
-      return LogLevel.SEVERE;
-    case 3:
-    case "FATAL":
-      return LogLevel.FATAL;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return LogLevel.UNRECOGNIZED;
-  }
-}
-
-export function logLevelToJSON(object: LogLevel): string {
-  switch (object) {
-    case LogLevel.DEBUG:
-      return "DEBUG";
-    case LogLevel.INFO:
-      return "INFO";
-    case LogLevel.SEVERE:
-      return "SEVERE";
-    case LogLevel.FATAL:
-      return "FATAL";
-    case LogLevel.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
-export interface LogEntry {
-  message: string;
-  location: string;
-  level: LogLevel;
-}
-
-function createBaseLogEntry(): LogEntry {
-  return { message: "", location: "", level: 0 };
-}
-
-export const LogEntry = {
-  encode(
-    message: LogEntry,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    if (message.message !== "") {
-      writer.uint32(10).string(message.message);
-    }
-    if (message.location !== "") {
-      writer.uint32(18).string(message.location);
-    }
-    if (message.level !== 0) {
-      writer.uint32(24).int32(message.level);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): LogEntry {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseLogEntry();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.location = reader.string();
-          continue;
-        case 3:
-          if (tag !== 24) {
-            break;
-          }
-
-          message.level = reader.int32() as any;
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): LogEntry {
-    return {
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-      location: isSet(object.location)
-        ? globalThis.String(object.location)
-        : "",
-      level: isSet(object.level) ? logLevelFromJSON(object.level) : 0,
-    };
-  },
-
-  toJSON(message: LogEntry): unknown {
-    const obj: any = {};
-    if (message.message !== "") {
-      obj.message = message.message;
-    }
-    if (message.location !== "") {
-      obj.location = message.location;
-    }
-    if (message.level !== 0) {
-      obj.level = logLevelToJSON(message.level);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<LogEntry>, I>>(base?: I): LogEntry {
-    return LogEntry.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<LogEntry>, I>>(object: I): LogEntry {
-    const message = createBaseLogEntry();
-    message.message = object.message ?? "";
-    message.location = object.location ?? "";
-    message.level = object.level ?? 0;
-    return message;
-  },
-};
 
 export type RunnerService = typeof RunnerService;
 export const RunnerService = {
@@ -180,45 +31,28 @@ export const RunnerService = {
     path: "/Runner/load",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: IRStage) =>
-      Buffer.from(IRStage.encode(value).finish()),
+    requestSerialize: (value: IRStage) => Buffer.from(IRStage.encode(value).finish()),
     requestDeserialize: (value: Buffer) => IRStage.decode(value),
-    responseSerialize: (value: Empty) =>
-      Buffer.from(Empty.encode(value).finish()),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
   exec: {
     path: "/Runner/exec",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: Empty) =>
-      Buffer.from(Empty.encode(value).finish()),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     requestDeserialize: (value: Buffer) => Empty.decode(value),
-    responseSerialize: (value: Empty) =>
-      Buffer.from(Empty.encode(value).finish()),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
   channel: {
     path: "/Runner/channel",
     requestStream: true,
     responseStream: true,
-    requestSerialize: (value: ChannelMessage) =>
-      Buffer.from(ChannelMessage.encode(value).finish()),
+    requestSerialize: (value: ChannelMessage) => Buffer.from(ChannelMessage.encode(value).finish()),
     requestDeserialize: (value: Buffer) => ChannelMessage.decode(value),
-    responseSerialize: (value: ChannelMessage) =>
-      Buffer.from(ChannelMessage.encode(value).finish()),
+    responseSerialize: (value: ChannelMessage) => Buffer.from(ChannelMessage.encode(value).finish()),
     responseDeserialize: (value: Buffer) => ChannelMessage.decode(value),
-  },
-  log: {
-    path: "/Runner/log",
-    requestStream: false,
-    responseStream: true,
-    requestSerialize: (value: Empty) =>
-      Buffer.from(Empty.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => Empty.decode(value),
-    responseSerialize: (value: LogEntry) =>
-      Buffer.from(LogEntry.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => LogEntry.decode(value),
   },
 } as const;
 
@@ -226,14 +60,10 @@ export interface RunnerServer extends UntypedServiceImplementation {
   load: handleUnaryCall<IRStage, Empty>;
   exec: handleUnaryCall<Empty, Empty>;
   channel: handleBidiStreamingCall<ChannelMessage, ChannelMessage>;
-  log: handleServerStreamingCall<Empty, LogEntry>;
 }
 
 export interface RunnerClient extends Client {
-  load(
-    request: IRStage,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall;
+  load(request: IRStage, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall;
   load(
     request: IRStage,
     metadata: Metadata,
@@ -245,10 +75,7 @@ export interface RunnerClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
-  exec(
-    request: Empty,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall;
+  exec(request: Empty, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall;
   exec(
     request: Empty,
     metadata: Metadata,
@@ -261,63 +88,12 @@ export interface RunnerClient extends Client {
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
   channel(): ClientDuplexStream<ChannelMessage, ChannelMessage>;
-  channel(
-    options: Partial<CallOptions>,
-  ): ClientDuplexStream<ChannelMessage, ChannelMessage>;
-  channel(
-    metadata: Metadata,
-    options?: Partial<CallOptions>,
-  ): ClientDuplexStream<ChannelMessage, ChannelMessage>;
-  log(
-    request: Empty,
-    options?: Partial<CallOptions>,
-  ): ClientReadableStream<LogEntry>;
-  log(
-    request: Empty,
-    metadata?: Metadata,
-    options?: Partial<CallOptions>,
-  ): ClientReadableStream<LogEntry>;
+  channel(options: Partial<CallOptions>): ClientDuplexStream<ChannelMessage, ChannelMessage>;
+  channel(metadata: Metadata, options?: Partial<CallOptions>): ClientDuplexStream<ChannelMessage, ChannelMessage>;
 }
 
-export const RunnerClient = makeGenericClientConstructor(
-  RunnerService,
-  "Runner",
-) as unknown as {
-  new (
-    address: string,
-    credentials: ChannelCredentials,
-    options?: Partial<ClientOptions>,
-  ): RunnerClient;
+export const RunnerClient = makeGenericClientConstructor(RunnerService, "Runner") as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): RunnerClient;
   service: typeof RunnerService;
   serviceName: string;
 };
-
-type Builtin =
-  | Date
-  | Function
-  | Uint8Array
-  | string
-  | number
-  | boolean
-  | undefined;
-
-export type DeepPartial<T> = T extends Builtin
-  ? T
-  : T extends globalThis.Array<infer U>
-    ? globalThis.Array<DeepPartial<U>>
-    : T extends ReadonlyArray<infer U>
-      ? ReadonlyArray<DeepPartial<U>>
-      : T extends {}
-        ? { [K in keyof T]?: DeepPartial<T[K]> }
-        : Partial<T>;
-
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin
-  ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
-      [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
-    };
-
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
-}

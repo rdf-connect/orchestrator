@@ -5,7 +5,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 
-internal fun <E, R> Channel<E>.map(scope: CoroutineScope, func: (R) -> E): SendChannel<R> {
+internal fun <E, R> SendChannel<E>.map(scope: CoroutineScope, func: (R) -> E): SendChannel<R> {
   // Create the new channel.
   val result = Channel<R>()
 

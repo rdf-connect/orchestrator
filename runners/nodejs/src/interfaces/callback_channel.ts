@@ -1,5 +1,5 @@
 import { Writer } from "./writer";
-import { RunnerError } from "../error";
+import { Channel } from "./channel";
 
 /**
  * A callback channel is a simple implementation of a writer that calls a
@@ -8,6 +8,12 @@ import { RunnerError } from "../error";
  * the channel.
  */
 export class CallbackChannel<T> implements Writer<T> {
+  /**
+   * The flow of messages is implemented by wrapping a regular channel.
+   * @private
+   */
+  private channel = new Channel<T>();
+
   /**
    * The callback that is called whenever a value is written to the channel.
    * @private
@@ -22,10 +28,18 @@ export class CallbackChannel<T> implements Writer<T> {
   private readonly onClose: null | (() => Promise<void>) = null;
 
   /**
-   * Whether the channel has been closed or not.
+   * Handle incoming messages of the channel by piping them into the callback.
    * @private
    */
-  private closed = false;
+  private handler = new Promise(async () => {
+    for await (const data of this.channel) {
+      await this.onWrite(data)
+    }
+
+    if (this.onClose != null) {
+      await this.onClose()
+    }
+  });
 
   /**
    * Create a new callback channel with a specific callback.
@@ -42,30 +56,15 @@ export class CallbackChannel<T> implements Writer<T> {
   }
 
   close(): Promise<void> {
-    // Channels cannot be closed twice.
-    if (this.closed) {
-      RunnerError.channelError();
-    }
-
-    this.closed = true;
-
-    // Execute the callback.
-    if (this.onClose) {
-      return this.onClose();
-    } else {
-      return Promise.resolve();
-    }
+    this.channel.close()
+    return Promise.resolve();
   }
 
   isClosed(): boolean {
-    return this.closed;
+    return this.channel.isClosed();
   }
 
-  write(data: T): Promise<void> {
-    if (!this.closed) {
-      return this.onWrite(data);
-    } else {
-      throw RunnerError.channelError();
-    }
+  write(data: T) {
+    this.channel.write(data)
   }
 }

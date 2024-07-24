@@ -27,8 +27,8 @@ export default class FileWriter extends Processor {
       Log.shared.debug(() => `Could not remove file: ${this.path}`);
     }
 
-    while (!this.incoming.isClosed()) {
-      const data = await this.incoming.read();
+    // Append all incoming data to the file.
+    for await (const data of this.incoming) {
       Log.shared.debug(() => `Writing file: ${this.path}`);
       fs.writeFileSync(this.path, data, { flag: "a" });
     }

@@ -2,6 +2,30 @@ package technology.idlab.intermediate
 
 import arrow.core.zip
 
+private fun getWriters(options: Map<String, Pair<IRParameter, IRArgument>>): List<String> {
+  val results = mutableListOf<String>()
+
+  options.values.forEach { (parameter, arguments) ->
+    when (parameter.kind) {
+      IRParameter.Kind.SIMPLE -> {
+        if (parameter.getSimple() == IRParameter.Type.WRITER) {
+          val uri = arguments.getSimple().first()
+          results.add(uri)
+        }
+      }
+      IRParameter.Kind.COMPLEX -> {
+        val nestedParams = parameter.getComplex()
+        arguments.getComplex().forEach { argument ->
+          val nestedOptions = getWriters(nestedParams.zip(argument))
+          results.addAll(nestedOptions)
+        }
+      }
+    }
+  }
+
+  return results
+}
+
 private fun getReaders(options: Map<String, Pair<IRParameter, IRArgument>>): List<String> {
   val results = mutableListOf<String>()
 
@@ -36,5 +60,9 @@ data class IRStage(
 ) {
   fun getReaders(processor: IRProcessor): List<String> {
     return getReaders(processor.parameters.zip(arguments))
+  }
+
+  fun getWriters(processor: IRProcessor): List<String> {
+    return getWriters(processor.parameters.zip(arguments))
   }
 }

@@ -3,9 +3,10 @@ package technology.idlab.runner.impl.grpc
 import java.io.File
 import kotlin.random.Random
 import kotlin.random.nextUInt
-import kotlinx.coroutines.channels.Channel
+import runner.impl.grpc.Config
+import technology.idlab.broker.Broker
 import technology.idlab.extensions.rawPath
-import technology.idlab.runner.Runner
+import technology.idlab.intermediate.IRRunner
 import technology.idlab.util.ManagedProcess
 
 /**
@@ -14,13 +15,12 @@ import technology.idlab.util.ManagedProcess
  */
 class HostedGRPCRunner
 private constructor(
-    /** The channel to send messages to. */
-    fromProcessors: Channel<Runner.Payload>,
     /** The process which contains the gRPC server. */
     process: ManagedProcess,
     /** The configuration of the gRPC server. */
     config: Config,
-) : GRPCRunner(fromProcessors, config) {
+    broker: Broker<ByteArray>
+) : GRPCRunner(config, broker) {
   // Exit the gRPC runner client when the server exits.
   init {
     process.exitHook { this@HostedGRPCRunner.exit() }
@@ -30,31 +30,25 @@ private constructor(
     /**
      * A GRPCRunner that runs a GRPC server in a child process.
      *
-     * @param command The command to invoke the GRPCRunner.
-     * @param directory The working directory where the command will be executed.
-     * @param fromProcessors The channel where the payloads are sent to from the processors.
+     * @param runner The runner to create a new instance of.
      */
-    fun create(
-        command: String,
-        directory: File,
-        fromProcessors: Channel<Payload>
-    ): HostedGRPCRunner {
+    fun create(runner: IRRunner, broker: Broker<ByteArray>): HostedGRPCRunner {
       // Create a new config for the runner. We run the server on a random port in [5000-10000] for
       // now, but should be configurable later.
       val port = (Random.nextUInt(5000u, 10_000u))
-      val config = Config("127.0.0.1", port.toInt())
+      val config = Config(runner.uri, "127.0.0.1", port.toInt())
 
       // Configure and build the process.
-      val cmd = "$command localhost $port"
+      val cmd = "${runner.entrypoint} localhost $port"
       val builder = ProcessBuilder(cmd.split(" "))
-      val dir = File(directory.rawPath())
+      val dir = File(runner.directory!!.rawPath())
       builder.directory(dir)
 
       // Start the process.
       val process = ManagedProcess.from(builder)
 
       // Create a new runner.
-      return HostedGRPCRunner(fromProcessors, process, config)
+      return HostedGRPCRunner(process, config, broker)
     }
   }
 }

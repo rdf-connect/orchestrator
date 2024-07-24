@@ -17,7 +17,6 @@ import { Reader } from "../interfaces/reader";
 import { RunnerError } from "../error";
 import { Channel } from "../interfaces/channel";
 import { CallbackChannel } from "../interfaces/callback_channel";
-import { BufferedCallbackChannel } from "../interfaces/buffered_callback_channel";
 
 /**
  * Argument types supported by RDF-Connect. These are enumerated as strings, in
@@ -89,8 +88,7 @@ function conforms(value: unknown, type: Type): boolean {
     case "writer":
       return (
         value instanceof Channel ||
-        value instanceof CallbackChannel ||
-        value instanceof BufferedCallbackChannel
+        value instanceof CallbackChannel
       );
     case "reader":
       return value instanceof Channel;

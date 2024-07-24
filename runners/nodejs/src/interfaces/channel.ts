@@ -1,6 +1,7 @@
 import { RunnerError } from "../error";
 import { Reader } from "./reader";
 import { Writer } from "./writer";
+import {Log} from "./log";
 
 /**
  * A channel is a communication mechanism that allows for the transfer of values
@@ -19,7 +20,7 @@ export class Channel<T> implements Reader<T>, Writer<T> {
    * Outstanding reads that are waiting for a value to be written to the channel.
    * @private
    */
-  private readonly reads: Array<(value: T) => void> = [];
+  private readonly reads: Array<{ resolve: (value: T) => void, reject: (reason: any) => void }> = [];
 
   /**
    * Whether the channel has been closed or not.
@@ -40,7 +41,7 @@ export class Channel<T> implements Reader<T>, Writer<T> {
     const read = this.reads.shift();
 
     if (read) {
-      read(value);
+      read.resolve(value);
     } else {
       this.values.push(value);
     }
@@ -59,16 +60,21 @@ export class Channel<T> implements Reader<T>, Writer<T> {
       } else if (this.closed) {
         reject(RunnerError.channelError());
       } else {
-        this.reads.push(resolve);
+        this.reads.push({ resolve, reject });
       }
     });
   }
 
   /**
-   * Close the channel, preventing any further writes from occurring.
+   * Close the channel, preventing any further writes from occurring. All
+   * outstanding reads will be cancelled by an exception.
    */
   close() {
     this.closed = true;
+
+    for (const promise of this.reads) {
+      promise.reject(RunnerError.channelError())
+    }
   }
 
   /**
@@ -76,5 +82,21 @@ export class Channel<T> implements Reader<T>, Writer<T> {
    */
   isClosed(): boolean {
     return this.closed;
+  }
+
+  /**
+   * Asynchronously read from the channel using an iterator. This iterator
+   * will complete when the channel is closed and all data is sent.
+   */
+  async *[Symbol.asyncIterator]() {
+    while (true) {
+      try {
+        yield await this.read()
+      } catch (e) {
+        if (this.closed && this.values.length == 0) {
+          break
+        }
+      }
+    }
   }
 }
