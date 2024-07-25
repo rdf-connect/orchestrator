@@ -8,8 +8,6 @@ import com.google.protobuf.ByteString
 import dataOrNull
 import io.grpc.ConnectivityState
 import io.grpc.StatusException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -29,11 +27,9 @@ import technology.idlab.util.retries
  */
 abstract class GRPCRunner(
     /** Location of the gRPC server. */
-    private val config: Config,
+    config: Config,
     broker: Broker<ByteArray>
 ) : Runner(broker) {
-  private val scope = CoroutineScope(Job())
-
   // The URI of this runner.
   override val uri: String = config.uri
 
@@ -74,7 +70,7 @@ abstract class GRPCRunner(
   private val messageCollector =
       FlowCollector<ChannelOuterClass.ChannelMessage> {
         if (it.type == ChannelOuterClass.ChannelMessageType.CLOSE) {
-          broker.unregister(it.channel.uri, this@GRPCRunner)
+          broker.unregisterSender(it.channel.uri)
           return@FlowCollector
         }
 
@@ -105,28 +101,28 @@ abstract class GRPCRunner(
   }
 
   /** Parse the incoming URI and bytes as a ChannelMessageKT, and send it to the gRPC flow. */
-  override suspend fun receive(uri: String, data: ByteArray) {
+  override fun receiveBrokerMessage(uri: String, data: ByteArray) {
     val message = channelMessage {
       this.channel = channel { this.uri = uri }
       this.type = ChannelOuterClass.ChannelMessageType.DATA
       this.data = channelData { this.bytes = ByteString.copyFrom(data) }
     }
 
-    messages.send(message)
+    scheduleTask { messages.send(message) }
   }
 
   /** Close a channel by sending a close message to the gRPC server. */
-  override suspend fun close(uri: String) {
+  override fun closingBrokerChannel(uri: String) {
     val message = channelMessage {
       this.channel = channel { this.uri = uri }
       this.type = ChannelOuterClass.ChannelMessageType.CLOSE
     }
 
-    messages.send(message)
+    scheduleTask { messages.send(message) }
   }
 
   override suspend fun load(processor: IRProcessor, stage: IRStage) {
-    Log.shared.debug { "Loading stage '${stage.uri}'." }
+    super.load(processor, stage)
 
     val payload = stage.toGRPC(processor.toGRPC())
     try {

@@ -45,7 +45,7 @@ private constructor(
       builder.directory(dir)
 
       // Start the process.
-      val process = ManagedProcess.from(builder)
+      val process = ManagedProcess.from(builder, prettyLog = false)
 
       // Create a new runner.
       return HostedGRPCRunner(process, config, broker)

@@ -4,8 +4,6 @@ import arrow.core.zip
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLClassLoader
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.coroutineScope
@@ -17,6 +15,8 @@ import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.Runner
 import technology.idlab.util.Log
+
+private const val JVM_RUNNER_URI = "https://www.rdf-connect/#JVMRunner"
 
 private const val STAGE_NO_CLASS = "Processor has no class key set."
 private const val REQUIRES_PROCESSOR_BASE_CLASS = "Class does not extend Processor."
@@ -45,9 +45,12 @@ private fun getClassLoader(path: String? = null): ClassLoader {
   return URLClassLoader(listOf(url).toTypedArray())
 }
 
-class JVMRunner(broker: Broker<ByteArray>) : Runner(broker) {
+class JVMRunner(
+    /** The broker which is used to exchange messages between runners. */
+    broker: Broker<ByteArray>
+) : Runner(broker) {
   /** The URI of this runner. */
-  override val uri = "https://www.rdf-connect.com/#JVMRunner"
+  override val uri = JVM_RUNNER_URI
 
   /** Map of all stages in the runner. */
   private val stages = mutableMapOf<String, Processor>()
@@ -55,25 +58,24 @@ class JVMRunner(broker: Broker<ByteArray>) : Runner(broker) {
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
-  private val job = Job()
-  private val scope = CoroutineScope(job)
-
   /** Load a new processor into the runner. */
   override suspend fun load(processor: IRProcessor, stage: IRStage) {
-    /** Load the class into the JVM. */
+    super.load(processor, stage)
+
+    /* Load the class into the JVM. */
     val loader = getClassLoader(processor.entrypoint)
     val name = processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
     val clazz = Class.forName(name, true, loader) as Class<*>
 
-    /** Check if instantiatable. */
+    /* Check if instantiatable. */
     if (!Processor::class.java.isAssignableFrom(clazz)) {
       Log.shared.fatal(REQUIRES_PROCESSOR_BASE_CLASS)
     }
 
-    /** Build the argument map. */
+    /* Build the argument map. */
     val arguments = this.instantiate(processor.parameters.zip(stage.arguments))
 
-    /** Initialize the stage with the new map. */
+    /* Initialize the stage with the new map. */
     val constructor = clazz.getConstructor(Arguments::class.java)
     val args = Arguments.from(arguments)
     this.stages[stage.uri] = constructor.newInstance(args) as Processor
@@ -86,9 +88,6 @@ class JVMRunner(broker: Broker<ByteArray>) : Runner(broker) {
 
   /** Closes all readers and exits the runner. */
   override suspend fun exit() {
-    Log.shared.info("Exiting the JVM Runner.")
-
-    // Close all readers.
     for (reader in this.readers.values) {
       reader.close()
     }
@@ -99,14 +98,14 @@ class JVMRunner(broker: Broker<ByteArray>) : Runner(broker) {
    *
    * @param uri The URI of the reader to send the message to.
    */
-  override suspend fun receive(uri: String, data: ByteArray) {
+  override fun receiveBrokerMessage(uri: String, data: ByteArray) {
     val reader = this.readers[uri]
 
     if (reader == null) {
       Log.shared.debug { "Channel not found: '$uri'" }
     }
 
-    reader?.send(data)
+    scheduleTask { reader?.send(data) }
   }
 
   /**
@@ -114,7 +113,7 @@ class JVMRunner(broker: Broker<ByteArray>) : Runner(broker) {
    *
    * @param uri The URI of the reader to close.
    */
-  override suspend fun close(uri: String) {
+  override fun closingBrokerChannel(uri: String) {
     val reader = this.readers[uri]
 
     if (reader == null) {
@@ -166,13 +165,13 @@ class JVMRunner(broker: Broker<ByteArray>) : Runner(broker) {
   private fun createWriter(uri: String): SendChannel<ByteArray> {
     val channel = Channel<ByteArray>()
 
-    // Pipe data into the broker.
     scope.launch {
+      // Pipe data into the broker.
       for (data in channel) {
         broker.send(uri, data)
       }
 
-      broker.unregister(uri, this@JVMRunner)
+      broker.unregisterSender(uri)
     }
 
     return channel

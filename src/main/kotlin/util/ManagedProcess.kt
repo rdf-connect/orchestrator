@@ -13,7 +13,11 @@ import technology.idlab.extensions.rawPath
  * @param process The process to manage.
  * @param name The name of the process, used for logging purposes.
  */
-class ManagedProcess(private val process: Process, private val name: String) {
+class ManagedProcess(
+    private val process: Process,
+    private val name: String,
+    private val prettyLog: Boolean = true
+) {
   // Functions to execute after the process exits, either forced or naturally.
   private val hooks = mutableListOf<suspend (Int) -> Unit>()
 
@@ -38,7 +42,11 @@ class ManagedProcess(private val process: Process, private val name: String) {
   private val incoming = thread {
     val stream = process.inputStream.bufferedReader()
     for (line in stream.lines()) {
-      println(line)
+      if (prettyLog) {
+        Log.shared.command(line, pid = process.pid(), location = name)
+      } else {
+        println(line)
+      }
     }
   }
 
@@ -93,7 +101,11 @@ class ManagedProcess(private val process: Process, private val name: String) {
   }
 
   companion object {
-    fun from(builder: ProcessBuilder, attempts: Int = 5): ManagedProcess {
+    fun from(
+        builder: ProcessBuilder,
+        attempts: Int = 5,
+        prettyLog: Boolean = true
+    ): ManagedProcess {
       Log.shared.debug {
         val command = builder.command().joinToString(" ")
         val directory = builder.directory().rawPath()
@@ -111,7 +123,7 @@ class ManagedProcess(private val process: Process, private val name: String) {
         }
       }
 
-      return ManagedProcess(process, builder.command().joinToString(" "))
+      return ManagedProcess(process, builder.command().joinToString(" "), prettyLog)
     }
   }
 }

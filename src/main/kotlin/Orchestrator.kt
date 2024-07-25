@@ -4,7 +4,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import technology.idlab.broker.Broker
-import technology.idlab.broker.Mode
+import technology.idlab.broker.impl.SimpleBroker
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
@@ -20,7 +20,7 @@ class Orchestrator(
     runners: List<IRRunner>
 ) {
   /** Message broker. */
-  private val broker = Broker<ByteArray>()
+  private val broker: Broker<ByteArray> = SimpleBroker()
 
   /** Stages by URI. */
   private val stages = stages.associateBy { it.uri }
@@ -40,16 +40,6 @@ class Orchestrator(
         val processor = this@Orchestrator.processors[stage.processorURI]!!
         val runner = this@Orchestrator.runners[processor.target]!!
         runner.load(processor, stage)
-
-        // Register readers.
-        for (reader in stage.getReaders(processor)) {
-          broker.register(reader, runner, Mode.READ)
-        }
-
-        // Register writers.
-        for (writer in stage.getWriters(processor)) {
-          broker.register(writer, runner, Mode.WRITE)
-        }
       }
     }
   }
