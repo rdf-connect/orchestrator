@@ -116,7 +116,7 @@ class ParserTest {
     // Get the stage.
     assertEquals(1, stages.size, "There should be one stage.")
     val stage = stages[0]
-    assertTrue(stage.processorURI.endsWith("Processor"), "Stage should use the correct processor.")
+    assertTrue(stage.processor.uri.endsWith("Processor"), "Stage should use the correct processor.")
 
     // Parse first argument.
     val arg1 = stage.arguments["arg1"]

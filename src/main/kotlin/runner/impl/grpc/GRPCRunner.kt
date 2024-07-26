@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import runner.impl.grpc.Config
-import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.Runner
 import technology.idlab.util.Log
@@ -119,10 +118,10 @@ abstract class GRPCRunner(
     scheduleTask { messages.send(message) }
   }
 
-  override suspend fun load(processor: IRProcessor, stage: IRStage) {
-    super.load(processor, stage)
+  override suspend fun load(stage: IRStage) {
+    super.load(stage)
 
-    val payload = stage.toGRPC(processor.toGRPC())
+    val payload = stage.toGRPC()
     try {
       grpc.load(payload)
     } catch (e: StatusException) {

@@ -7,7 +7,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import technology.idlab.broker.Broker
 import technology.idlab.broker.BrokerClient
-import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.impl.grpc.HostedGRPCRunner
@@ -51,11 +50,11 @@ abstract class Runner : BrokerClient<ByteArray> {
   }
 
   /** Register and prepare a stage inside the runtime. */
-  open suspend fun load(processor: IRProcessor, stage: IRStage) {
+  open suspend fun load(stage: IRStage) {
     Log.shared.debug { "Loading stage '${stage.uri}' in '$uri'." }
 
-    val writers = stage.getWriters(processor)
-    val readers = stage.getReaders(processor)
+    val writers = stage.getWriters()
+    val readers = stage.getReaders()
 
     for (writer in writers) {
       sending.add(writer)

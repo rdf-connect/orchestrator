@@ -81,10 +81,10 @@ internal fun IRArgument.toGRPC(): GRPC.IRArgument {
   return builder.build()
 }
 
-internal fun IRStage.toGRPC(processor: GRPC.IRProcessor): GRPC.IRStage {
+internal fun IRStage.toGRPC(): GRPC.IRStage {
   val builder = GRPC.IRStage.newBuilder()
   builder.setUri(uri)
-  builder.setProcessor(processor)
+  builder.setProcessor(this.processor.toGRPC())
   builder.putAllArguments(arguments.mapValues { it.value.toGRPC() })
   return builder.build()
 }

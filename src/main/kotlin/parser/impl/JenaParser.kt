@@ -298,9 +298,10 @@ private fun Model.parseProcessor(processor: Resource): IRProcessor {
 
 private fun Model.parseStages(pipeline: Resource): List<IRStage> {
   return listObjectsOfProperty(pipeline, RDFC.stages).toList().map { stage ->
-    val processor = objectOfProperty(stage.asResource(), RDF.type)!!.asResource()
+    val processorURI = objectOfProperty(stage.asResource(), RDF.type)!!.asResource()
+    val processor = parseProcessor(processorURI)
     val arguments = objectOfProperty(stage.asResource(), RDFC.arguments)!!.asResource()
-    IRStage(stage.toString(), processor.uri, parseArguments(arguments))
+    IRStage(stage.toString(), processor, parseArguments(arguments))
   }
 }
 

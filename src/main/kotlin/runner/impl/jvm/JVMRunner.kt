@@ -10,7 +10,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
-import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.Runner
 import technology.idlab.util.Log
@@ -55,12 +54,12 @@ class JVMRunner : Runner() {
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
   /** Load a new processor into the runner. */
-  override suspend fun load(processor: IRProcessor, stage: IRStage) {
-    super.load(processor, stage)
+  override suspend fun load(stage: IRStage) {
+    super.load(stage)
 
     /* Load the class into the JVM. */
-    val loader = getClassLoader(processor.entrypoint)
-    val name = processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
+    val loader = getClassLoader(stage.processor.entrypoint)
+    val name = stage.processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
     val clazz = Class.forName(name, true, loader) as Class<*>
 
     /* Check if instantiatable. */
@@ -69,7 +68,7 @@ class JVMRunner : Runner() {
     }
 
     /* Build the argument map. */
-    val arguments = this.instantiate(processor.parameters.zip(stage.arguments))
+    val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
 
     /* Initialize the stage with the new map. */
     val constructor = clazz.getConstructor(Arguments::class.java)

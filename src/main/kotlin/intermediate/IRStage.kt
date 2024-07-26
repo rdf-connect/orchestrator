@@ -53,16 +53,16 @@ private fun getReaders(options: Map<String, Pair<IRParameter, IRArgument>>): Lis
 data class IRStage(
     // The URI of the stage.
     val uri: String,
-    // The URI of the processor itself.
-    val processorURI: String,
+    // The processor.
+    val processor: IRProcessor,
     // Concrete but unparsed arguments for the stage.
     val arguments: Map<String, IRArgument> = emptyMap(),
 ) {
-  fun getReaders(processor: IRProcessor): List<String> {
+  fun getReaders(): List<String> {
     return getReaders(processor.parameters.zip(arguments))
   }
 
-  fun getWriters(processor: IRProcessor): List<String> {
+  fun getWriters(): List<String> {
     return getWriters(processor.parameters.zip(arguments))
   }
 }

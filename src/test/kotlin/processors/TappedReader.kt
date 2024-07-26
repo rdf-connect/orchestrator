@@ -47,7 +47,7 @@ class TappedReader(args: Arguments) : Processor(args) {
 
     fun stage(channelURI: String): IRStage {
       return IRStage(
-          "tapped_reader_stage", processor.uri, mapOf("input" to IRArgument(listOf(channelURI))))
+          "tapped_reader_stage", processor, mapOf("input" to IRArgument(listOf(channelURI))))
     }
   }
 }

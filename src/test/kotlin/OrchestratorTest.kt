@@ -7,8 +7,6 @@ import processors.TappedWriter
 import technology.idlab.Orchestrator
 import technology.idlab.intermediate.IRRunner
 
-val processors = listOf(TappedWriter.processor, TappedReader.processor)
-
 val stages = listOf(TappedWriter.stage("channel"), TappedReader.stage("channel"))
 
 val jvmRunner =
@@ -20,7 +18,7 @@ val jvmRunner =
 class OrchestratorTest {
   @Test
   fun channelTest(): Unit = runBlocking {
-    val orchestrator = Orchestrator(stages, processors, listOf(jvmRunner))
+    val orchestrator = Orchestrator(stages, listOf(jvmRunner))
 
     // Bring pipeline online.
     launch { orchestrator.exec() }
