@@ -31,7 +31,7 @@ jobs:
           node-version: '20'
 
       - name: Create JAR
-        run: ./gradlew jar --console=plain --warning-mode all
+        run: ./gradlew shadowJar --console=plain --warning-mode all
 
       - name: Build
         run: ./gradlew installDist --console=plain --warning-mode all
