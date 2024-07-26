@@ -8,12 +8,13 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.parser.Parser
+import technology.idlab.parser.impl.JenaParser
 
 class ParserTest {
   private fun parse(resource: String): Parser {
     val uri = this::class.java.getResource(resource)
     val file = File(uri!!.toURI())
-    return Parser.using(file)
+    return JenaParser(file)
   }
 
   @Test
@@ -109,7 +110,7 @@ class ParserTest {
   fun stages() {
     val uri = this::class.java.getResource("/pipelines/basic/index.ttl")
     val file = File(uri!!.toURI())
-    val parser = Parser.using(file)
+    val parser = JenaParser(file)
 
     val stages = parser.pipelines[0].stages
 

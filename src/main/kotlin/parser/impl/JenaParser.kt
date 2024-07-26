@@ -381,7 +381,7 @@ private fun Model.parsePipelines(): List<IRPipeline> {
   return listSubjectsWithProperty(RDF.type, RDFC.pipeline).toList().map { parsePipeline(it) }
 }
 
-class JenaParser(file: File) : Parser() {
+class JenaParser(file: File) : Parser {
   /** The Apache Jena model. */
   private val model: Model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
 
