@@ -9,6 +9,7 @@
 test:report a rdfc:Channel .
 test:validated a rdfc:Channel .
 test:unvalidated a rdfc:Channel .
+test:web a rdfc:Channel .
 
 test:JVMTestingPipeline
   a rdfc:Pipeline ;
@@ -18,10 +19,21 @@ test:JVMTestingPipeline
     test:FileReader ,
     test:SHACLValidator ,
     test:FileWriter ,
-    test:ReportWriter ;
+    test:ReportWriter ,
+    test:HttpFetch ,
+    test:HttpWriter ;
   rdfc:dependency
+    <../../../../processors/http-utils-kt> ,
     <../../../../processors/file-utils-kt> ,
     <../../../../processors/shacl-validator-kt> .
+
+test:HttpFetch
+  a rdfc:HttpFetchKT ;
+  rdfc:arguments [
+    rdfc:endpoint "https://example.com" ;
+    rdfc:method "GET" ;
+    rdfc:outgoing test:web ;
+  ] .
 
 test:FileReader
   a rdfc:FileReaderKT ;
@@ -41,6 +53,13 @@ test:SHACLValidator
     rdfc:shapes <./shacl/shapes.ttl> ;
     rdfc:mime "text/turtle" ;
     rdfc:fatal "false"^^xsd:boolean ;
+  ] .
+
+test:HttpWriter
+  a rdfc:FileWriterKT ;
+  rdfc:arguments [
+    rdfc:path </tmp/rdfc-testing/web.html> ;
+    rdfc:incoming test:web ;
   ] .
 
 test:FileWriter

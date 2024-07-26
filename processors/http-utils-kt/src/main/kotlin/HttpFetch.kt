@@ -1,4 +1,4 @@
-package technology.idlab.std
+package technology.idlab.httputils
 
 import io.ktor.client.*
 import io.ktor.client.engine.*
@@ -14,11 +14,14 @@ class HttpFetch(args: Arguments) : Processor(args) {
   /** Meta configuration. */
   private var engine: HttpClientEngine = CIO.create()
 
+  /** Default values. */
+  private val methodDefault = "GET"
+
   /** Parameters. */
-  private val endpoint: String = arguments["endpoint"]
-  private val output: SendChannel<ByteArray> = arguments["output"]
-  private val headers: Array<String> = arguments["headers"]
-  private val method: String = arguments.get<String?>("method") ?: "GET"
+  private val endpoint: String by args
+  private val outgoing: SendChannel<ByteArray> by args
+  private val headers: Array<String>? by args
+  private val method: String? by args
 
   /** Prebuild request. */
   private val builder = HttpRequestBuilder()
@@ -26,8 +29,8 @@ class HttpFetch(args: Arguments) : Processor(args) {
   /** Build the HTTP request. */
   init {
     builder.url(endpoint)
-    builder.method = HttpMethod.parse(method)
-    headers.map { header ->
+    builder.method = HttpMethod.parse(method ?: methodDefault)
+    headers?.map { header ->
       val (key, value) = header.split(":").map { it.trim() }
       builder.headers.append(key, value)
     }
@@ -45,7 +48,8 @@ class HttpFetch(args: Arguments) : Processor(args) {
 
     // Push the result to the output.
     val bytes = res.readBytes()
-    output.send(bytes)
+    outgoing.send(bytes)
+    outgoing.close()
   }
 
   internal fun overwriteEngine(engine: HttpClientEngine) {

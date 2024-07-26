@@ -50,6 +50,13 @@ class E2ETest {
 
   @Test
   fun jvm() {
+    // Remove the web page if it already exists.
+    val webPage = File("/tmp/rdfc-testing/web.html")
+    webPage.delete()
+
     run("/e2e/jvm.ttl")
+
+    // Check if web page has been fetched and written to disk.
+    assert(webPage.readText().contains("<title>Example Domain</title>"))
   }
 }
