@@ -20,14 +20,14 @@ class Orchestrator(
     runners: List<IRRunner>
 ) {
   /** Message broker. */
-  private val broker: Broker<ByteArray> = SimpleBroker()
+  private val broker: Broker<ByteArray>
 
   /** Stages by URI. */
   private val stages = stages.associateBy { it.uri }
 
   /** Runners by URI. */
   private val runners =
-      runners.associateBy { it.uri }.mapValues { (_, runner) -> Runner.from(runner, broker) }
+      runners.associateBy { it.uri }.mapValues { (_, runner) -> Runner.from(runner) }
 
   /** Processors by URI. */
   private val processors = processors.associateBy { it.uri }
@@ -42,6 +42,10 @@ class Orchestrator(
         runner.load(processor, stage)
       }
     }
+  }
+
+  init {
+    this.broker = SimpleBroker(this.runners.values)
   }
 
   /** Execute all stages in all the runtimes. */

@@ -6,15 +6,35 @@ import technology.idlab.util.Log
 
 typealias Clients<T> = Pair<Int, MutableSet<BrokerClient<T>>>
 
-class SimpleBroker<T> : Broker<T> {
+class SimpleBroker<T>(clients: Collection<BrokerClient<T>>) : Broker<T> {
   /** The collection of readers and writers for each channel. */
-  private val clients = mutableMapOf<String, Clients<T>>()
+  private val clients: MutableMap<String, Clients<T>>
+
+  init {
+    val result = mutableMapOf<String, Clients<T>>()
+
+    for (client in clients) {
+      client.inject(this)
+
+      for (uri in client.receiving) {
+        val (rc, receivers) = result.getOrPut(uri) { Pair(0, mutableSetOf()) }
+        receivers.add(client)
+        result[uri] = Pair(rc, receivers)
+      }
+
+      for (uri in client.sending) {
+        val (rc, receivers) = result.getOrPut(uri) { Pair(0, mutableSetOf()) }
+        result[uri] = Pair(rc + 1, receivers)
+      }
+    }
+
+    this.clients = result
+  }
 
   override fun send(uri: String, data: T) {
     Log.shared.debug { "Brokering message: '$uri'" }
     val (_, receivers) = clients[uri] ?: Log.shared.fatal("Channel not registered: $uri")
 
-    // If all readers went offline, we can no longer send any messages to the channel.
     if (receivers.size == 0) {
       Log.shared.fatal("Channel no longer available: $uri")
     }
@@ -25,19 +45,7 @@ class SimpleBroker<T> : Broker<T> {
     }
   }
 
-  override fun registerSender(uri: String) {
-    Log.shared.debug { "Registering sender to: '$uri'" }
-    val (rc, receivers) = clients.getOrPut(uri) { Pair(0, mutableSetOf()) }
-    clients[uri] = Pair(rc + 1, receivers)
-  }
-
-  override fun registerReceiver(uri: String, receiver: BrokerClient<T>) {
-    Log.shared.debug { "Registering receiver '${receiver.uri}' to '$uri'" }
-    val (_, receivers) = clients.getOrPut(uri) { Pair(0, mutableSetOf()) }
-    receivers.add(receiver)
-  }
-
-  override fun unregisterSender(uri: String) {
+  override fun unregister(uri: String) {
     Log.shared.debug { "Unregistering sender from '$uri'" }
 
     // Decrease the sender count.

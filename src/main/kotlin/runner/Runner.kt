@@ -14,7 +14,7 @@ import technology.idlab.runner.impl.grpc.HostedGRPCRunner
 import technology.idlab.runner.impl.jvm.JVMRunner
 import technology.idlab.util.Log
 
-abstract class Runner(protected val broker: Broker<ByteArray>) : BrokerClient<ByteArray> {
+abstract class Runner : BrokerClient<ByteArray> {
   /** A job to control the `CoroutineScope`. */
   private val job = Job()
 
@@ -23,6 +23,15 @@ abstract class Runner(protected val broker: Broker<ByteArray>) : BrokerClient<By
 
   /** The tasks to run concurrently, in a FIFO order. */
   private val tasks = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+
+  /** Reference to the broker, set via dependency injection. */
+  final override lateinit var broker: Broker<ByteArray>
+
+  /** The URIs the runner wants to listen to. */
+  override val receiving: MutableSet<String> = mutableSetOf()
+
+  /** The URIs the runners wants to send to. */
+  override val sending: MutableList<String> = mutableListOf()
 
   /**
    * All incoming tasks will be handled in a first-in first-out based, in order to guarantee their
@@ -49,11 +58,11 @@ abstract class Runner(protected val broker: Broker<ByteArray>) : BrokerClient<By
     val readers = stage.getReaders(processor)
 
     for (writer in writers) {
-      broker.registerSender(writer)
+      sending.add(writer)
     }
 
     for (reader in readers) {
-      broker.registerReceiver(reader, this)
+      receiving.add(reader)
     }
   }
 
@@ -64,19 +73,19 @@ abstract class Runner(protected val broker: Broker<ByteArray>) : BrokerClient<By
   abstract suspend fun exit()
 
   companion object {
-    private fun builtIn(uri: String, broker: Broker<ByteArray>): Runner {
+    private fun builtIn(uri: String): Runner {
       return when (uri) {
-        "https://www.rdf-connect.com/#JVMRunner" -> JVMRunner(broker)
+        "https://www.rdf-connect.com/#JVMRunner" -> JVMRunner()
         else -> Log.shared.fatal("Unknown built in runner: $uri")
       }
     }
 
-    fun from(runner: IRRunner, broker: Broker<ByteArray>): Runner {
+    fun from(runner: IRRunner): Runner {
       Log.shared.info("Creating runner: ${runner.uri}")
 
       when (runner.type) {
-        IRRunner.Type.GRPC -> return HostedGRPCRunner.create(runner, broker)
-        IRRunner.Type.BUILT_IN -> return builtIn(runner.uri, broker)
+        IRRunner.Type.GRPC -> return HostedGRPCRunner.create(runner)
+        IRRunner.Type.BUILT_IN -> return builtIn(runner.uri)
         else -> {
           Log.shared.fatal("Unknown runner type: ${runner.type}")
         }

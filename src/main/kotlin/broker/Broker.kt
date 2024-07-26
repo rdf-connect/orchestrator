@@ -14,24 +14,9 @@ interface Broker<T> {
   fun send(uri: String, data: T)
 
   /**
-   * Register a sender to a channel with a given URI.
-   *
-   * @param uri The URI of the channel.
-   */
-  fun registerSender(uri: String)
-
-  /**
-   * Register a receiver to a channel with a given URI.
-   *
-   * @param uri The URI of the channel.
-   * @param receiver The `BrokerReceiver` to register.
-   */
-  fun registerReceiver(uri: String, receiver: BrokerClient<T>)
-
-  /**
    * Remove a sender from a channel. If no senders remain, the channel is closed.
    *
    * @param uri The URI to which the sender no longer wants to listen to.
    */
-  fun unregisterSender(uri: String)
+  fun unregister(uri: String)
 }

@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import runner.impl.grpc.Config
-import technology.idlab.broker.Broker
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.Runner
@@ -28,8 +27,7 @@ import technology.idlab.util.retries
 abstract class GRPCRunner(
     /** Location of the gRPC server. */
     config: Config,
-    broker: Broker<ByteArray>
-) : Runner(broker) {
+) : Runner() {
   // The URI of this runner.
   override val uri: String = config.uri
 
@@ -70,7 +68,7 @@ abstract class GRPCRunner(
   private val messageCollector =
       FlowCollector<ChannelOuterClass.ChannelMessage> {
         if (it.type == ChannelOuterClass.ChannelMessageType.CLOSE) {
-          broker.unregisterSender(it.channel.uri)
+          broker.unregister(it.channel.uri)
           return@FlowCollector
         }
 

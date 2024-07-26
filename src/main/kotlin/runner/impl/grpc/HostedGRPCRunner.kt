@@ -4,7 +4,6 @@ import java.io.File
 import kotlin.random.Random
 import kotlin.random.nextUInt
 import runner.impl.grpc.Config
-import technology.idlab.broker.Broker
 import technology.idlab.extensions.rawPath
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.util.ManagedProcess
@@ -19,8 +18,7 @@ private constructor(
     process: ManagedProcess,
     /** The configuration of the gRPC server. */
     config: Config,
-    broker: Broker<ByteArray>
-) : GRPCRunner(config, broker) {
+) : GRPCRunner(config) {
   // Exit the gRPC runner client when the server exits.
   init {
     process.exitHook { this@HostedGRPCRunner.exit() }
@@ -32,7 +30,7 @@ private constructor(
      *
      * @param runner The runner to create a new instance of.
      */
-    fun create(runner: IRRunner, broker: Broker<ByteArray>): HostedGRPCRunner {
+    fun create(runner: IRRunner): HostedGRPCRunner {
       // Create a new config for the runner. We run the server on a random port in [5000-10000] for
       // now, but should be configurable later.
       val port = (Random.nextUInt(5000u, 10_000u))
@@ -48,7 +46,7 @@ private constructor(
       val process = ManagedProcess.from(builder, prettyLog = false)
 
       // Create a new runner.
-      return HostedGRPCRunner(process, config, broker)
+      return HostedGRPCRunner(process, config)
     }
   }
 }

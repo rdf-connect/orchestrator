@@ -8,7 +8,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import technology.idlab.broker.Broker
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
@@ -45,10 +44,7 @@ private fun getClassLoader(path: String? = null): ClassLoader {
   return URLClassLoader(listOf(url).toTypedArray())
 }
 
-class JVMRunner(
-    /** The broker which is used to exchange messages between runners. */
-    broker: Broker<ByteArray>
-) : Runner(broker) {
+class JVMRunner : Runner() {
   /** The URI of this runner. */
   override val uri = JVM_RUNNER_URI
 
@@ -171,7 +167,7 @@ class JVMRunner(
         broker.send(uri, data)
       }
 
-      broker.unregisterSender(uri)
+      broker.unregister(uri)
     }
 
     return channel
