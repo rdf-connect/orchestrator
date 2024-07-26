@@ -1,4 +1,4 @@
-package technology.idlab.std
+package technology.idlab.fileutils
 
 import java.io.File
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -11,11 +11,11 @@ class FileWriter(args: Arguments) : Processor(args) {
   private val appendDefault = false
 
   /** Arguments */
-  private val path: String = arguments["path"]
-  private val file = File(path)
-  private val input: ReceiveChannel<ByteArray> = arguments["input"]
-  private val overwrite: Boolean? = arguments["overwrite"]
-  private val append: Boolean? = arguments["append"]
+  private val path: String by args
+  private val file = File(path.removePrefix("file:"))
+  private val incoming: ReceiveChannel<ByteArray> by args
+  private val overwrite: Boolean? by args
+  private val append: Boolean? by args
 
   init {
     // Sanity check.
@@ -36,7 +36,7 @@ class FileWriter(args: Arguments) : Processor(args) {
 
   /** All incoming values are parsed as byte and appended onto the file. */
   override suspend fun exec() {
-    for (data in input) {
+    for (data in incoming) {
       file.appendBytes(data)
     }
   }

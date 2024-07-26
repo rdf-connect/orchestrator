@@ -20,12 +20,11 @@ test:JVMTestingPipeline
     test:FileWriter ,
     test:ReportWriter ;
   rdfc:dependency
-    <../../../../runners/nodejs> ,
-    <../../../../processors/file-utils-ts> ,
+    <../../../../processors/file-utils-kt> ,
     <../../../../processors/shacl-validator-kt> .
 
 test:FileReader
-  a rdfc:FileReaderTS ;
+  a rdfc:FileReaderKT ;
   rdfc:arguments [
     rdfc:paths
       <./data/valid.ttl> ,
@@ -45,14 +44,14 @@ test:SHACLValidator
   ] .
 
 test:FileWriter
-  a rdfc:FileWriterTS ;
+  a rdfc:FileWriterKT ;
   rdfc:arguments [
     rdfc:path </tmp/rdfc-testing/valid.ttl> ;
     rdfc:incoming test:validated ;
   ] .
 
 test:ReportWriter
-  a rdfc:FileWriterTS ;
+  a rdfc:FileWriterKT ;
   rdfc:arguments [
     rdfc:path </tmp/rdfc-testing/report.ttl> ;
     rdfc:incoming test:report ;
