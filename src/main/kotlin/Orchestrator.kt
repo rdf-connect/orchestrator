@@ -2,7 +2,6 @@ package technology.idlab
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import technology.idlab.broker.Broker
 import technology.idlab.broker.impl.SimpleBroker
 import technology.idlab.intermediate.IRRunner
@@ -19,38 +18,53 @@ class Orchestrator(
   /** Message broker. */
   private val broker: Broker<ByteArray>
 
-  /** Stages by URI. */
-  private val stages = stages.associateBy { it.uri }
-
   /** Runners by URI. */
-  private val runners =
-      runners.associateBy { it.uri }.mapValues { (_, runner) -> Runner.from(runner) }
+  private val runners: Map<String, Runner>
 
   /** Load all stages into their respective runners. */
   init {
-    runBlocking {
-      for ((_, stage) in this@Orchestrator.stages) {
-        // Load stage.
-        val runner = this@Orchestrator.runners[stage.processor.target]!!
-        runner.load(stage)
-      }
-    }
-  }
+    // Associate the URI of the runner to the runner itself, as well as the set of stages.
+    val result: Map<String, Pair<IRRunner, MutableSet<IRStage>>> =
+        runners.associateBy { it.uri }.mapValues { (_, runner) -> Pair(runner, mutableSetOf()) }
 
-  init {
+    // Add every stage to it's corresponding runner.
+    for (stage in stages) {
+      result[stage.processor.target]!!.second.add(stage)
+    }
+
+    // Instantiate the runners.
+    this.runners =
+        result.mapValues {
+          val (runner, runnerStages) = it.value
+          Runner.from(runner, runnerStages)
+        }
+
+    // Register broker.
     this.broker = SimpleBroker(this.runners.values)
   }
 
   /** Execute all stages in all the runtimes. */
   suspend fun exec() = coroutineScope {
-    runners.values
-        .map {
+    // Prepare all runners for execution.
+    var jobs =
+        runners.values.map {
           launch {
-            Log.shared.debug { "Executing: ${it.uri}" }
-            it.exec()
-            Log.shared.debug { "Execution finished: ${it.uri}" }
+            Log.shared.debug { "Preparing runner: ${it.uri}" }
+            it.prepare()
+            Log.shared.debug { "Preparation runner finished: ${it.uri}" }
           }
         }
-        .forEach { it.join() }
+    jobs.forEach { it.join() }
+
+    // Start execution.
+    jobs =
+        runners.values.map {
+          launch {
+            Log.shared.debug { "Executing runner: ${it.uri}" }
+            it.exec()
+            Log.shared.debug { "Execution runner finished: ${it.uri}" }
+          }
+        }
+    jobs.forEach { it.join() }
   }
 }

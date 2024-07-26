@@ -13,7 +13,10 @@ import technology.idlab.runner.impl.grpc.HostedGRPCRunner
 import technology.idlab.runner.impl.jvm.JVMRunner
 import technology.idlab.util.Log
 
-abstract class Runner : BrokerClient<ByteArray> {
+abstract class Runner(
+    /** The stages which the runner must execute. */
+    protected val stages: Collection<IRStage>
+) : BrokerClient<ByteArray> {
   /** A job to control the `CoroutineScope`. */
   private val job = Job()
 
@@ -27,10 +30,10 @@ abstract class Runner : BrokerClient<ByteArray> {
   final override lateinit var broker: Broker<ByteArray>
 
   /** The URIs the runner wants to listen to. */
-  override val receiving: MutableSet<String> = mutableSetOf()
+  final override val receiving: Set<String> = this.stages.map { it.getReaders() }.flatten().toSet()
 
   /** The URIs the runners wants to send to. */
-  override val sending: MutableList<String> = mutableListOf()
+  final override val sending: List<String> = this.stages.map { it.getWriters() }.flatten()
 
   /**
    * All incoming tasks will be handled in a first-in first-out based, in order to guarantee their
@@ -49,21 +52,8 @@ abstract class Runner : BrokerClient<ByteArray> {
     runBlocking { tasks.send(task) }
   }
 
-  /** Register and prepare a stage inside the runtime. */
-  open suspend fun load(stage: IRStage) {
-    Log.shared.debug { "Loading stage '${stage.uri}' in '$uri'." }
-
-    val writers = stage.getWriters()
-    val readers = stage.getReaders()
-
-    for (writer in writers) {
-      sending.add(writer)
-    }
-
-    for (reader in readers) {
-      receiving.add(reader)
-    }
-  }
+  /** Prepare the runner for execution. ALl stages must be loaded here. */
+  abstract suspend fun prepare()
 
   /** Start pipeline execution. */
   abstract suspend fun exec()
@@ -72,23 +62,18 @@ abstract class Runner : BrokerClient<ByteArray> {
   abstract suspend fun exit()
 
   companion object {
-    private fun builtIn(uri: String): Runner {
-      return when (uri) {
-        "https://www.rdf-connect.com/#JVMRunner" -> JVMRunner()
-        else -> Log.shared.fatal("Unknown built in runner: $uri")
-      }
-    }
-
-    fun from(runner: IRRunner): Runner {
+    fun from(runner: IRRunner, stages: Collection<IRStage>): Runner {
       Log.shared.info("Creating runner: ${runner.uri}")
 
-      when (runner.type) {
-        IRRunner.Type.GRPC -> return HostedGRPCRunner.create(runner)
-        IRRunner.Type.BUILT_IN -> return builtIn(runner.uri)
-        else -> {
-          Log.shared.fatal("Unknown runner type: ${runner.type}")
-        }
+      if (runner.uri == "https://www.rdf-connect.com/#JVMRunner") {
+        return JVMRunner(stages)
       }
+
+      if (runner.type == IRRunner.Type.GRPC) {
+        return HostedGRPCRunner.create(runner, stages)
+      }
+
+      Log.shared.fatal("Unknown runner type: ${runner.type}")
     }
   }
 }

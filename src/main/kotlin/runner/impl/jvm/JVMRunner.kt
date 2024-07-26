@@ -43,42 +43,41 @@ private fun getClassLoader(path: String? = null): ClassLoader {
   return URLClassLoader(listOf(url).toTypedArray())
 }
 
-class JVMRunner : Runner() {
+class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
   /** The URI of this runner. */
   override val uri = JVM_RUNNER_URI
 
   /** Map of all stages in the runner. */
-  private val stages = mutableMapOf<String, Processor>()
+  private val instances = mutableMapOf<String, Processor>()
 
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
-  /** Load a new processor into the runner. */
-  override suspend fun load(stage: IRStage) {
-    super.load(stage)
+  override suspend fun prepare() {
+    for (stage in stages) {
+      /* Load the class into the JVM. */
+      val loader = getClassLoader(stage.processor.entrypoint)
+      val name = stage.processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
+      val clazz = Class.forName(name, true, loader) as Class<*>
 
-    /* Load the class into the JVM. */
-    val loader = getClassLoader(stage.processor.entrypoint)
-    val name = stage.processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
-    val clazz = Class.forName(name, true, loader) as Class<*>
+      /* Check if instantiatable. */
+      if (!Processor::class.java.isAssignableFrom(clazz)) {
+        Log.shared.fatal(REQUIRES_PROCESSOR_BASE_CLASS)
+      }
 
-    /* Check if instantiatable. */
-    if (!Processor::class.java.isAssignableFrom(clazz)) {
-      Log.shared.fatal(REQUIRES_PROCESSOR_BASE_CLASS)
+      /* Build the argument map. */
+      val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
+
+      /* Initialize the stage with the new map. */
+      val constructor = clazz.getConstructor(Arguments::class.java)
+      val args = Arguments.from(arguments)
+      this.instances[stage.uri] = constructor.newInstance(args) as Processor
     }
-
-    /* Build the argument map. */
-    val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
-
-    /* Initialize the stage with the new map. */
-    val constructor = clazz.getConstructor(Arguments::class.java)
-    val args = Arguments.from(arguments)
-    this.stages[stage.uri] = constructor.newInstance(args) as Processor
   }
 
   /** Execute all stages in the runner by calling their `exec` method in parallel. */
   override suspend fun exec() = coroutineScope {
-    this@JVMRunner.stages.values.map { launch { it.exec() } }.forEach { it.join() }
+    this@JVMRunner.instances.values.map { launch { it.exec() } }.forEach { it.join() }
   }
 
   /** Closes all readers and exits the runner. */

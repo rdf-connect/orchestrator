@@ -26,7 +26,9 @@ import technology.idlab.util.retries
 abstract class GRPCRunner(
     /** Location of the gRPC server. */
     config: Config,
-) : Runner() {
+    /** Stages to execute. */
+    stages: Collection<IRStage>
+) : Runner(stages) {
   // The URI of this runner.
   override val uri: String = config.uri
 
@@ -118,14 +120,14 @@ abstract class GRPCRunner(
     scheduleTask { messages.send(message) }
   }
 
-  override suspend fun load(stage: IRStage) {
-    super.load(stage)
-
-    val payload = stage.toGRPC()
-    try {
-      grpc.load(payload)
-    } catch (e: StatusException) {
-      Log.shared.fatal("Failed to load stage: ${e.cause}")
+  override suspend fun prepare() {
+    for (stage in stages) {
+      val payload = stage.toGRPC()
+      try {
+        grpc.load(payload)
+      } catch (e: StatusException) {
+        Log.shared.fatal("Failed to load stage: ${e.cause}")
+      }
     }
   }
 
