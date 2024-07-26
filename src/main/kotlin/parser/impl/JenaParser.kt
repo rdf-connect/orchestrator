@@ -381,7 +381,12 @@ private fun Model.parsePipelines(): List<IRPipeline> {
   return listSubjectsWithProperty(RDF.type, RDFC.pipeline).toList().map { parsePipeline(it) }
 }
 
-class JenaParser(file: File) : Parser {
+class JenaParser(
+    /** A file pointer to the pipeline configuration entrypoint. */
+    file: File,
+    /** Dependency resolver. */
+    private val resolver: Resolver
+) : Parser {
   /** The Apache Jena model. */
   private val model: Model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
 
@@ -413,7 +418,7 @@ class JenaParser(file: File) : Parser {
     this.packages =
         dependencies
             .map {
-              val path = Resolver.resolve(it)
+              val path = resolver.resolve(it)
               val mdl = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
               mdl.read(path.toString(), "TURTLE")
               val result = mdl.parsePackages(path.parentFile)

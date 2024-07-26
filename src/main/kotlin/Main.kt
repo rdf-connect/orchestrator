@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import technology.idlab.extensions.rawPath
 import technology.idlab.intermediate.IRPackage
 import technology.idlab.parser.impl.JenaParser
+import technology.idlab.resolver.impl.GenericResolver
 import technology.idlab.util.Log
 import technology.idlab.util.ManagedProcess
 
@@ -43,7 +44,7 @@ internal suspend fun exec(path: String) {
 
   // Parse said config to a IRPipeline.
   Log.shared.debug("Invoking parser.")
-  val parser = JenaParser(file)
+  val parser = JenaParser(file, GenericResolver())
 
   // Parse the pipeline out of the configuration file.
   if (parser.pipelines.size != 1) {
