@@ -17,30 +17,30 @@ class SHACLValidator(args: Arguments) : Processor(args) {
   private val errorIsFatalDefault = false
 
   /** Arguments. */
-  private val fatal: Boolean? = arguments["validation_is_fatal"]
-  private val incoming: ReceiveChannel<ByteArray> = arguments["incoming"]
-  private val outgoing: SendChannel<ByteArray> = arguments["outgoing"]
-  private val report: SendChannel<ByteArray>? = arguments["report"]
-  private val path: String = arguments["shapes"]
+  private val fatal: Boolean? by args
+  private val incoming: ReceiveChannel<ByteArray> by args
+  private val outgoing: SendChannel<ByteArray> by args
+  private val report: SendChannel<ByteArray>? by args
+  private val shapes: String by args
 
   /** Runtime fields. */
-  private val shapes: Graph
+  private val shapesGraph: Graph
   private val validator = ShaclValidator.get()
 
   init {
     // Initialize the shape graph and validator.
-    Log.shared.debug { "Loading: $path" }
+    Log.shared.debug { "Loading: $shapes" }
 
-    // Create a new model with the SHACL shapes.
+    // Create a new model with the SHACL shapesGraph.
     val model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
     try {
-      model.read(path, "TURTLE")
+      model.read(shapes, "TURTLE")
     } catch (e: RiotException) {
-      Log.shared.fatal("Failed to read SHACL shapes from file://$path")
+      Log.shared.fatal("Failed to read SHACL shapesGraph from file://$shapes")
     }
 
-    // Assign its graph to the shapes field.
-    this.shapes = model.graph
+    // Assign its graph to the shapesGraph field.
+    this.shapesGraph = model.graph
   }
 
   /** Read incoming data, validate it, and output it. */
@@ -56,7 +56,7 @@ class SHACLValidator(args: Arguments) : Processor(args) {
       }
 
       // Validate the model.
-      val report = validator.validate(shapes, model.graph)
+      val report = validator.validate(shapesGraph, model.graph)
 
       if (report.conforms()) {
         Log.shared.debug { "Validation successful." }

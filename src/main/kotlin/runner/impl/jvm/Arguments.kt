@@ -1,5 +1,6 @@
 package technology.idlab.runner.impl.jvm
 
+import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.isSuperclassOf
@@ -103,6 +104,10 @@ data class Arguments(
     } else {
       Log.shared.fatal("Could not parse $name to ${T::class.simpleName}")
     }
+  }
+
+  inline operator fun <reified T> getValue(thisRef: Any, property: KProperty<*>): T {
+    return this.get<T>(property.name)
   }
 
   companion object {

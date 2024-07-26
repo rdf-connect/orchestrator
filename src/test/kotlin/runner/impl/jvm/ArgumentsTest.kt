@@ -15,6 +15,25 @@ class ArgumentsTest {
   }
 
   @Test
+  fun delegation() {
+    val args =
+        Arguments(
+            mapOf(
+                "words" to listOf("the", "a"),
+                "present" to listOf(true),
+            ))
+    val obj =
+        object {
+          val words: List<String> by args
+          val present: Boolean? by args
+          val nulled: Boolean? by args
+        }
+    assertEquals(listOf("the", "a"), obj.words)
+    assertEquals(true, obj.present)
+    assertEquals(null, obj.nulled)
+  }
+
+  @Test
   fun single() {
     val args = Arguments(mapOf("key" to listOf("value")))
     assertEquals("value", args.get<String>("key"))
