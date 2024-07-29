@@ -1,0 +1,17 @@
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+
+rdfc:PythonPackage
+  a rdfc:Package ;
+  rdfc:version "0.0.1" ;
+  rdfc:author "Jens Pots" ;
+  rdfc:description "A gRPC based Python runner." ;
+  rdfc:repo "https://github.com/rdf-connect/orchestrator" ;
+  rdfc:license "MIT" ;
+  rdfc:prepare (
+    "poetry install"
+  ) ;
+  rdfc:runners rdfc:NodeRunner .
+
+rdfc:PythonRunner
+  a rdfc:GRPCRunner ;
+  rdfc:entrypoint "poetry run server" .

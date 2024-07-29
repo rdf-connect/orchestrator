@@ -1,12 +1,21 @@
 [tool.poetry]
-name = "RDF-Connect Python Runner"
+name = "Python Runner for RDF-Connect"
 version = "0.1.0"
 description = "Python runner for RDF-Connect using gRPC."
 authors = ["Jens Pots <jenspots@ugent.be>"]
 readme = "README.md"
 
+packages = [
+  { include = "src" }
+]
+
+[tool.poetry.scripts]
+server = "src.main:main"
+
 [tool.poetry.dependencies]
 python = "^3.12"
+grpcio = "^1.65.1"
+grpcio-tools = "^1.65.1"
 
 
 [build-system]
