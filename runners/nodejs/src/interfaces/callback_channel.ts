@@ -31,15 +31,15 @@ export class CallbackChannel<T> implements Writer<T> {
    * Handle incoming messages of the channel by piping them into the callback.
    * @private
    */
-  private handler = new Promise(async () => {
+  private handler = (async () => {
     for await (const data of this.channel) {
-      await this.onWrite(data)
+      await this.onWrite(data);
     }
 
     if (this.onClose != null) {
-      await this.onClose()
+      await this.onClose();
     }
-  });
+  })();
 
   /**
    * Create a new callback channel with a specific callback.
@@ -56,7 +56,7 @@ export class CallbackChannel<T> implements Writer<T> {
   }
 
   close(): Promise<void> {
-    this.channel.close()
+    this.channel.close();
     return Promise.resolve();
   }
 
@@ -65,6 +65,6 @@ export class CallbackChannel<T> implements Writer<T> {
   }
 
   write(data: T) {
-    this.channel.write(data)
+    this.channel.write(data);
   }
 }

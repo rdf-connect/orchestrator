@@ -61,7 +61,10 @@ function createBaseChannel(): Channel {
 }
 
 export const Channel = {
-  encode(message: Channel, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: Channel,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
     if (message.uri !== "") {
       writer.uint32(10).string(message.uri);
     }
@@ -69,7 +72,8 @@ export const Channel = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Channel {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseChannel();
     while (reader.pos < end) {
@@ -118,7 +122,10 @@ function createBaseChannelData(): ChannelData {
 }
 
 export const ChannelData = {
-  encode(message: ChannelData, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: ChannelData,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
     if (message.bytes.length !== 0) {
       writer.uint32(10).bytes(message.bytes);
     }
@@ -126,7 +133,8 @@ export const ChannelData = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): ChannelData {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseChannelData();
     while (reader.pos < end) {
@@ -149,7 +157,11 @@ export const ChannelData = {
   },
 
   fromJSON(object: any): ChannelData {
-    return { bytes: isSet(object.bytes) ? bytesFromBase64(object.bytes) : new Uint8Array(0) };
+    return {
+      bytes: isSet(object.bytes)
+        ? bytesFromBase64(object.bytes)
+        : new Uint8Array(0),
+    };
   },
 
   toJSON(message: ChannelData): unknown {
@@ -163,7 +175,9 @@ export const ChannelData = {
   create<I extends Exact<DeepPartial<ChannelData>, I>>(base?: I): ChannelData {
     return ChannelData.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<ChannelData>, I>>(object: I): ChannelData {
+  fromPartial<I extends Exact<DeepPartial<ChannelData>, I>>(
+    object: I,
+  ): ChannelData {
     const message = createBaseChannelData();
     message.bytes = object.bytes ?? new Uint8Array(0);
     return message;
@@ -175,7 +189,10 @@ function createBaseChannelMessage(): ChannelMessage {
 }
 
 export const ChannelMessage = {
-  encode(message: ChannelMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: ChannelMessage,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
     if (message.channel !== undefined) {
       Channel.encode(message.channel, writer.uint32(10).fork()).ldelim();
     }
@@ -189,7 +206,8 @@ export const ChannelMessage = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): ChannelMessage {
-    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseChannelMessage();
     while (reader.pos < end) {
@@ -227,7 +245,9 @@ export const ChannelMessage = {
 
   fromJSON(object: any): ChannelMessage {
     return {
-      channel: isSet(object.channel) ? Channel.fromJSON(object.channel) : undefined,
+      channel: isSet(object.channel)
+        ? Channel.fromJSON(object.channel)
+        : undefined,
       type: isSet(object.type) ? channelMessageTypeFromJSON(object.type) : 0,
       data: isSet(object.data) ? ChannelData.fromJSON(object.data) : undefined,
     };
@@ -247,18 +267,24 @@ export const ChannelMessage = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ChannelMessage>, I>>(base?: I): ChannelMessage {
+  create<I extends Exact<DeepPartial<ChannelMessage>, I>>(
+    base?: I,
+  ): ChannelMessage {
     return ChannelMessage.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<ChannelMessage>, I>>(object: I): ChannelMessage {
+  fromPartial<I extends Exact<DeepPartial<ChannelMessage>, I>>(
+    object: I,
+  ): ChannelMessage {
     const message = createBaseChannelMessage();
-    message.channel = (object.channel !== undefined && object.channel !== null)
-      ? Channel.fromPartial(object.channel)
-      : undefined;
+    message.channel =
+      object.channel !== undefined && object.channel !== null
+        ? Channel.fromPartial(object.channel)
+        : undefined;
     message.type = object.type ?? 0;
-    message.data = (object.data !== undefined && object.data !== null)
-      ? ChannelData.fromPartial(object.data)
-      : undefined;
+    message.data =
+      object.data !== undefined && object.data !== null
+        ? ChannelData.fromPartial(object.data)
+        : undefined;
     return message;
   },
 };
@@ -288,17 +314,31 @@ function base64FromBytes(arr: Uint8Array): string {
   }
 }
 
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+type Builtin =
+  | Date
+  | Function
+  | Uint8Array
+  | string
+  | number
+  | boolean
+  | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
+export type DeepPartial<T> = T extends Builtin
+  ? T
+  : T extends globalThis.Array<infer U>
+    ? globalThis.Array<DeepPartial<U>>
+    : T extends ReadonlyArray<infer U>
+      ? ReadonlyArray<DeepPartial<U>>
+      : T extends {}
+        ? { [K in keyof T]?: DeepPartial<T[K]> }
+        : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+export type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
+      [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
+    };
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

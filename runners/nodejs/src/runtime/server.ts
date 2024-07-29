@@ -8,7 +8,6 @@ import {
 import { IRStage } from "../proto/intermediate";
 import { Empty } from "../proto/empty";
 import { Runner } from "./runner";
-import { Log } from "../interfaces/log";
 import { ChannelMessage } from "../proto/channel";
 
 /**
@@ -25,18 +24,23 @@ export class ServerImplementation implements RunnerServer {
    * implemented by gRPC as callbacks, but can be easily bound to the runners
    * internal handlers.
    */
-  channel(call: ServerDuplexStream<ChannelMessage, ChannelMessage>): void {
+  exec(call: ServerDuplexStream<ChannelMessage, ChannelMessage>): void {
+    // Start execution, and end the call on success.
+    Runner.shared.exec().then(() => {
+      call.end();
+    });
+
     // On incoming data, call the appropriate reader.
     call.on("data", function (payload: ChannelMessage) {
       Runner.shared.incoming.write(payload);
     });
 
     // On outgoing data, write it to the stream.
-    new Promise(async () => {
+    (async () => {
       for await (const data of Runner.shared.outgoing) {
-        call.write(data)
+        call.write(data);
       }
-    });
+    })();
   }
 
   /**
@@ -56,24 +60,5 @@ export class ServerImplementation implements RunnerServer {
         console.error(e);
         callback(null, {});
       });
-  }
-
-  /**
-   * Execute all stages in the runner by calling the `exec` function on all
-   * implementations.
-   */
-  exec(
-    call: ServerUnaryCall<Empty, Empty>,
-    callback: sendUnaryData<Empty>,
-  ): void {
-    Runner.shared.exec().then(
-      () => {
-        callback(null, {});
-      },
-      (e) => {
-        console.error(e);
-        callback(null, {});
-      },
-    );
   }
 }

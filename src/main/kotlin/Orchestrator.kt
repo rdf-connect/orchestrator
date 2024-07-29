@@ -50,7 +50,7 @@ class Orchestrator(
         runners.values.map {
           launch {
             Log.shared.debug { "Preparing runner: ${it.uri}" }
-            it.prepare()
+            it.load()
             Log.shared.debug { "Preparation runner finished: ${it.uri}" }
           }
         }

@@ -1,9 +1,8 @@
 import { RunnerError } from "../error";
 
-const TIME_PADDING = 15
-const LEVEL_PADDING = 10
-const FILE_PADDING = 39
-const MESSAGE_PADDING = 87
+const TIME_PADDING = 15;
+const LEVEL_PADDING = 10;
+const FILE_PADDING = 39;
 
 enum LogLevel {
   DEBUG,
@@ -64,12 +63,15 @@ export class Log {
    * @private
    */
   private push(value: { level: LogLevel; message: string }): void {
-    const time = new Date().toISOString().slice(11, 22).padEnd(TIME_PADDING, ' ')
-    const level = LogLevel[value.level].padEnd(LEVEL_PADDING, ' ')
-    const caller = this.getCaller().padEnd(FILE_PADDING, ' ')
-    const message = value.message
+    const time = new Date()
+      .toISOString()
+      .slice(11, 22)
+      .padEnd(TIME_PADDING, " ");
+    const level = LogLevel[value.level].padEnd(LEVEL_PADDING, " ");
+    const caller = this.getCaller().padEnd(FILE_PADDING, " ");
+    const message = value.message;
 
-    console.log(`${time}${level}${caller}${message}`)
+    console.log(`${time}${level}${caller}${message}`);
   }
 
   /**

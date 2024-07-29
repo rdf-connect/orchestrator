@@ -86,10 +86,7 @@ function conforms(value: unknown, type: Type): boolean {
     case "string":
       return typeof value === "string";
     case "writer":
-      return (
-        value instanceof Channel ||
-        value instanceof CallbackChannel
-      );
+      return value instanceof Channel || value instanceof CallbackChannel;
     case "reader":
       return value instanceof Channel;
     case "map":

@@ -1,7 +1,6 @@
 import { RunnerError } from "../error";
 import { Reader } from "./reader";
 import { Writer } from "./writer";
-import {Log} from "./log";
 
 /**
  * A channel is a communication mechanism that allows for the transfer of values
@@ -20,7 +19,10 @@ export class Channel<T> implements Reader<T>, Writer<T> {
    * Outstanding reads that are waiting for a value to be written to the channel.
    * @private
    */
-  private readonly reads: Array<{ resolve: (value: T) => void, reject: (reason: any) => void }> = [];
+  private readonly reads: Array<{
+    resolve: (value: T) => void;
+    reject: (reason: unknown) => void;
+  }> = [];
 
   /**
    * Whether the channel has been closed or not.
@@ -73,7 +75,7 @@ export class Channel<T> implements Reader<T>, Writer<T> {
     this.closed = true;
 
     for (const promise of this.reads) {
-      promise.reject(RunnerError.channelError())
+      promise.reject(RunnerError.channelError());
     }
   }
 
@@ -91,10 +93,10 @@ export class Channel<T> implements Reader<T>, Writer<T> {
   async *[Symbol.asyncIterator]() {
     while (true) {
       try {
-        yield await this.read()
+        yield await this.read();
       } catch (e) {
         if (this.closed && this.values.length == 0) {
-          break
+          break;
         }
       }
     }

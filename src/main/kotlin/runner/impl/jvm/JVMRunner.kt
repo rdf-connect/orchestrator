@@ -53,7 +53,7 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
-  override suspend fun prepare() {
+  override suspend fun load() {
     for (stage in stages) {
       /* Load the class into the JVM. */
       val loader = getClassLoader(stage.processor.entrypoint)

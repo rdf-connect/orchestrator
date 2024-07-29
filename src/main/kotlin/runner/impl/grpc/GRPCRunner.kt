@@ -1,5 +1,7 @@
 package technology.idlab.runner.impl.grpc
 
+import ChannelOuterClass.ChannelMessage
+import ChannelOuterClass.ChannelMessageType
 import RunnerGrpcKt
 import channel
 import channelData
@@ -11,7 +13,6 @@ import io.grpc.StatusException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import runner.impl.grpc.Config
 import technology.idlab.intermediate.IRStage
@@ -39,7 +40,7 @@ abstract class GRPCRunner(
   private val grpc = RunnerGrpcKt.RunnerCoroutineStub(conn)
 
   // Incoming messages.
-  private val messages = Channel<ChannelOuterClass.ChannelMessage>()
+  private val messages = Channel<ChannelMessage>()
 
   init {
     Log.shared.debug { "Waiting for connection." }
@@ -53,12 +54,7 @@ abstract class GRPCRunner(
       }
     }
 
-    // Begin routing channel messages.
-    scope.launch {
-      Log.shared.debug("Begin routing messages in GRPCRunner.")
-      grpc.channel(messages.receiveAsFlow()).collect(this@GRPCRunner.messageCollector)
-      Log.shared.debug("Ending routing messages in GRPCRunner.")
-    }
+    Log.shared.debug { "GRPCRunner is online." }
   }
 
   /**
@@ -66,19 +62,19 @@ abstract class GRPCRunner(
    * maps the incoming `ChannelMessage` to a payload, and sends it to the broker. Note that this
    * flow collector is not a coroutine, but a lambda that is called by the gRPC server.
    */
-  private val messageCollector =
-      FlowCollector<ChannelOuterClass.ChannelMessage> {
-        if (it.type == ChannelOuterClass.ChannelMessageType.CLOSE) {
+  private val collector =
+      FlowCollector<ChannelMessage> {
+        if (it.type == ChannelMessageType.CLOSE) {
           broker.unregister(it.channel.uri)
           return@FlowCollector
         }
 
-        if (it.type == ChannelOuterClass.ChannelMessageType.UNRECOGNIZED) {
+        if (it.type == ChannelMessageType.UNRECOGNIZED) {
           Log.shared.fatal("Channel '${it.channel.uri}' received an unrecognized message type.")
         }
 
         // We can now assume that the message is of type DATA.
-        assert(it.type == ChannelOuterClass.ChannelMessageType.DATA)
+        assert(it.type == ChannelMessageType.DATA)
 
         // If no data was received, log an error and substitute an empty byte array.
         val data =
@@ -93,9 +89,6 @@ abstract class GRPCRunner(
       }
 
   override suspend fun exit() {
-    Log.shared.debug("Exiting GRPCRunner.")
-
-    Log.shared.debug("Shutting down connection.")
     conn.shutdown()
   }
 
@@ -103,7 +96,7 @@ abstract class GRPCRunner(
   override fun receiveBrokerMessage(uri: String, data: ByteArray) {
     val message = channelMessage {
       this.channel = channel { this.uri = uri }
-      this.type = ChannelOuterClass.ChannelMessageType.DATA
+      this.type = ChannelMessageType.DATA
       this.data = channelData { this.bytes = ByteString.copyFrom(data) }
     }
 
@@ -114,13 +107,13 @@ abstract class GRPCRunner(
   override fun closingBrokerChannel(uri: String) {
     val message = channelMessage {
       this.channel = channel { this.uri = uri }
-      this.type = ChannelOuterClass.ChannelMessageType.CLOSE
+      this.type = ChannelMessageType.CLOSE
     }
 
     scheduleTask { messages.send(message) }
   }
 
-  override suspend fun prepare() {
+  override suspend fun load() {
     for (stage in stages) {
       val payload = stage.toGRPC()
       try {
@@ -134,7 +127,9 @@ abstract class GRPCRunner(
   override suspend fun exec() {
     // Attempt to execute the pipelines.
     try {
-      grpc.exec(empty)
+      Log.shared.debug("Begin routing messages in GRPCRunner.")
+      grpc.exec(messages.receiveAsFlow()).collect(this@GRPCRunner.collector)
+      Log.shared.debug("Ending routing messages in GRPCRunner.")
     } catch (e: StatusException) {
       Log.shared.fatal("Failed to execute pipeline: ${e.message}")
     }

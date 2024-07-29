@@ -53,7 +53,7 @@ abstract class Runner(
   }
 
   /** Prepare the runner for execution. ALl stages must be loaded here. */
-  abstract suspend fun prepare()
+  abstract suspend fun load()
 
   /** Start pipeline execution. */
   abstract suspend fun exec()

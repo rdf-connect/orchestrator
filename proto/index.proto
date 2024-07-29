@@ -6,6 +6,5 @@ import "intermediate.proto";
 
 service Runner {
   rpc load(IRStage) returns (Empty);
-  rpc exec(Empty) returns (Empty);
-  rpc channel(stream ChannelMessage) returns (stream ChannelMessage);
+  rpc exec(stream ChannelMessage) returns (stream ChannelMessage);
 }
