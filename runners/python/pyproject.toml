@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "RDF-Connect Python Runner"
+version = "0.1.0"
+description = "Python runner for RDF-Connect using gRPC."
+authors = ["Jens Pots <jenspots@ugent.be>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
