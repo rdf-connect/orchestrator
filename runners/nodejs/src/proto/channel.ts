@@ -7,7 +7,7 @@
 /* eslint-disable */
 import _m0 from "protobufjs/minimal.js";
 
-export const protobufPackage = "";
+export const protobufPackage = "rdfc";
 
 export enum ChannelMessageType {
   DATA = 0,

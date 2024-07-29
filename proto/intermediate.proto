@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package rdfc;
+
 enum IRParameterType {
     BOOLEAN = 0;
     BYTE = 1;

@@ -1,7 +1,7 @@
 package technology.idlab.runner.impl.grpc
 
-import EmptyOuterClass.Empty
-import Intermediate as GRPC
+import rdfc.EmptyOuterClass.Empty
+import rdfc.Intermediate as GRPC
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor

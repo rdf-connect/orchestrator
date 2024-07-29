@@ -1,19 +1,19 @@
 package technology.idlab.runner.impl.grpc
 
-import ChannelOuterClass.ChannelMessage
-import ChannelOuterClass.ChannelMessageType
-import RunnerGrpcKt
-import channel
-import channelData
-import channelMessage
 import com.google.protobuf.ByteString
-import dataOrNull
 import io.grpc.ConnectivityState
 import io.grpc.StatusException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.runBlocking
+import rdfc.ChannelOuterClass.ChannelMessage
+import rdfc.ChannelOuterClass.ChannelMessageType
+import rdfc.RunnerGrpcKt.RunnerCoroutineStub
+import rdfc.channel
+import rdfc.channelData
+import rdfc.channelMessage
+import rdfc.dataOrNull
 import runner.impl.grpc.Config
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.Runner
@@ -37,7 +37,7 @@ abstract class GRPCRunner(
   private val conn = config.connect()
 
   // Create a gRPC stub.
-  private val grpc = RunnerGrpcKt.RunnerCoroutineStub(conn)
+  private val grpc = RunnerCoroutineStub(conn)
 
   // Incoming messages.
   private val messages = Channel<ChannelMessage>()

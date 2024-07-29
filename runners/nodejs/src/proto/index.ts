@@ -23,12 +23,12 @@ import { ChannelMessage } from "./channel.js";
 import { Empty } from "./empty.js";
 import { IRStage } from "./intermediate.js";
 
-export const protobufPackage = "";
+export const protobufPackage = "rdfc";
 
 export type RunnerService = typeof RunnerService;
 export const RunnerService = {
   load: {
-    path: "/Runner/load",
+    path: "/rdfc.Runner/load",
     requestStream: false,
     responseStream: false,
     requestSerialize: (value: IRStage) =>
@@ -39,7 +39,7 @@ export const RunnerService = {
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
   exec: {
-    path: "/Runner/exec",
+    path: "/rdfc.Runner/exec",
     requestStream: true,
     responseStream: true,
     requestSerialize: (value: ChannelMessage) =>
@@ -84,7 +84,7 @@ export interface RunnerClient extends Client {
 
 export const RunnerClient = makeGenericClientConstructor(
   RunnerService,
-  "Runner",
+  "rdfc.Runner",
 ) as unknown as {
   new (
     address: string,

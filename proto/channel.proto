@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package rdfc;
+
 message Channel {
   string uri = 1;
 }
