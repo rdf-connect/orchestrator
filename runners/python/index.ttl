@@ -10,7 +10,7 @@ rdfc:PythonPackage
   rdfc:prepare (
     "poetry install"
   ) ;
-  rdfc:runners rdfc:NodeRunner .
+  rdfc:runners rdfc:PythonRunner .
 
 rdfc:PythonRunner
   a rdfc:GRPCRunner ;
