@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "shacl-validator-py"
+version = "0.1.0"
+description = "A Python-based SHACL validator for RDF-Connect."
+authors = ["Jens Pots <jens.pots@ugent.be>"]
+license = "MIT"
+readme = "README.md"
+
+packages = [
+    { include = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+rdfc = { path = "../../runners/python/dist/rdfc-0.1.0-py3-none-any.whl" }
+rdflib = "^7.0.0"
+pyshacl = "^0.26.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

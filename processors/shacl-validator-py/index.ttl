@@ -1,0 +1,35 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[]
+  a rdfc:Package ;
+  rdfc:version "0.0.1" ;
+  rdfc:author "Jens Pots" ;
+  rdfc:description "A SHACL Validator processor, written in Python." ;
+  rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
+  rdfc:license "MIT" ;
+  rdfc:prepare ( "poetry build" ) ;
+  rdfc:processors rdfc:SHACLValidatorPY .
+
+rdfc:SHACLValidatorPY
+  a rdfc:Processor ;
+  rdfc:target rdfc:PythonRunner ;
+  rdfc:entrypoint <./dist/shacl_validator_py-0.1.0-py3-none-any.whl> ;
+  rdfc:metadata
+    "module_name: src" ,
+    "class_name: SHACLValidator" .
+
+[]
+  a sh:NodeShape ;
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  sh:targetClass rdfc:SHACLValidatorPY ;
+  sh:property [
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "arguments" ;
+    sh:path rdfc:arguments ;
+    sh:node [] ;
+  ].

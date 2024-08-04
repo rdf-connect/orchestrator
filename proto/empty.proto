@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package rdfc;
-
-/**
- * A message that represents nothing.
- */
-message Empty {}
