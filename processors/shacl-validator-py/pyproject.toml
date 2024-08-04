@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 packages = [
-    { include = "src" }
+    { include = "rdfc_shacl_validator" }
 ]
 
 [tool.poetry.dependencies]

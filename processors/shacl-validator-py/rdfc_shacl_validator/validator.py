@@ -1,8 +1,7 @@
 from typing import Any
 from rdflib import Graph
 from pyshacl import validate
-from rdfc.src.runtime.channel import Channel
-from rdfc.src.runtime import Processor
+from rdfc import Channel, Processor
 
 
 class SHACLValidator(Processor):

@@ -1,7 +1,7 @@
 import os
 import unittest
-from rdfc.src.runtime.channel import Channel
-from src.validator import SHACLValidator
+from rdfc import Channel
+from rdfc_shacl_validator.validator import SHACLValidator
 
 
 class ValidatorTest(unittest.IsolatedAsyncioTestCase):

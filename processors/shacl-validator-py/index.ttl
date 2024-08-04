@@ -18,7 +18,7 @@ rdfc:SHACLValidatorPY
   rdfc:target rdfc:PythonRunner ;
   rdfc:entrypoint <./dist/shacl_validator_py-0.1.0-py3-none-any.whl> ;
   rdfc:metadata
-    "module_name: src" ,
+    "module_name: rdfc_shacl_validator" ,
     "class_name: SHACLValidator" .
 
 []

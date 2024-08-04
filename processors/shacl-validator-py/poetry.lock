@@ -261,7 +261,7 @@ description = "Python runner for RDF-Connect using gRPC."
 optional = false
 python-versions = ">=3.12,<4.0"
 files = [
-    {file = "rdfc-0.1.0-py3-none-any.whl", hash = "sha256:9e09b4d422ebc6656d387b46cec8bcf7faec6cc07799dba5df6a1dd90e48ffa5"},
+    {file = "rdfc-0.1.0-py3-none-any.whl", hash = "sha256:9969f967ddabc148a26200ffe3a1a1306b6667aba92993252f576f30bc160c59"},
 ]
 
 [package.dependencies]
