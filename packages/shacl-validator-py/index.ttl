@@ -10,7 +10,7 @@
   rdfc:description "A SHACL Validator processor, written in Python." ;
   rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
   rdfc:license "MIT" ;
-  rdfc:prepare ( "hatch build" ) ;
+  rdfc:prepare ( "hatch run test -h" "hatch build" ) ;
   rdfc:processors rdfc:SHACLValidatorPY .
 
 rdfc:SHACLValidatorPY

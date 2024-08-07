@@ -8,7 +8,7 @@ authors = [
 dependencies = [
     "pyshacl>=0.26.0",
     "rdflib>=7.0.0",
-    "rdfc @ {root:parent:parent:uri}/runners/python/dist/rdfc-0.1.0-py3-none-any.whl"
+    "rdfc @ {root:parent:uri}/runner-py/dist/rdfc-0.1.0-py3-none-any.whl"
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
