@@ -5,7 +5,7 @@ import {
   ServerUnaryCall,
   UntypedHandleCall,
 } from "@grpc/grpc-js";
-import { IRStage } from "../proto/intermediate";
+import { Stage } from "../proto/intermediate";
 import { Empty } from "../proto/empty";
 import { Runner } from "./runner";
 import { ChannelMessage } from "../proto/channel";
@@ -48,7 +48,7 @@ export class ServerImplementation implements RunnerServer {
    * simply bind to the runners internal implementation.
    */
   load(
-    call: ServerUnaryCall<IRStage, Empty>,
+    call: ServerUnaryCall<Stage, Empty>,
     callback: sendUnaryData<Empty>,
   ): void {
     Runner.shared

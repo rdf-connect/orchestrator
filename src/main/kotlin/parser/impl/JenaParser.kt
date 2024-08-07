@@ -190,7 +190,10 @@ private fun Model.nameOfSHACLPath(path: Resource): String {
  * Parse the arguments of a stage. This is a recursive implementation that will automatically parse
  * nested classes. Recursion will continue until all objects found are literals.
  */
-private fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
+private fun Model.parseArguments(
+    node: Resource,
+    parameters: Map<String, IRParameter>
+): Map<String, IRArgument> {
   val simple = mutableMapOf<String, MutableList<String>>()
   val complex = mutableMapOf<String, MutableList<Map<String, IRArgument>>>()
 
@@ -207,6 +210,7 @@ private fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
 
     // Get the name of the argument.
     val key = nameOfSHACLPath(path)
+    val params = parameters[key]!!
     val value = triple.`object`
 
     if (isSimpleSHACLShape(path)) {
@@ -220,14 +224,18 @@ private fun Model.parseArguments(node: Resource): Map<String, IRArgument> {
       list.add(v.toString())
     } else {
       val list = complex.getOrPut(key) { mutableListOf() }
-      val nested = parseArguments(value.asResource())
+      val nested = parseArguments(value.asResource(), params.getComplex())
       list.add(nested)
     }
   }
 
   // Combine both simple and complex mappings as a single map to IRArguments.
-  return simple.mapValues { (_, value) -> IRArgument(simple = value) } +
-      complex.mapValues { (_, value) -> IRArgument(complex = value) }
+  return simple.mapValues { (key, value) ->
+    IRArgument(simple = value, parameter = parameters[key]!!)
+  } +
+      complex.mapValues { (key, value) ->
+        IRArgument(complex = value, parameter = parameters[key]!!)
+      }
 }
 
 private fun Model.parseRunner(directory: File, runner: Resource): IRRunner {
@@ -301,7 +309,7 @@ private fun Model.parseStages(pipeline: Resource): List<IRStage> {
     val processorURI = objectOfProperty(stage.asResource(), RDF.type)!!.asResource()
     val processor = parseProcessor(processorURI)
     val arguments = objectOfProperty(stage.asResource(), RDFC.arguments)!!.asResource()
-    IRStage(stage.toString(), processor, parseArguments(arguments))
+    IRStage(stage.toString(), processor, parseArguments(arguments, processor.parameters))
   }
 }
 

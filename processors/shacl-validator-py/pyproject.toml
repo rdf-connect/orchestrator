@@ -1,21 +1,30 @@
-[tool.poetry]
-name = "shacl-validator-py"
+[project]
+name = "rdfc-shacl"
 version = "0.1.0"
-description = "A Python-based SHACL validator for RDF-Connect."
-authors = ["Jens Pots <jens.pots@ugent.be>"]
-license = "MIT"
-readme = "README.md"
-
-packages = [
-    { include = "rdfc_shacl_validator" }
+description = "A SHACL validator for RDFC."
+authors = [
+    { name = "jens pots", email = "jens.pots@ugent.be" },
 ]
-
-[tool.poetry.dependencies]
-python = "^3.12"
-rdfc = { path = "../../runners/python/dist/rdfc-0.1.0-py3-none-any.whl" }
-rdflib = "^7.0.0"
-pyshacl = "^0.26.0"
+dependencies = [
+    "pyshacl>=0.26.0",
+    "rdflib>=7.0.0",
+    "rdfc @ {root:parent:parent:uri}/runners/python/dist/rdfc-0.1.0-py3-none-any.whl"
+]
+readme = "README.md"
+requires-python = ">= 3.8"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rdfc_shacl"]
+
+[tool.hatch.envs.default]
+type = "virtual"
+path = ".venv"
+system-packages = false
+installer = "uv"

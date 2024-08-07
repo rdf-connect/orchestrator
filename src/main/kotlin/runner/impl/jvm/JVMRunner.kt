@@ -25,9 +25,9 @@ private const val REQUIRES_PROCESSOR_BASE_CLASS = "Class does not extend Process
  *
  * @param path The optional path to a JAR file.
  */
-private fun getClassLoader(path: String? = null): ClassLoader {
+private fun getClassLoader(path: String = ""): ClassLoader {
   // Default case, return the system class loader.
-  if (path == null) {
+  if (path == "") {
     return ClassLoader.getSystemClassLoader()
   }
 

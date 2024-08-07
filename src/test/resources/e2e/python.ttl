@@ -1,0 +1,57 @@
+@prefix test: <https://www.rdf-connect.com/test#> .
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+test:report a rdfc:Channel .
+test:validated a rdfc:Channel .
+test:unvalidated a rdfc:Channel .
+
+test:PythonPipeline
+  a rdfc:Pipeline ;
+  rdfc:name "Python Testing Pipeline" ;
+  rdfc:description "Pipeline for end-to-end testing of the Python runner." ;
+  rdfc:stages
+    test:FileReader ,
+    test:FileWriter ,
+    test:ReportWriter ,
+    test:PythonProcessor ;
+  rdfc:dependency
+    <../../../../runners/python> ,
+    <../../../../processors/file-utils-kt> ,
+    <../../../../processors/shacl-validator-py> .
+
+test:FileReader
+  a rdfc:FileReaderKT ;
+  rdfc:arguments [
+    rdfc:paths
+      <./data/valid.ttl> ,
+      <./data/invalid.ttl> ;
+    rdfc:outgoing test:unvalidated ;
+  ] .
+
+test:PythonProcessor
+  a rdfc:SHACLValidatorPY ;
+  rdfc:arguments [
+    rdfc:incoming test:unvalidated ;
+    rdfc:outgoing test:validated ;
+    rdfc:report test:report ;
+    rdfc:shapes <./shacl/shapes.ttl> ;
+  ] .
+
+test:FileWriter
+  a rdfc:FileWriterKT ;
+  rdfc:arguments [
+    rdfc:path </tmp/rdfc-testing/valid.ttl> ;
+    rdfc:incoming test:validated ;
+  ] .
+
+test:ReportWriter
+  a rdfc:FileWriterKT ;
+  rdfc:arguments [
+    rdfc:path </tmp/rdfc-testing/report.ttl> ;
+    rdfc:incoming test:report ;
+  ] .

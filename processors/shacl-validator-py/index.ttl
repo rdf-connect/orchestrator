@@ -10,15 +10,15 @@
   rdfc:description "A SHACL Validator processor, written in Python." ;
   rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
   rdfc:license "MIT" ;
-  rdfc:prepare ( "poetry build" ) ;
+  rdfc:prepare ( "hatch build" ) ;
   rdfc:processors rdfc:SHACLValidatorPY .
 
 rdfc:SHACLValidatorPY
   a rdfc:Processor ;
   rdfc:target rdfc:PythonRunner ;
-  rdfc:entrypoint <./dist/shacl_validator_py-0.1.0-py3-none-any.whl> ;
+  rdfc:entrypoint <.> ;
   rdfc:metadata
-    "module_name: rdfc_shacl_validator" ,
+    "module_name: rdfc_shacl" ,
     "class_name: SHACLValidator" .
 
 []
@@ -31,5 +31,31 @@ rdfc:SHACLValidatorPY
     sh:minCount 1 ;
     sh:name "arguments" ;
     sh:path rdfc:arguments ;
-    sh:node [] ;
+    sh:node [
+      sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "shapes" ;
+        sh:path rdfc:shapes ;
+        sh:nodeKind sh:IRIOrLiteral ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "incoming" ;
+        sh:path rdfc:incoming ;
+        sh:class rdfc:Reader ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "outgoing" ;
+        sh:path rdfc:outgoing ;
+        sh:class rdfc:Writer ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "report" ;
+        sh:path rdfc:report ;
+        sh:class rdfc:Writer ;
+      ] ;
+    ] ;
   ].

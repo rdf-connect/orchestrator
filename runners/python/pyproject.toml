@@ -1,23 +1,34 @@
-[tool.poetry]
-name = "Python Runner for RDF-Connect"
+[project]
+name = "rdfc"
 version = "0.1.0"
 description = "Python runner for RDF-Connect using gRPC."
-authors = ["Jens Pots <jenspots@ugent.be>"]
-readme = "README.md"
-
-packages = [
-  { include = "src" }
+authors = [
+    { name = "Jens Pots", email = "jens@jenspots.com" }
 ]
+dependencies = [
+    "grpcio>=1.65.4",
+    "grpcio-tools>=1.65.4",
+    "protobuf>=5.27.3",
+    "types-protobuf>=5.27.0.20240626",
+]
+readme = "README.md"
+requires-python = ">= 3.12"
 
-[tool.poetry.scripts]
-server = "src.main:main"
-
-[tool.poetry.dependencies]
-python = "^3.12"
-grpcio = "^1.65.1"
-grpcio-tools = "^1.65.1"
-
+[project.scripts]
+"rdfc" = 'rdfc:main'
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rdfc"]
+
+[tool.hatch.envs.default]
+type = "virtual"
+path = ".venv"
+system-packages = false
+installer = "uv"

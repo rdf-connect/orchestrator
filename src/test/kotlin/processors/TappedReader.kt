@@ -33,7 +33,7 @@ class TappedReader(args: Arguments) : Processor(args) {
         IRProcessor(
             "tapped_reader",
             "https://www.rdf-connect.com/#JVMRunner",
-            null,
+            "",
             mapOf(
                 "input" to
                     IRParameter(
@@ -47,7 +47,19 @@ class TappedReader(args: Arguments) : Processor(args) {
 
     fun stage(channelURI: String): IRStage {
       return IRStage(
-          "tapped_reader_stage", processor, mapOf("input" to IRArgument(listOf(channelURI))))
+          "tapped_reader_stage",
+          processor,
+          mapOf(
+              "input" to
+                  IRArgument(
+                      listOf(channelURI),
+                      parameter =
+                          IRParameter(
+                              IRParameter.Type.READER,
+                              presence = IRParameter.Presence.REQUIRED,
+                              count = IRParameter.Count.SINGLE,
+                          ),
+                  )))
     }
   }
 }

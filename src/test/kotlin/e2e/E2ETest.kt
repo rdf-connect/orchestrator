@@ -40,7 +40,12 @@ class E2ETest {
     assert(report.readText().isNotEmpty()) { "The invalid file should not be empty." }
 
     assert(valid.readText().contains("<Ghent>"))
-    assert(report.readText().contains("sh:conforms"))
+    assert(report.readText().contains("sh:Violation"))
+  }
+
+  @Test
+  fun python() {
+    run("/e2e/python.ttl")
   }
 
   @Test

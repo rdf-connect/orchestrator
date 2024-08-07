@@ -1,71 +1,104 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 package rdfc;
 
-enum IRParameterType {
-    BOOLEAN = 0;
-    BYTE = 1;
-    DATE = 2;
-    DOUBLE = 3;
-    FLOAT = 4;
-    INT = 5;
-    LONG = 6;
-    STRING = 7;
-    WRITER = 8;
-    READER = 9;
-}
-
-enum IRParameterPresence {
-  OPTIONAL = 0;
-  REQUIRED = 1;
-}
-
-enum IRParameterCount {
-  SINGLE = 0;
-  LIST = 1;
-}
-
-message IRParameters {
-  map<string, IRParameter> parameters = 1;
-}
-
-message IRParameter {
-  oneof type {
-    IRParameterType simple = 1;
-    IRParameters complex = 2;
-  }
-  IRParameterPresence presence = 3;
-  IRParameterCount count = 4;
-}
-
-message IRProcessor {
+/*
+ * A RDFC channel reader.
+ * Note that this is a declarative type, and must be instantiated by the runner.
+ */
+message Reader {
+  /* Channel URI. */
   string uri = 1;
+}
+
+/*
+ * A RDFC channel writer.
+ * Note that this is a declarative type, and must be instantiated by the runner.
+ */
+message Writer {
+  /* Channel URI. */
+  string uri = 1;
+}
+
+/*
+ * Either a single argument, or a nested
+ */
+message ArgumentLiteral {
+  oneof value {
+    /* Raw bytes. */
+    bytes bytes = 10;
+
+    /* UTF-8 encoded bytes. */
+    string string = 20;
+
+    /* Simple booleans. */
+    bool bool = 30;
+
+    /* Floating point numbers. */
+    double double = 40;
+    float float = 42;
+
+    /* Integer types. */
+    int32 int32 = 50;
+    int64 int64 = 52;
+    uint32 uint32 = 54;
+    uint64 uint64 = 56;
+
+    /* Date representation using nanosecond accuracy. */
+    google.protobuf.Timestamp timestamp = 60;
+
+    /* RDFC channel implementations. */
+    Reader reader = 70;
+    Writer writer = 72;
+  }
+
+  message List {
+    repeated ArgumentLiteral values = 1;
+  }
+}
+
+message ArgumentMap {
+  map<string, Argument> values = 1;
+
+  message List {
+    repeated ArgumentMap values =  1;
+  }
+}
+
+/*
+ * An argument is either a literal or a map, or a list of literals or a list of maps.
+ */
+message Argument {
+  oneof value {
+    ArgumentLiteral literal = 1;
+    ArgumentLiteral.List literals = 2;
+    ArgumentMap map = 3;
+    ArgumentMap.List maps = 4;
+  }
+}
+
+/*
+ * A processor declaration.
+ */
+message Processor {
+  /* The URI of the processor. */
+  string uri = 1;
+  /* The source code entrypoint. */
   string entrypoint = 2;
-  map<string, IRParameter> parameters = 3;
+  /* Additional metadata, as required by the runners. */
   map<string, string> metadata = 4;
 }
 
-message IRArgumentSimple {
-  repeated string value = 1;
-}
-
-message IRArgumentMap {
-  map<string, IRArgument> arguments = 1;
-}
-
-message IRArgumentComplex {
-  repeated IRArgumentMap value = 1;
-}
-
-message IRArgument {
-  oneof value {
-    IRArgumentSimple simple = 1;
-    IRArgumentComplex complex = 2;
-  }
-}
-
-message IRStage {
+/*
+ * A concrete stage of a given processor, with instantiated arguments.
+ */
+message Stage {
+  /* The URI of the stage. */
   string uri = 1;
-  IRProcessor processor = 2;
-  map<string, IRArgument> arguments = 3;
+  /* The processor definition. */
+  Processor processor = 2;
+  /* Stage arguments. */
+  map<string, Argument> arguments = 3;
 }

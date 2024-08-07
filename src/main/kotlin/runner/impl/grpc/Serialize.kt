@@ -1,99 +1,100 @@
 package technology.idlab.runner.impl.grpc
 
-import rdfc.EmptyOuterClass.Empty
+import com.google.protobuf.Timestamp
+import com.google.protobuf.kotlin.toByteStringUtf8
 import rdfc.Intermediate as GRPC
+import rdfc.Intermediate
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
 
-internal val empty = Empty.getDefaultInstance()
-
-internal fun IRParameter.Type.toGRPC(): GRPC.IRParameterType {
-  return when (this) {
-    IRParameter.Type.BOOLEAN -> GRPC.IRParameterType.BOOLEAN
-    IRParameter.Type.BYTE -> GRPC.IRParameterType.BYTE
-    IRParameter.Type.DATE -> GRPC.IRParameterType.DATE
-    IRParameter.Type.DOUBLE -> GRPC.IRParameterType.DOUBLE
-    IRParameter.Type.FLOAT -> GRPC.IRParameterType.FLOAT
-    IRParameter.Type.INT -> GRPC.IRParameterType.INT
-    IRParameter.Type.LONG -> GRPC.IRParameterType.LONG
-    IRParameter.Type.STRING -> GRPC.IRParameterType.STRING
-    IRParameter.Type.WRITER -> GRPC.IRParameterType.WRITER
-    IRParameter.Type.READER -> GRPC.IRParameterType.READER
-  }
-}
-
-internal fun IRParameter.Presence.toGRPC(): GRPC.IRParameterPresence {
-  return when (this) {
-    IRParameter.Presence.REQUIRED -> GRPC.IRParameterPresence.REQUIRED
-    IRParameter.Presence.OPTIONAL -> GRPC.IRParameterPresence.OPTIONAL
-  }
-}
-
-internal fun IRParameter.Count.toGRPC(): GRPC.IRParameterCount {
-  return when (this) {
-    IRParameter.Count.SINGLE -> GRPC.IRParameterCount.SINGLE
-    IRParameter.Count.LIST -> GRPC.IRParameterCount.LIST
-  }
-}
-
-internal fun Map<String, IRParameter>.toGRPC(): GRPC.IRParameters {
-  return GRPC.IRParameters.newBuilder().putAllParameters(mapValues { it.value.toGRPC() }).build()
-}
-
-internal fun List<String>.toGRPC(): GRPC.IRArgumentSimple {
-  return GRPC.IRArgumentSimple.newBuilder().addAllValue(this).build()
-}
-
-internal fun List<Map<String, IRArgument>>.toGRPC(): GRPC.IRArgumentComplex {
-  val arguments = map { it.toGRPC() }
-  val builder = GRPC.IRArgumentComplex.newBuilder()
-  builder.addAllValue(arguments)
-  return builder.build()
-}
-
-internal fun Map<String, IRArgument>.toGRPC(): GRPC.IRArgumentMap {
-  val builder = GRPC.IRArgumentMap.newBuilder()
-  forEach { (key, value) -> builder.putArguments(key, value.toGRPC()) }
-  return builder.build()
-}
-
-internal fun IRParameter.toGRPC(): GRPC.IRParameter {
-  val builder = GRPC.IRParameter.newBuilder()
-  when (kind) {
-    IRParameter.Kind.SIMPLE -> builder.setSimple(getSimple().toGRPC())
-    IRParameter.Kind.COMPLEX -> builder.setComplex(getComplex().toGRPC())
-  }
-  builder.setPresence(presence.toGRPC())
-  builder.setCount(count.toGRPC())
-  return builder.build()
-}
-
-internal fun IRArgument.toGRPC(): GRPC.IRArgument {
-  val builder = GRPC.IRArgument.newBuilder()
-  when (kind) {
-    IRArgument.Kind.SIMPLE -> builder.setSimple(getSimple().toGRPC())
-    IRArgument.Kind.COMPLEX -> {
-      builder.setComplex(getComplex().toGRPC())
+private fun serialize(type: IRParameter.Type, serialized: String): Intermediate.ArgumentLiteral =
+    rdfc.argumentLiteral {
+      when (type) {
+        IRParameter.Type.BOOLEAN -> {
+          bool = serialized == "true"
+        }
+        IRParameter.Type.BYTE -> {
+          bytes = serialized.toByteStringUtf8()
+        }
+        IRParameter.Type.DATE -> {
+          timestamp = Timestamp.parseFrom(serialized.toByteArray())
+        }
+        IRParameter.Type.DOUBLE -> {
+          double = serialized.toDouble()
+        }
+        IRParameter.Type.FLOAT -> {
+          float = serialized.toFloat()
+        }
+        IRParameter.Type.INT -> {
+          int32 = serialized.toInt()
+        }
+        IRParameter.Type.LONG -> {
+          int64 = serialized.toLong()
+        }
+        IRParameter.Type.STRING -> {
+          string = serialized
+        }
+        IRParameter.Type.WRITER -> {
+          writer = rdfc.writer { uri = serialized }
+        }
+        IRParameter.Type.READER -> {
+          reader = rdfc.reader { uri = serialized }
+        }
+      }
     }
+
+private fun serialize(
+    type: IRParameter.Type,
+    serialized: List<String>
+): Intermediate.ArgumentLiteral.List =
+    rdfc.ArgumentLiteralKt.list {
+      for (element in serialized) {
+        values.add(serialize(type, element))
+      }
+    }
+
+private fun serialize(serialized: Map<String, IRArgument>): Intermediate.ArgumentMap =
+    rdfc.argumentMap { values.putAll(serialized.mapValues { serialize(it.value) }) }
+
+private fun serialize(serialized: List<Map<String, IRArgument>>): Intermediate.ArgumentMap.List =
+    rdfc.ArgumentMapKt.list { values.addAll(serialized.map { serialize(it) }) }
+
+private fun serialize(arg: IRArgument): Intermediate.Argument =
+    rdfc.argument {
+      when (Pair(arg.parameter.count, arg.parameter.kind)) {
+        Pair(IRParameter.Count.SINGLE, IRParameter.Kind.SIMPLE) -> {
+          val type = arg.parameter.getSimple()
+          val serialized = arg.getSimple()[0]
+          this.literal = serialize(type, serialized)
+        }
+        Pair(IRParameter.Count.LIST, IRParameter.Kind.SIMPLE) -> {
+          val type = arg.parameter.getSimple()
+          val serialized = arg.getSimple()
+          this.literals = serialize(type, serialized)
+        }
+        Pair(IRParameter.Count.SINGLE, IRParameter.Kind.COMPLEX) -> {
+          this.map = serialize(arg.getComplex()[0])
+        }
+        Pair(IRParameter.Count.LIST, IRParameter.Kind.COMPLEX) -> {
+          this.maps = serialize(arg.getComplex())
+        }
+      }
+    }
+
+private fun serialize(processor: IRProcessor): GRPC.Processor {
+  return rdfc.processor {
+    uri = processor.uri
+    entrypoint = processor.entrypoint
+    metadata.putAll(processor.metadata)
   }
-  return builder.build()
 }
 
-internal fun IRStage.toGRPC(): GRPC.IRStage {
-  val builder = GRPC.IRStage.newBuilder()
-  builder.setUri(uri)
-  builder.setProcessor(this.processor.toGRPC())
-  builder.putAllArguments(arguments.mapValues { it.value.toGRPC() })
-  return builder.build()
-}
-
-internal fun IRProcessor.toGRPC(): GRPC.IRProcessor {
-  val builder = GRPC.IRProcessor.newBuilder()
-  builder.setUri(uri)
-  builder.setEntrypoint(entrypoint)
-  builder.putAllParameters(parameters.mapValues { it.value.toGRPC() })
-  builder.putAllMetadata(metadata)
-  return builder.build()
+internal fun serialize(stage: IRStage): GRPC.Stage {
+  return rdfc.stage {
+    uri = stage.uri
+    processor = serialize(stage.processor)
+    arguments.putAll(stage.arguments.mapValues { serialize(it.value) })
+  }
 }

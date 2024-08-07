@@ -8,10 +8,10 @@ rdfc:PythonPackage
   rdfc:repo "https://github.com/rdf-connect/orchestrator" ;
   rdfc:license "MIT" ;
   rdfc:prepare (
-    "poetry install"
+    "hatch build"
   ) ;
   rdfc:runners rdfc:PythonRunner .
 
 rdfc:PythonRunner
   a rdfc:GRPCRunner ;
-  rdfc:entrypoint "poetry run server" .
+  rdfc:entrypoint "hatch run rdfc" .

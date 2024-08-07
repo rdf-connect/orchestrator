@@ -33,7 +33,7 @@ class TappedWriter(args: Arguments) : Processor(args) {
         IRProcessor(
             "tapped_writer",
             "https://www.rdf-connect.com/#JVMRunner",
-            null,
+            "",
             mapOf(
                 "output" to
                     IRParameter(
@@ -47,7 +47,18 @@ class TappedWriter(args: Arguments) : Processor(args) {
 
     fun stage(channelURI: String): IRStage {
       return IRStage(
-          "tapped_writer_stage", processor, mapOf("output" to IRArgument(listOf(channelURI))))
+          "tapped_writer_stage",
+          processor,
+          mapOf(
+              "output" to
+                  IRArgument(
+                      listOf(channelURI),
+                      parameter =
+                          IRParameter(
+                              IRParameter.Type.WRITER,
+                              presence = IRParameter.Presence.REQUIRED,
+                              count = IRParameter.Count.SINGLE,
+                          ))))
     }
   }
 }

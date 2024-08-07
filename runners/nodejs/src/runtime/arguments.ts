@@ -15,8 +15,9 @@
 import { Writer } from "../interfaces/writer";
 import { Reader } from "../interfaces/reader";
 import { RunnerError } from "../error";
-import { Channel } from "../interfaces/channel";
-import { CallbackChannel } from "../interfaces/callback_channel";
+import { Argument, ArgumentLiteral } from "../proto/intermediate";
+import { ChannelRepository } from "./runner";
+import { Log } from "../interfaces/log";
 
 /**
  * Argument types supported by RDF-Connect. These are enumerated as strings, in
@@ -61,40 +62,6 @@ type GetType<T extends Type> = T extends "boolean"
                     : T extends "map"
                       ? Arguments
                       : never;
-
-/**
- * Check if a given value conforms to a given type.
- * @param value The value to check.
- * @param type The abstract type to check against.
- */
-function conforms(value: unknown, type: Type): boolean {
-  switch (type) {
-    case "boolean":
-      return typeof value === "boolean";
-    case "byte":
-      return typeof value === "number";
-    case "date":
-      return value instanceof Date;
-    case "double":
-      return typeof value === "number";
-    case "float":
-      return typeof value === "number";
-    case "int":
-      return typeof value === "number";
-    case "long":
-      return typeof value === "number";
-    case "string":
-      return typeof value === "string";
-    case "writer":
-      return value instanceof Channel || value instanceof CallbackChannel;
-    case "reader":
-      return value instanceof Channel;
-    case "map":
-      return value instanceof Arguments;
-    default:
-      RunnerError.nonExhaustiveSwitch();
-  }
-}
 
 /**
  * Literal type which indicates if the requested type is a singleton or a list.
@@ -152,23 +119,17 @@ type Returns<
  */
 export class Arguments {
   // The actual arguments, parsed by the runner beforehand.
-  private readonly args: Map<string, unknown[]>;
+  private readonly args: { [key: string]: Argument };
 
-  constructor(args: Map<string, unknown[]>) {
+  // Channel repository for instantiating readers and writers.
+  private readonly repository: ChannelRepository;
+
+  constructor(
+    args: { [key: string]: Argument },
+    repository: ChannelRepository,
+  ) {
     this.args = args;
-
-    // Map all instances of a map into an `Arguments` object.
-    for (const [key, values] of this.args) {
-      const newValues = values.map((value) => {
-        if (value instanceof Map) {
-          return new Arguments(value);
-        } else {
-          return value;
-        }
-      });
-
-      this.args.set(key, newValues);
-    }
+    this.repository = repository;
   }
 
   /**
@@ -182,10 +143,8 @@ export class Arguments {
     L extends List | undefined,
     N extends Nullable | undefined,
   >(name: string, options: Options<T, L, N>): Returns<T, L, N> {
-    const values = this.args.get(name);
-
-    // If no value is found, handle accordingly.
-    if (!values) {
+    // Check if the given argument exists, and handle accordingly.
+    if (!Object.hasOwn(this.args, name)) {
       if (options.nullable === "true") {
         return null as Returns<T, L, N>;
       } else {
@@ -193,24 +152,88 @@ export class Arguments {
       }
     }
 
-    // Cast the value to the correct type.
-    values.forEach((value) => {
-      if (!conforms(value, options.type)) {
-        RunnerError.incorrectType(name, options.type);
+    // Retrieve the argument.
+    const values = this.args[name];
+
+    if (values.map) {
+      if (options.type !== "map") {
+        Log.shared.fatal(`Argument '${name}' is of type 'map'.`);
       }
-    });
 
-    // If the value is a list, return it as such.
-    if (options.list === "true") {
-      return values as Returns<T, L, N>;
+      if (options.list !== "false") {
+        Log.shared.fatal(`Argument '${name} is of type 'list'.`);
+      }
+
+      return new Arguments(values.map.values, this.repository) as Returns<
+        T,
+        L,
+        N
+      >;
     }
 
-    // Check if there is only one value present.
-    if (values.length != 1) {
-      RunnerError.inconsistency();
+    if (values.maps) {
+      if (options.type !== "map") {
+        Log.shared.fatal(`Argument '${name}' is of type 'map'.`);
+      }
+
+      if (options.list !== "true") {
+        Log.shared.fatal(`Argument '${name} is not of type 'list'.`);
+      }
+
+      return values.maps.values.map((element) => {
+        return new Arguments(element.values, this.repository);
+      }) as Returns<T, L, N>;
     }
 
-    // Return the value.
-    return values[0] as Returns<T, L, N>;
+    if (values.literal) {
+      if (options.type === "map") {
+        Log.shared.fatal(`Argument '${name}' is not of type 'map'.`);
+      }
+
+      if (options.list !== "false") {
+        Log.shared.fatal(`Argument '${name} is not of type 'list'.`);
+      }
+
+      return this.getAs(values.literal, options.type) as Returns<T, L, N>;
+    }
+
+    if (values.literals) {
+      if (options.type === "map") {
+        Log.shared.fatal(`Argument '${name}' is not of type 'map'.`);
+      }
+
+      if (options.list !== "true") {
+        Log.shared.fatal(`Argument '${name} is not of type 'list'.`);
+      }
+
+      return values.literals.values.map((literal) => {
+        return this.getAs(literal, options.type);
+      }) as Returns<T, L, N>;
+    }
+
+    Log.shared.fatal("No value present in Union.");
+    process.exit(1);
+  }
+
+  private getAs(literal: ArgumentLiteral, type: Type) {
+    if (type === "string") {
+      return literal.string!;
+    } else if (type === "boolean") {
+      return literal.bool!;
+    } else if (type === "reader") {
+      return this.repository.createReader(literal.reader!.uri);
+    } else if (type === "writer") {
+      return this.repository.createWriter(literal.writer!.uri);
+    } else if (type === "double" || type === "float") {
+      return literal.double || literal.float!;
+    } else if (type === "int" || type === "long") {
+      return (
+        literal.uint32 || literal.uint64 || literal.int32 || literal.int64!
+      );
+    } else if (type === "date") {
+      return literal.timestamp!;
+    } else {
+      Log.shared.fatal("Non-exhaustive switch.");
+    }
   }
 }

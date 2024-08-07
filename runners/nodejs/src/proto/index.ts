@@ -20,8 +20,8 @@ import {
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
 import { ChannelMessage } from "./channel.js";
-import { Empty } from "./empty.js";
-import { IRStage } from "./intermediate.js";
+import { Empty } from "./google/protobuf/empty.js";
+import { Stage } from "./intermediate.js";
 
 export const protobufPackage = "rdfc";
 
@@ -31,9 +31,9 @@ export const RunnerService = {
     path: "/rdfc.Runner/load",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: IRStage) =>
-      Buffer.from(IRStage.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IRStage.decode(value),
+    requestSerialize: (value: Stage) =>
+      Buffer.from(Stage.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Stage.decode(value),
     responseSerialize: (value: Empty) =>
       Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
@@ -52,22 +52,22 @@ export const RunnerService = {
 } as const;
 
 export interface RunnerServer extends UntypedServiceImplementation {
-  load: handleUnaryCall<IRStage, Empty>;
+  load: handleUnaryCall<Stage, Empty>;
   exec: handleBidiStreamingCall<ChannelMessage, ChannelMessage>;
 }
 
 export interface RunnerClient extends Client {
   load(
-    request: IRStage,
+    request: Stage,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
   load(
-    request: IRStage,
+    request: Stage,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall;
   load(
-    request: IRStage,
+    request: Stage,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,

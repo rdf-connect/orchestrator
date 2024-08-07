@@ -5,246 +5,128 @@
 // source: intermediate.proto
 
 /* eslint-disable */
+import Long from "long";
 import _m0 from "protobufjs/minimal.js";
+import { Timestamp } from "./google/protobuf/timestamp.js";
 
 export const protobufPackage = "rdfc";
 
-export enum IRParameterType {
-  BOOLEAN = 0,
-  BYTE = 1,
-  DATE = 2,
-  DOUBLE = 3,
-  FLOAT = 4,
-  INT = 5,
-  LONG = 6,
-  STRING = 7,
-  WRITER = 8,
-  READER = 9,
-  UNRECOGNIZED = -1,
-}
-
-export function iRParameterTypeFromJSON(object: any): IRParameterType {
-  switch (object) {
-    case 0:
-    case "BOOLEAN":
-      return IRParameterType.BOOLEAN;
-    case 1:
-    case "BYTE":
-      return IRParameterType.BYTE;
-    case 2:
-    case "DATE":
-      return IRParameterType.DATE;
-    case 3:
-    case "DOUBLE":
-      return IRParameterType.DOUBLE;
-    case 4:
-    case "FLOAT":
-      return IRParameterType.FLOAT;
-    case 5:
-    case "INT":
-      return IRParameterType.INT;
-    case 6:
-    case "LONG":
-      return IRParameterType.LONG;
-    case 7:
-    case "STRING":
-      return IRParameterType.STRING;
-    case 8:
-    case "WRITER":
-      return IRParameterType.WRITER;
-    case 9:
-    case "READER":
-      return IRParameterType.READER;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return IRParameterType.UNRECOGNIZED;
-  }
-}
-
-export function iRParameterTypeToJSON(object: IRParameterType): string {
-  switch (object) {
-    case IRParameterType.BOOLEAN:
-      return "BOOLEAN";
-    case IRParameterType.BYTE:
-      return "BYTE";
-    case IRParameterType.DATE:
-      return "DATE";
-    case IRParameterType.DOUBLE:
-      return "DOUBLE";
-    case IRParameterType.FLOAT:
-      return "FLOAT";
-    case IRParameterType.INT:
-      return "INT";
-    case IRParameterType.LONG:
-      return "LONG";
-    case IRParameterType.STRING:
-      return "STRING";
-    case IRParameterType.WRITER:
-      return "WRITER";
-    case IRParameterType.READER:
-      return "READER";
-    case IRParameterType.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
-export enum IRParameterPresence {
-  OPTIONAL = 0,
-  REQUIRED = 1,
-  UNRECOGNIZED = -1,
-}
-
-export function iRParameterPresenceFromJSON(object: any): IRParameterPresence {
-  switch (object) {
-    case 0:
-    case "OPTIONAL":
-      return IRParameterPresence.OPTIONAL;
-    case 1:
-    case "REQUIRED":
-      return IRParameterPresence.REQUIRED;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return IRParameterPresence.UNRECOGNIZED;
-  }
-}
-
-export function iRParameterPresenceToJSON(object: IRParameterPresence): string {
-  switch (object) {
-    case IRParameterPresence.OPTIONAL:
-      return "OPTIONAL";
-    case IRParameterPresence.REQUIRED:
-      return "REQUIRED";
-    case IRParameterPresence.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
-export enum IRParameterCount {
-  SINGLE = 0,
-  LIST = 1,
-  UNRECOGNIZED = -1,
-}
-
-export function iRParameterCountFromJSON(object: any): IRParameterCount {
-  switch (object) {
-    case 0:
-    case "SINGLE":
-      return IRParameterCount.SINGLE;
-    case 1:
-    case "LIST":
-      return IRParameterCount.LIST;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return IRParameterCount.UNRECOGNIZED;
-  }
-}
-
-export function iRParameterCountToJSON(object: IRParameterCount): string {
-  switch (object) {
-    case IRParameterCount.SINGLE:
-      return "SINGLE";
-    case IRParameterCount.LIST:
-      return "LIST";
-    case IRParameterCount.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
-export interface IRParameters {
-  parameters: { [key: string]: IRParameter };
-}
-
-export interface IRParameters_ParametersEntry {
-  key: string;
-  value: IRParameter | undefined;
-}
-
-export interface IRParameter {
-  simple?: IRParameterType | undefined;
-  complex?: IRParameters | undefined;
-  presence: IRParameterPresence;
-  count: IRParameterCount;
-}
-
-export interface IRProcessor {
+/**
+ * A RDFC channel reader.
+ * Note that this is a declarative type, and must be instantiated by the runner.
+ */
+export interface Reader {
+  /** Channel URI. */
   uri: string;
+}
+
+/**
+ * A RDFC channel writer.
+ * Note that this is a declarative type, and must be instantiated by the runner.
+ */
+export interface Writer {
+  /** Channel URI. */
+  uri: string;
+}
+
+/** Either a single argument, or a nested */
+export interface ArgumentLiteral {
+  /** Raw bytes. */
+  bytes?: Uint8Array | undefined;
+  /** UTF-8 encoded bytes. */
+  string?: string | undefined;
+  /** Simple booleans. */
+  bool?: boolean | undefined;
+  /** Floating point numbers. */
+  double?: number | undefined;
+  float?: number | undefined;
+  /** Integer types. */
+  int32?: number | undefined;
+  int64?: number | undefined;
+  uint32?: number | undefined;
+  uint64?: number | undefined;
+  /** Date representation using nanosecond accuracy. */
+  timestamp?: Date | undefined;
+  /** RDFC channel implementations. */
+  reader?: Reader | undefined;
+  writer?: Writer | undefined;
+}
+
+export interface ArgumentLiteral_List {
+  values: ArgumentLiteral[];
+}
+
+export interface ArgumentMap {
+  values: { [key: string]: Argument };
+}
+
+export interface ArgumentMap_ValuesEntry {
+  key: string;
+  value: Argument | undefined;
+}
+
+export interface ArgumentMap_List {
+  values: ArgumentMap[];
+}
+
+/** An argument is either a literal or a map, or a list of literals or a list of maps. */
+export interface Argument {
+  literal?: ArgumentLiteral | undefined;
+  literals?: ArgumentLiteral_List | undefined;
+  map?: ArgumentMap | undefined;
+  maps?: ArgumentMap_List | undefined;
+}
+
+/** A processor declaration. */
+export interface Processor {
+  /** The URI of the processor. */
+  uri: string;
+  /** The source code entrypoint. */
   entrypoint: string;
-  parameters: { [key: string]: IRParameter };
+  /** Additional metadata, as required by the runners. */
   metadata: { [key: string]: string };
 }
 
-export interface IRProcessor_ParametersEntry {
-  key: string;
-  value: IRParameter | undefined;
-}
-
-export interface IRProcessor_MetadataEntry {
+export interface Processor_MetadataEntry {
   key: string;
   value: string;
 }
 
-export interface IRArgumentSimple {
-  value: string[];
-}
-
-export interface IRArgumentMap {
-  arguments: { [key: string]: IRArgument };
-}
-
-export interface IRArgumentMap_ArgumentsEntry {
-  key: string;
-  value: IRArgument | undefined;
-}
-
-export interface IRArgumentComplex {
-  value: IRArgumentMap[];
-}
-
-export interface IRArgument {
-  simple?: IRArgumentSimple | undefined;
-  complex?: IRArgumentComplex | undefined;
-}
-
-export interface IRStage {
+/** A concrete stage of a given processor, with instantiated arguments. */
+export interface Stage {
+  /** The URI of the stage. */
   uri: string;
-  processor: IRProcessor | undefined;
-  arguments: { [key: string]: IRArgument };
+  /** The processor definition. */
+  processor: Processor | undefined;
+  /** Stage arguments. */
+  arguments: { [key: string]: Argument };
 }
 
-export interface IRStage_ArgumentsEntry {
+export interface Stage_ArgumentsEntry {
   key: string;
-  value: IRArgument | undefined;
+  value: Argument | undefined;
 }
 
-function createBaseIRParameters(): IRParameters {
-  return { parameters: {} };
+function createBaseReader(): Reader {
+  return { uri: "" };
 }
 
-export const IRParameters = {
+export const Reader = {
   encode(
-    message: IRParameters,
+    message: Reader,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
-    Object.entries(message.parameters).forEach(([key, value]) => {
-      IRParameters_ParametersEntry.encode(
-        { key: key as any, value },
-        writer.uint32(10).fork(),
-      ).ldelim();
-    });
+    if (message.uri !== "") {
+      writer.uint32(10).string(message.uri);
+    }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): IRParameters {
+  decode(input: _m0.Reader | Uint8Array, length?: number): Reader {
     const reader =
       input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRParameters();
+    const message = createBaseReader();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -253,12 +135,476 @@ export const IRParameters = {
             break;
           }
 
-          const entry1 = IRParameters_ParametersEntry.decode(
+          message.uri = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Reader {
+    return { uri: isSet(object.uri) ? globalThis.String(object.uri) : "" };
+  },
+
+  toJSON(message: Reader): unknown {
+    const obj: any = {};
+    if (message.uri !== "") {
+      obj.uri = message.uri;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Reader>, I>>(base?: I): Reader {
+    return Reader.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Reader>, I>>(object: I): Reader {
+    const message = createBaseReader();
+    message.uri = object.uri ?? "";
+    return message;
+  },
+};
+
+function createBaseWriter(): Writer {
+  return { uri: "" };
+}
+
+export const Writer = {
+  encode(
+    message: Writer,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    if (message.uri !== "") {
+      writer.uint32(10).string(message.uri);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Writer {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWriter();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.uri = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Writer {
+    return { uri: isSet(object.uri) ? globalThis.String(object.uri) : "" };
+  },
+
+  toJSON(message: Writer): unknown {
+    const obj: any = {};
+    if (message.uri !== "") {
+      obj.uri = message.uri;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Writer>, I>>(base?: I): Writer {
+    return Writer.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Writer>, I>>(object: I): Writer {
+    const message = createBaseWriter();
+    message.uri = object.uri ?? "";
+    return message;
+  },
+};
+
+function createBaseArgumentLiteral(): ArgumentLiteral {
+  return {
+    bytes: undefined,
+    string: undefined,
+    bool: undefined,
+    double: undefined,
+    float: undefined,
+    int32: undefined,
+    int64: undefined,
+    uint32: undefined,
+    uint64: undefined,
+    timestamp: undefined,
+    reader: undefined,
+    writer: undefined,
+  };
+}
+
+export const ArgumentLiteral = {
+  encode(
+    message: ArgumentLiteral,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    if (message.bytes !== undefined) {
+      writer.uint32(82).bytes(message.bytes);
+    }
+    if (message.string !== undefined) {
+      writer.uint32(162).string(message.string);
+    }
+    if (message.bool !== undefined) {
+      writer.uint32(240).bool(message.bool);
+    }
+    if (message.double !== undefined) {
+      writer.uint32(321).double(message.double);
+    }
+    if (message.float !== undefined) {
+      writer.uint32(341).float(message.float);
+    }
+    if (message.int32 !== undefined) {
+      writer.uint32(400).int32(message.int32);
+    }
+    if (message.int64 !== undefined) {
+      writer.uint32(416).int64(message.int64);
+    }
+    if (message.uint32 !== undefined) {
+      writer.uint32(432).uint32(message.uint32);
+    }
+    if (message.uint64 !== undefined) {
+      writer.uint32(448).uint64(message.uint64);
+    }
+    if (message.timestamp !== undefined) {
+      Timestamp.encode(
+        toTimestamp(message.timestamp),
+        writer.uint32(482).fork(),
+      ).ldelim();
+    }
+    if (message.reader !== undefined) {
+      Reader.encode(message.reader, writer.uint32(562).fork()).ldelim();
+    }
+    if (message.writer !== undefined) {
+      Writer.encode(message.writer, writer.uint32(578).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ArgumentLiteral {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseArgumentLiteral();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 10:
+          if (tag !== 82) {
+            break;
+          }
+
+          message.bytes = reader.bytes();
+          continue;
+        case 20:
+          if (tag !== 162) {
+            break;
+          }
+
+          message.string = reader.string();
+          continue;
+        case 30:
+          if (tag !== 240) {
+            break;
+          }
+
+          message.bool = reader.bool();
+          continue;
+        case 40:
+          if (tag !== 321) {
+            break;
+          }
+
+          message.double = reader.double();
+          continue;
+        case 42:
+          if (tag !== 341) {
+            break;
+          }
+
+          message.float = reader.float();
+          continue;
+        case 50:
+          if (tag !== 400) {
+            break;
+          }
+
+          message.int32 = reader.int32();
+          continue;
+        case 52:
+          if (tag !== 416) {
+            break;
+          }
+
+          message.int64 = longToNumber(reader.int64() as Long);
+          continue;
+        case 54:
+          if (tag !== 432) {
+            break;
+          }
+
+          message.uint32 = reader.uint32();
+          continue;
+        case 56:
+          if (tag !== 448) {
+            break;
+          }
+
+          message.uint64 = longToNumber(reader.uint64() as Long);
+          continue;
+        case 60:
+          if (tag !== 482) {
+            break;
+          }
+
+          message.timestamp = fromTimestamp(
+            Timestamp.decode(reader, reader.uint32()),
+          );
+          continue;
+        case 70:
+          if (tag !== 562) {
+            break;
+          }
+
+          message.reader = Reader.decode(reader, reader.uint32());
+          continue;
+        case 72:
+          if (tag !== 578) {
+            break;
+          }
+
+          message.writer = Writer.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ArgumentLiteral {
+    return {
+      bytes: isSet(object.bytes) ? bytesFromBase64(object.bytes) : undefined,
+      string: isSet(object.string)
+        ? globalThis.String(object.string)
+        : undefined,
+      bool: isSet(object.bool) ? globalThis.Boolean(object.bool) : undefined,
+      double: isSet(object.double)
+        ? globalThis.Number(object.double)
+        : undefined,
+      float: isSet(object.float) ? globalThis.Number(object.float) : undefined,
+      int32: isSet(object.int32) ? globalThis.Number(object.int32) : undefined,
+      int64: isSet(object.int64) ? globalThis.Number(object.int64) : undefined,
+      uint32: isSet(object.uint32)
+        ? globalThis.Number(object.uint32)
+        : undefined,
+      uint64: isSet(object.uint64)
+        ? globalThis.Number(object.uint64)
+        : undefined,
+      timestamp: isSet(object.timestamp)
+        ? fromJsonTimestamp(object.timestamp)
+        : undefined,
+      reader: isSet(object.reader) ? Reader.fromJSON(object.reader) : undefined,
+      writer: isSet(object.writer) ? Writer.fromJSON(object.writer) : undefined,
+    };
+  },
+
+  toJSON(message: ArgumentLiteral): unknown {
+    const obj: any = {};
+    if (message.bytes !== undefined) {
+      obj.bytes = base64FromBytes(message.bytes);
+    }
+    if (message.string !== undefined) {
+      obj.string = message.string;
+    }
+    if (message.bool !== undefined) {
+      obj.bool = message.bool;
+    }
+    if (message.double !== undefined) {
+      obj.double = message.double;
+    }
+    if (message.float !== undefined) {
+      obj.float = message.float;
+    }
+    if (message.int32 !== undefined) {
+      obj.int32 = Math.round(message.int32);
+    }
+    if (message.int64 !== undefined) {
+      obj.int64 = Math.round(message.int64);
+    }
+    if (message.uint32 !== undefined) {
+      obj.uint32 = Math.round(message.uint32);
+    }
+    if (message.uint64 !== undefined) {
+      obj.uint64 = Math.round(message.uint64);
+    }
+    if (message.timestamp !== undefined) {
+      obj.timestamp = message.timestamp.toISOString();
+    }
+    if (message.reader !== undefined) {
+      obj.reader = Reader.toJSON(message.reader);
+    }
+    if (message.writer !== undefined) {
+      obj.writer = Writer.toJSON(message.writer);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ArgumentLiteral>, I>>(
+    base?: I,
+  ): ArgumentLiteral {
+    return ArgumentLiteral.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ArgumentLiteral>, I>>(
+    object: I,
+  ): ArgumentLiteral {
+    const message = createBaseArgumentLiteral();
+    message.bytes = object.bytes ?? undefined;
+    message.string = object.string ?? undefined;
+    message.bool = object.bool ?? undefined;
+    message.double = object.double ?? undefined;
+    message.float = object.float ?? undefined;
+    message.int32 = object.int32 ?? undefined;
+    message.int64 = object.int64 ?? undefined;
+    message.uint32 = object.uint32 ?? undefined;
+    message.uint64 = object.uint64 ?? undefined;
+    message.timestamp = object.timestamp ?? undefined;
+    message.reader =
+      object.reader !== undefined && object.reader !== null
+        ? Reader.fromPartial(object.reader)
+        : undefined;
+    message.writer =
+      object.writer !== undefined && object.writer !== null
+        ? Writer.fromPartial(object.writer)
+        : undefined;
+    return message;
+  },
+};
+
+function createBaseArgumentLiteral_List(): ArgumentLiteral_List {
+  return { values: [] };
+}
+
+export const ArgumentLiteral_List = {
+  encode(
+    message: ArgumentLiteral_List,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    for (const v of message.values) {
+      ArgumentLiteral.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number,
+  ): ArgumentLiteral_List {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseArgumentLiteral_List();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.values.push(ArgumentLiteral.decode(reader, reader.uint32()));
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ArgumentLiteral_List {
+    return {
+      values: globalThis.Array.isArray(object?.values)
+        ? object.values.map((e: any) => ArgumentLiteral.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ArgumentLiteral_List): unknown {
+    const obj: any = {};
+    if (message.values?.length) {
+      obj.values = message.values.map((e) => ArgumentLiteral.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ArgumentLiteral_List>, I>>(
+    base?: I,
+  ): ArgumentLiteral_List {
+    return ArgumentLiteral_List.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ArgumentLiteral_List>, I>>(
+    object: I,
+  ): ArgumentLiteral_List {
+    const message = createBaseArgumentLiteral_List();
+    message.values =
+      object.values?.map((e) => ArgumentLiteral.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseArgumentMap(): ArgumentMap {
+  return { values: {} };
+}
+
+export const ArgumentMap = {
+  encode(
+    message: ArgumentMap,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    Object.entries(message.values).forEach(([key, value]) => {
+      ArgumentMap_ValuesEntry.encode(
+        { key: key as any, value },
+        writer.uint32(10).fork(),
+      ).ldelim();
+    });
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ArgumentMap {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseArgumentMap();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          const entry1 = ArgumentMap_ValuesEntry.decode(
             reader,
             reader.uint32(),
           );
           if (entry1.value !== undefined) {
-            message.parameters[entry1.key] = entry1.value;
+            message.values[entry1.key] = entry1.value;
           }
           continue;
       }
@@ -270,47 +616,46 @@ export const IRParameters = {
     return message;
   },
 
-  fromJSON(object: any): IRParameters {
+  fromJSON(object: any): ArgumentMap {
     return {
-      parameters: isObject(object.parameters)
-        ? Object.entries(object.parameters).reduce<{
-            [key: string]: IRParameter;
-          }>((acc, [key, value]) => {
-            acc[key] = IRParameter.fromJSON(value);
-            return acc;
-          }, {})
+      values: isObject(object.values)
+        ? Object.entries(object.values).reduce<{ [key: string]: Argument }>(
+            (acc, [key, value]) => {
+              acc[key] = Argument.fromJSON(value);
+              return acc;
+            },
+            {},
+          )
         : {},
     };
   },
 
-  toJSON(message: IRParameters): unknown {
+  toJSON(message: ArgumentMap): unknown {
     const obj: any = {};
-    if (message.parameters) {
-      const entries = Object.entries(message.parameters);
+    if (message.values) {
+      const entries = Object.entries(message.values);
       if (entries.length > 0) {
-        obj.parameters = {};
+        obj.values = {};
         entries.forEach(([k, v]) => {
-          obj.parameters[k] = IRParameter.toJSON(v);
+          obj.values[k] = Argument.toJSON(v);
         });
       }
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<IRParameters>, I>>(
-    base?: I,
-  ): IRParameters {
-    return IRParameters.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<ArgumentMap>, I>>(base?: I): ArgumentMap {
+    return ArgumentMap.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<IRParameters>, I>>(
+  fromPartial<I extends Exact<DeepPartial<ArgumentMap>, I>>(
     object: I,
-  ): IRParameters {
-    const message = createBaseIRParameters();
-    message.parameters = Object.entries(object.parameters ?? {}).reduce<{
-      [key: string]: IRParameter;
+  ): ArgumentMap {
+    const message = createBaseArgumentMap();
+    message.values = Object.entries(object.values ?? {}).reduce<{
+      [key: string]: Argument;
     }>((acc, [key, value]) => {
       if (value !== undefined) {
-        acc[key] = IRParameter.fromPartial(value);
+        acc[key] = Argument.fromPartial(value);
       }
       return acc;
     }, {});
@@ -318,20 +663,20 @@ export const IRParameters = {
   },
 };
 
-function createBaseIRParameters_ParametersEntry(): IRParameters_ParametersEntry {
+function createBaseArgumentMap_ValuesEntry(): ArgumentMap_ValuesEntry {
   return { key: "", value: undefined };
 }
 
-export const IRParameters_ParametersEntry = {
+export const ArgumentMap_ValuesEntry = {
   encode(
-    message: IRParameters_ParametersEntry,
+    message: ArgumentMap_ValuesEntry,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
     }
     if (message.value !== undefined) {
-      IRParameter.encode(message.value, writer.uint32(18).fork()).ldelim();
+      Argument.encode(message.value, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -339,11 +684,11 @@ export const IRParameters_ParametersEntry = {
   decode(
     input: _m0.Reader | Uint8Array,
     length?: number,
-  ): IRParameters_ParametersEntry {
+  ): ArgumentMap_ValuesEntry {
     const reader =
       input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRParameters_ParametersEntry();
+    const message = createBaseArgumentMap_ValuesEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -359,7 +704,7 @@ export const IRParameters_ParametersEntry = {
             break;
           }
 
-          message.value = IRParameter.decode(reader, reader.uint32());
+          message.value = Argument.decode(reader, reader.uint32());
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -370,103 +715,185 @@ export const IRParameters_ParametersEntry = {
     return message;
   },
 
-  fromJSON(object: any): IRParameters_ParametersEntry {
+  fromJSON(object: any): ArgumentMap_ValuesEntry {
     return {
       key: isSet(object.key) ? globalThis.String(object.key) : "",
-      value: isSet(object.value)
-        ? IRParameter.fromJSON(object.value)
-        : undefined,
+      value: isSet(object.value) ? Argument.fromJSON(object.value) : undefined,
     };
   },
 
-  toJSON(message: IRParameters_ParametersEntry): unknown {
+  toJSON(message: ArgumentMap_ValuesEntry): unknown {
     const obj: any = {};
     if (message.key !== "") {
       obj.key = message.key;
     }
     if (message.value !== undefined) {
-      obj.value = IRParameter.toJSON(message.value);
+      obj.value = Argument.toJSON(message.value);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<IRParameters_ParametersEntry>, I>>(
+  create<I extends Exact<DeepPartial<ArgumentMap_ValuesEntry>, I>>(
     base?: I,
-  ): IRParameters_ParametersEntry {
-    return IRParameters_ParametersEntry.fromPartial(base ?? ({} as any));
+  ): ArgumentMap_ValuesEntry {
+    return ArgumentMap_ValuesEntry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<IRParameters_ParametersEntry>, I>>(
+  fromPartial<I extends Exact<DeepPartial<ArgumentMap_ValuesEntry>, I>>(
     object: I,
-  ): IRParameters_ParametersEntry {
-    const message = createBaseIRParameters_ParametersEntry();
+  ): ArgumentMap_ValuesEntry {
+    const message = createBaseArgumentMap_ValuesEntry();
     message.key = object.key ?? "";
     message.value =
       object.value !== undefined && object.value !== null
-        ? IRParameter.fromPartial(object.value)
+        ? Argument.fromPartial(object.value)
         : undefined;
     return message;
   },
 };
 
-function createBaseIRParameter(): IRParameter {
-  return { simple: undefined, complex: undefined, presence: 0, count: 0 };
+function createBaseArgumentMap_List(): ArgumentMap_List {
+  return { values: [] };
 }
 
-export const IRParameter = {
+export const ArgumentMap_List = {
   encode(
-    message: IRParameter,
+    message: ArgumentMap_List,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
-    if (message.simple !== undefined) {
-      writer.uint32(8).int32(message.simple);
-    }
-    if (message.complex !== undefined) {
-      IRParameters.encode(message.complex, writer.uint32(18).fork()).ldelim();
-    }
-    if (message.presence !== 0) {
-      writer.uint32(24).int32(message.presence);
-    }
-    if (message.count !== 0) {
-      writer.uint32(32).int32(message.count);
+    for (const v of message.values) {
+      ArgumentMap.encode(v!, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): IRParameter {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ArgumentMap_List {
     const reader =
       input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRParameter();
+    const message = createBaseArgumentMap_List();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.simple = reader.int32() as any;
+          message.values.push(ArgumentMap.decode(reader, reader.uint32()));
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ArgumentMap_List {
+    return {
+      values: globalThis.Array.isArray(object?.values)
+        ? object.values.map((e: any) => ArgumentMap.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ArgumentMap_List): unknown {
+    const obj: any = {};
+    if (message.values?.length) {
+      obj.values = message.values.map((e) => ArgumentMap.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ArgumentMap_List>, I>>(
+    base?: I,
+  ): ArgumentMap_List {
+    return ArgumentMap_List.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ArgumentMap_List>, I>>(
+    object: I,
+  ): ArgumentMap_List {
+    const message = createBaseArgumentMap_List();
+    message.values =
+      object.values?.map((e) => ArgumentMap.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseArgument(): Argument {
+  return {
+    literal: undefined,
+    literals: undefined,
+    map: undefined,
+    maps: undefined,
+  };
+}
+
+export const Argument = {
+  encode(
+    message: Argument,
+    writer: _m0.Writer = _m0.Writer.create(),
+  ): _m0.Writer {
+    if (message.literal !== undefined) {
+      ArgumentLiteral.encode(
+        message.literal,
+        writer.uint32(10).fork(),
+      ).ldelim();
+    }
+    if (message.literals !== undefined) {
+      ArgumentLiteral_List.encode(
+        message.literals,
+        writer.uint32(18).fork(),
+      ).ldelim();
+    }
+    if (message.map !== undefined) {
+      ArgumentMap.encode(message.map, writer.uint32(26).fork()).ldelim();
+    }
+    if (message.maps !== undefined) {
+      ArgumentMap_List.encode(message.maps, writer.uint32(34).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Argument {
+    const reader =
+      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseArgument();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.literal = ArgumentLiteral.decode(reader, reader.uint32());
           continue;
         case 2:
           if (tag !== 18) {
             break;
           }
 
-          message.complex = IRParameters.decode(reader, reader.uint32());
+          message.literals = ArgumentLiteral_List.decode(
+            reader,
+            reader.uint32(),
+          );
           continue;
         case 3:
-          if (tag !== 24) {
+          if (tag !== 26) {
             break;
           }
 
-          message.presence = reader.int32() as any;
+          message.map = ArgumentMap.decode(reader, reader.uint32());
           continue;
         case 4:
-          if (tag !== 32) {
+          if (tag !== 34) {
             break;
           }
 
-          message.count = reader.int32() as any;
+          message.maps = ArgumentMap_List.decode(reader, reader.uint32());
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -477,63 +904,70 @@ export const IRParameter = {
     return message;
   },
 
-  fromJSON(object: any): IRParameter {
+  fromJSON(object: any): Argument {
     return {
-      simple: isSet(object.simple)
-        ? iRParameterTypeFromJSON(object.simple)
+      literal: isSet(object.literal)
+        ? ArgumentLiteral.fromJSON(object.literal)
         : undefined,
-      complex: isSet(object.complex)
-        ? IRParameters.fromJSON(object.complex)
+      literals: isSet(object.literals)
+        ? ArgumentLiteral_List.fromJSON(object.literals)
         : undefined,
-      presence: isSet(object.presence)
-        ? iRParameterPresenceFromJSON(object.presence)
-        : 0,
-      count: isSet(object.count) ? iRParameterCountFromJSON(object.count) : 0,
+      map: isSet(object.map) ? ArgumentMap.fromJSON(object.map) : undefined,
+      maps: isSet(object.maps)
+        ? ArgumentMap_List.fromJSON(object.maps)
+        : undefined,
     };
   },
 
-  toJSON(message: IRParameter): unknown {
+  toJSON(message: Argument): unknown {
     const obj: any = {};
-    if (message.simple !== undefined) {
-      obj.simple = iRParameterTypeToJSON(message.simple);
+    if (message.literal !== undefined) {
+      obj.literal = ArgumentLiteral.toJSON(message.literal);
     }
-    if (message.complex !== undefined) {
-      obj.complex = IRParameters.toJSON(message.complex);
+    if (message.literals !== undefined) {
+      obj.literals = ArgumentLiteral_List.toJSON(message.literals);
     }
-    if (message.presence !== 0) {
-      obj.presence = iRParameterPresenceToJSON(message.presence);
+    if (message.map !== undefined) {
+      obj.map = ArgumentMap.toJSON(message.map);
     }
-    if (message.count !== 0) {
-      obj.count = iRParameterCountToJSON(message.count);
+    if (message.maps !== undefined) {
+      obj.maps = ArgumentMap_List.toJSON(message.maps);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<IRParameter>, I>>(base?: I): IRParameter {
-    return IRParameter.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<Argument>, I>>(base?: I): Argument {
+    return Argument.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<IRParameter>, I>>(
-    object: I,
-  ): IRParameter {
-    const message = createBaseIRParameter();
-    message.simple = object.simple ?? undefined;
-    message.complex =
-      object.complex !== undefined && object.complex !== null
-        ? IRParameters.fromPartial(object.complex)
+  fromPartial<I extends Exact<DeepPartial<Argument>, I>>(object: I): Argument {
+    const message = createBaseArgument();
+    message.literal =
+      object.literal !== undefined && object.literal !== null
+        ? ArgumentLiteral.fromPartial(object.literal)
         : undefined;
-    message.presence = object.presence ?? 0;
-    message.count = object.count ?? 0;
+    message.literals =
+      object.literals !== undefined && object.literals !== null
+        ? ArgumentLiteral_List.fromPartial(object.literals)
+        : undefined;
+    message.map =
+      object.map !== undefined && object.map !== null
+        ? ArgumentMap.fromPartial(object.map)
+        : undefined;
+    message.maps =
+      object.maps !== undefined && object.maps !== null
+        ? ArgumentMap_List.fromPartial(object.maps)
+        : undefined;
     return message;
   },
 };
 
-function createBaseIRProcessor(): IRProcessor {
-  return { uri: "", entrypoint: "", parameters: {}, metadata: {} };
+function createBaseProcessor(): Processor {
+  return { uri: "", entrypoint: "", metadata: {} };
 }
 
-export const IRProcessor = {
+export const Processor = {
   encode(
-    message: IRProcessor,
+    message: Processor,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.uri !== "") {
@@ -542,14 +976,8 @@ export const IRProcessor = {
     if (message.entrypoint !== "") {
       writer.uint32(18).string(message.entrypoint);
     }
-    Object.entries(message.parameters).forEach(([key, value]) => {
-      IRProcessor_ParametersEntry.encode(
-        { key: key as any, value },
-        writer.uint32(26).fork(),
-      ).ldelim();
-    });
     Object.entries(message.metadata).forEach(([key, value]) => {
-      IRProcessor_MetadataEntry.encode(
+      Processor_MetadataEntry.encode(
         { key: key as any, value },
         writer.uint32(34).fork(),
       ).ldelim();
@@ -557,11 +985,11 @@ export const IRProcessor = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): IRProcessor {
+  decode(input: _m0.Reader | Uint8Array, length?: number): Processor {
     const reader =
       input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRProcessor();
+    const message = createBaseProcessor();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -579,25 +1007,12 @@ export const IRProcessor = {
 
           message.entrypoint = reader.string();
           continue;
-        case 3:
-          if (tag !== 26) {
-            break;
-          }
-
-          const entry3 = IRProcessor_ParametersEntry.decode(
-            reader,
-            reader.uint32(),
-          );
-          if (entry3.value !== undefined) {
-            message.parameters[entry3.key] = entry3.value;
-          }
-          continue;
         case 4:
           if (tag !== 34) {
             break;
           }
 
-          const entry4 = IRProcessor_MetadataEntry.decode(
+          const entry4 = Processor_MetadataEntry.decode(
             reader,
             reader.uint32(),
           );
@@ -614,20 +1029,12 @@ export const IRProcessor = {
     return message;
   },
 
-  fromJSON(object: any): IRProcessor {
+  fromJSON(object: any): Processor {
     return {
       uri: isSet(object.uri) ? globalThis.String(object.uri) : "",
       entrypoint: isSet(object.entrypoint)
         ? globalThis.String(object.entrypoint)
         : "",
-      parameters: isObject(object.parameters)
-        ? Object.entries(object.parameters).reduce<{
-            [key: string]: IRParameter;
-          }>((acc, [key, value]) => {
-            acc[key] = IRParameter.fromJSON(value);
-            return acc;
-          }, {})
-        : {},
       metadata: isObject(object.metadata)
         ? Object.entries(object.metadata).reduce<{ [key: string]: string }>(
             (acc, [key, value]) => {
@@ -640,22 +1047,13 @@ export const IRProcessor = {
     };
   },
 
-  toJSON(message: IRProcessor): unknown {
+  toJSON(message: Processor): unknown {
     const obj: any = {};
     if (message.uri !== "") {
       obj.uri = message.uri;
     }
     if (message.entrypoint !== "") {
       obj.entrypoint = message.entrypoint;
-    }
-    if (message.parameters) {
-      const entries = Object.entries(message.parameters);
-      if (entries.length > 0) {
-        obj.parameters = {};
-        entries.forEach(([k, v]) => {
-          obj.parameters[k] = IRParameter.toJSON(v);
-        });
-      }
     }
     if (message.metadata) {
       const entries = Object.entries(message.metadata);
@@ -669,23 +1067,15 @@ export const IRProcessor = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<IRProcessor>, I>>(base?: I): IRProcessor {
-    return IRProcessor.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<Processor>, I>>(base?: I): Processor {
+    return Processor.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<IRProcessor>, I>>(
+  fromPartial<I extends Exact<DeepPartial<Processor>, I>>(
     object: I,
-  ): IRProcessor {
-    const message = createBaseIRProcessor();
+  ): Processor {
+    const message = createBaseProcessor();
     message.uri = object.uri ?? "";
     message.entrypoint = object.entrypoint ?? "";
-    message.parameters = Object.entries(object.parameters ?? {}).reduce<{
-      [key: string]: IRParameter;
-    }>((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = IRParameter.fromPartial(value);
-      }
-      return acc;
-    }, {});
     message.metadata = Object.entries(object.metadata ?? {}).reduce<{
       [key: string]: string;
     }>((acc, [key, value]) => {
@@ -698,103 +1088,13 @@ export const IRProcessor = {
   },
 };
 
-function createBaseIRProcessor_ParametersEntry(): IRProcessor_ParametersEntry {
-  return { key: "", value: undefined };
-}
-
-export const IRProcessor_ParametersEntry = {
-  encode(
-    message: IRProcessor_ParametersEntry,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    if (message.key !== "") {
-      writer.uint32(10).string(message.key);
-    }
-    if (message.value !== undefined) {
-      IRParameter.encode(message.value, writer.uint32(18).fork()).ldelim();
-    }
-    return writer;
-  },
-
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number,
-  ): IRProcessor_ParametersEntry {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRProcessor_ParametersEntry();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.key = reader.string();
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.value = IRParameter.decode(reader, reader.uint32());
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): IRProcessor_ParametersEntry {
-    return {
-      key: isSet(object.key) ? globalThis.String(object.key) : "",
-      value: isSet(object.value)
-        ? IRParameter.fromJSON(object.value)
-        : undefined,
-    };
-  },
-
-  toJSON(message: IRProcessor_ParametersEntry): unknown {
-    const obj: any = {};
-    if (message.key !== "") {
-      obj.key = message.key;
-    }
-    if (message.value !== undefined) {
-      obj.value = IRParameter.toJSON(message.value);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<IRProcessor_ParametersEntry>, I>>(
-    base?: I,
-  ): IRProcessor_ParametersEntry {
-    return IRProcessor_ParametersEntry.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<IRProcessor_ParametersEntry>, I>>(
-    object: I,
-  ): IRProcessor_ParametersEntry {
-    const message = createBaseIRProcessor_ParametersEntry();
-    message.key = object.key ?? "";
-    message.value =
-      object.value !== undefined && object.value !== null
-        ? IRParameter.fromPartial(object.value)
-        : undefined;
-    return message;
-  },
-};
-
-function createBaseIRProcessor_MetadataEntry(): IRProcessor_MetadataEntry {
+function createBaseProcessor_MetadataEntry(): Processor_MetadataEntry {
   return { key: "", value: "" };
 }
 
-export const IRProcessor_MetadataEntry = {
+export const Processor_MetadataEntry = {
   encode(
-    message: IRProcessor_MetadataEntry,
+    message: Processor_MetadataEntry,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.key !== "") {
@@ -809,11 +1109,11 @@ export const IRProcessor_MetadataEntry = {
   decode(
     input: _m0.Reader | Uint8Array,
     length?: number,
-  ): IRProcessor_MetadataEntry {
+  ): Processor_MetadataEntry {
     const reader =
       input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRProcessor_MetadataEntry();
+    const message = createBaseProcessor_MetadataEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -840,14 +1140,14 @@ export const IRProcessor_MetadataEntry = {
     return message;
   },
 
-  fromJSON(object: any): IRProcessor_MetadataEntry {
+  fromJSON(object: any): Processor_MetadataEntry {
     return {
       key: isSet(object.key) ? globalThis.String(object.key) : "",
       value: isSet(object.value) ? globalThis.String(object.value) : "",
     };
   },
 
-  toJSON(message: IRProcessor_MetadataEntry): unknown {
+  toJSON(message: Processor_MetadataEntry): unknown {
     const obj: any = {};
     if (message.key !== "") {
       obj.key = message.key;
@@ -858,459 +1158,35 @@ export const IRProcessor_MetadataEntry = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<IRProcessor_MetadataEntry>, I>>(
+  create<I extends Exact<DeepPartial<Processor_MetadataEntry>, I>>(
     base?: I,
-  ): IRProcessor_MetadataEntry {
-    return IRProcessor_MetadataEntry.fromPartial(base ?? ({} as any));
+  ): Processor_MetadataEntry {
+    return Processor_MetadataEntry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<IRProcessor_MetadataEntry>, I>>(
+  fromPartial<I extends Exact<DeepPartial<Processor_MetadataEntry>, I>>(
     object: I,
-  ): IRProcessor_MetadataEntry {
-    const message = createBaseIRProcessor_MetadataEntry();
+  ): Processor_MetadataEntry {
+    const message = createBaseProcessor_MetadataEntry();
     message.key = object.key ?? "";
     message.value = object.value ?? "";
     return message;
   },
 };
 
-function createBaseIRArgumentSimple(): IRArgumentSimple {
-  return { value: [] };
-}
-
-export const IRArgumentSimple = {
-  encode(
-    message: IRArgumentSimple,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    for (const v of message.value) {
-      writer.uint32(10).string(v!);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): IRArgumentSimple {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRArgumentSimple();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.value.push(reader.string());
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): IRArgumentSimple {
-    return {
-      value: globalThis.Array.isArray(object?.value)
-        ? object.value.map((e: any) => globalThis.String(e))
-        : [],
-    };
-  },
-
-  toJSON(message: IRArgumentSimple): unknown {
-    const obj: any = {};
-    if (message.value?.length) {
-      obj.value = message.value;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<IRArgumentSimple>, I>>(
-    base?: I,
-  ): IRArgumentSimple {
-    return IRArgumentSimple.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<IRArgumentSimple>, I>>(
-    object: I,
-  ): IRArgumentSimple {
-    const message = createBaseIRArgumentSimple();
-    message.value = object.value?.map((e) => e) || [];
-    return message;
-  },
-};
-
-function createBaseIRArgumentMap(): IRArgumentMap {
-  return { arguments: {} };
-}
-
-export const IRArgumentMap = {
-  encode(
-    message: IRArgumentMap,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    Object.entries(message.arguments).forEach(([key, value]) => {
-      IRArgumentMap_ArgumentsEntry.encode(
-        { key: key as any, value },
-        writer.uint32(10).fork(),
-      ).ldelim();
-    });
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): IRArgumentMap {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRArgumentMap();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          const entry1 = IRArgumentMap_ArgumentsEntry.decode(
-            reader,
-            reader.uint32(),
-          );
-          if (entry1.value !== undefined) {
-            message.arguments[entry1.key] = entry1.value;
-          }
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): IRArgumentMap {
-    return {
-      arguments: isObject(object.arguments)
-        ? Object.entries(object.arguments).reduce<{
-            [key: string]: IRArgument;
-          }>((acc, [key, value]) => {
-            acc[key] = IRArgument.fromJSON(value);
-            return acc;
-          }, {})
-        : {},
-    };
-  },
-
-  toJSON(message: IRArgumentMap): unknown {
-    const obj: any = {};
-    if (message.arguments) {
-      const entries = Object.entries(message.arguments);
-      if (entries.length > 0) {
-        obj.arguments = {};
-        entries.forEach(([k, v]) => {
-          obj.arguments[k] = IRArgument.toJSON(v);
-        });
-      }
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<IRArgumentMap>, I>>(
-    base?: I,
-  ): IRArgumentMap {
-    return IRArgumentMap.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<IRArgumentMap>, I>>(
-    object: I,
-  ): IRArgumentMap {
-    const message = createBaseIRArgumentMap();
-    message.arguments = Object.entries(object.arguments ?? {}).reduce<{
-      [key: string]: IRArgument;
-    }>((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = IRArgument.fromPartial(value);
-      }
-      return acc;
-    }, {});
-    return message;
-  },
-};
-
-function createBaseIRArgumentMap_ArgumentsEntry(): IRArgumentMap_ArgumentsEntry {
-  return { key: "", value: undefined };
-}
-
-export const IRArgumentMap_ArgumentsEntry = {
-  encode(
-    message: IRArgumentMap_ArgumentsEntry,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    if (message.key !== "") {
-      writer.uint32(10).string(message.key);
-    }
-    if (message.value !== undefined) {
-      IRArgument.encode(message.value, writer.uint32(18).fork()).ldelim();
-    }
-    return writer;
-  },
-
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number,
-  ): IRArgumentMap_ArgumentsEntry {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRArgumentMap_ArgumentsEntry();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.key = reader.string();
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.value = IRArgument.decode(reader, reader.uint32());
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): IRArgumentMap_ArgumentsEntry {
-    return {
-      key: isSet(object.key) ? globalThis.String(object.key) : "",
-      value: isSet(object.value)
-        ? IRArgument.fromJSON(object.value)
-        : undefined,
-    };
-  },
-
-  toJSON(message: IRArgumentMap_ArgumentsEntry): unknown {
-    const obj: any = {};
-    if (message.key !== "") {
-      obj.key = message.key;
-    }
-    if (message.value !== undefined) {
-      obj.value = IRArgument.toJSON(message.value);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<IRArgumentMap_ArgumentsEntry>, I>>(
-    base?: I,
-  ): IRArgumentMap_ArgumentsEntry {
-    return IRArgumentMap_ArgumentsEntry.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<IRArgumentMap_ArgumentsEntry>, I>>(
-    object: I,
-  ): IRArgumentMap_ArgumentsEntry {
-    const message = createBaseIRArgumentMap_ArgumentsEntry();
-    message.key = object.key ?? "";
-    message.value =
-      object.value !== undefined && object.value !== null
-        ? IRArgument.fromPartial(object.value)
-        : undefined;
-    return message;
-  },
-};
-
-function createBaseIRArgumentComplex(): IRArgumentComplex {
-  return { value: [] };
-}
-
-export const IRArgumentComplex = {
-  encode(
-    message: IRArgumentComplex,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    for (const v of message.value) {
-      IRArgumentMap.encode(v!, writer.uint32(10).fork()).ldelim();
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): IRArgumentComplex {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRArgumentComplex();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.value.push(IRArgumentMap.decode(reader, reader.uint32()));
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): IRArgumentComplex {
-    return {
-      value: globalThis.Array.isArray(object?.value)
-        ? object.value.map((e: any) => IRArgumentMap.fromJSON(e))
-        : [],
-    };
-  },
-
-  toJSON(message: IRArgumentComplex): unknown {
-    const obj: any = {};
-    if (message.value?.length) {
-      obj.value = message.value.map((e) => IRArgumentMap.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<IRArgumentComplex>, I>>(
-    base?: I,
-  ): IRArgumentComplex {
-    return IRArgumentComplex.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<IRArgumentComplex>, I>>(
-    object: I,
-  ): IRArgumentComplex {
-    const message = createBaseIRArgumentComplex();
-    message.value =
-      object.value?.map((e) => IRArgumentMap.fromPartial(e)) || [];
-    return message;
-  },
-};
-
-function createBaseIRArgument(): IRArgument {
-  return { simple: undefined, complex: undefined };
-}
-
-export const IRArgument = {
-  encode(
-    message: IRArgument,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
-    if (message.simple !== undefined) {
-      IRArgumentSimple.encode(
-        message.simple,
-        writer.uint32(10).fork(),
-      ).ldelim();
-    }
-    if (message.complex !== undefined) {
-      IRArgumentComplex.encode(
-        message.complex,
-        writer.uint32(18).fork(),
-      ).ldelim();
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): IRArgument {
-    const reader =
-      input instanceof _m0.Reader ? input : _m0.Reader.create(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRArgument();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          if (tag !== 10) {
-            break;
-          }
-
-          message.simple = IRArgumentSimple.decode(reader, reader.uint32());
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.complex = IRArgumentComplex.decode(reader, reader.uint32());
-          continue;
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skipType(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): IRArgument {
-    return {
-      simple: isSet(object.simple)
-        ? IRArgumentSimple.fromJSON(object.simple)
-        : undefined,
-      complex: isSet(object.complex)
-        ? IRArgumentComplex.fromJSON(object.complex)
-        : undefined,
-    };
-  },
-
-  toJSON(message: IRArgument): unknown {
-    const obj: any = {};
-    if (message.simple !== undefined) {
-      obj.simple = IRArgumentSimple.toJSON(message.simple);
-    }
-    if (message.complex !== undefined) {
-      obj.complex = IRArgumentComplex.toJSON(message.complex);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<IRArgument>, I>>(base?: I): IRArgument {
-    return IRArgument.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<IRArgument>, I>>(
-    object: I,
-  ): IRArgument {
-    const message = createBaseIRArgument();
-    message.simple =
-      object.simple !== undefined && object.simple !== null
-        ? IRArgumentSimple.fromPartial(object.simple)
-        : undefined;
-    message.complex =
-      object.complex !== undefined && object.complex !== null
-        ? IRArgumentComplex.fromPartial(object.complex)
-        : undefined;
-    return message;
-  },
-};
-
-function createBaseIRStage(): IRStage {
+function createBaseStage(): Stage {
   return { uri: "", processor: undefined, arguments: {} };
 }
 
-export const IRStage = {
-  encode(
-    message: IRStage,
-    writer: _m0.Writer = _m0.Writer.create(),
-  ): _m0.Writer {
+export const Stage = {
+  encode(message: Stage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.uri !== "") {
       writer.uint32(10).string(message.uri);
     }
     if (message.processor !== undefined) {
-      IRProcessor.encode(message.processor, writer.uint32(18).fork()).ldelim();
+      Processor.encode(message.processor, writer.uint32(18).fork()).ldelim();
     }
     Object.entries(message.arguments).forEach(([key, value]) => {
-      IRStage_ArgumentsEntry.encode(
+      Stage_ArgumentsEntry.encode(
         { key: key as any, value },
         writer.uint32(26).fork(),
       ).ldelim();
@@ -1318,11 +1194,11 @@ export const IRStage = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): IRStage {
+  decode(input: _m0.Reader | Uint8Array, length?: number): Stage {
     const reader =
       input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRStage();
+    const message = createBaseStage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1338,14 +1214,14 @@ export const IRStage = {
             break;
           }
 
-          message.processor = IRProcessor.decode(reader, reader.uint32());
+          message.processor = Processor.decode(reader, reader.uint32());
           continue;
         case 3:
           if (tag !== 26) {
             break;
           }
 
-          const entry3 = IRStage_ArgumentsEntry.decode(reader, reader.uint32());
+          const entry3 = Stage_ArgumentsEntry.decode(reader, reader.uint32());
           if (entry3.value !== undefined) {
             message.arguments[entry3.key] = entry3.value;
           }
@@ -1359,58 +1235,59 @@ export const IRStage = {
     return message;
   },
 
-  fromJSON(object: any): IRStage {
+  fromJSON(object: any): Stage {
     return {
       uri: isSet(object.uri) ? globalThis.String(object.uri) : "",
       processor: isSet(object.processor)
-        ? IRProcessor.fromJSON(object.processor)
+        ? Processor.fromJSON(object.processor)
         : undefined,
       arguments: isObject(object.arguments)
-        ? Object.entries(object.arguments).reduce<{
-            [key: string]: IRArgument;
-          }>((acc, [key, value]) => {
-            acc[key] = IRArgument.fromJSON(value);
-            return acc;
-          }, {})
+        ? Object.entries(object.arguments).reduce<{ [key: string]: Argument }>(
+            (acc, [key, value]) => {
+              acc[key] = Argument.fromJSON(value);
+              return acc;
+            },
+            {},
+          )
         : {},
     };
   },
 
-  toJSON(message: IRStage): unknown {
+  toJSON(message: Stage): unknown {
     const obj: any = {};
     if (message.uri !== "") {
       obj.uri = message.uri;
     }
     if (message.processor !== undefined) {
-      obj.processor = IRProcessor.toJSON(message.processor);
+      obj.processor = Processor.toJSON(message.processor);
     }
     if (message.arguments) {
       const entries = Object.entries(message.arguments);
       if (entries.length > 0) {
         obj.arguments = {};
         entries.forEach(([k, v]) => {
-          obj.arguments[k] = IRArgument.toJSON(v);
+          obj.arguments[k] = Argument.toJSON(v);
         });
       }
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<IRStage>, I>>(base?: I): IRStage {
-    return IRStage.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<Stage>, I>>(base?: I): Stage {
+    return Stage.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<IRStage>, I>>(object: I): IRStage {
-    const message = createBaseIRStage();
+  fromPartial<I extends Exact<DeepPartial<Stage>, I>>(object: I): Stage {
+    const message = createBaseStage();
     message.uri = object.uri ?? "";
     message.processor =
       object.processor !== undefined && object.processor !== null
-        ? IRProcessor.fromPartial(object.processor)
+        ? Processor.fromPartial(object.processor)
         : undefined;
     message.arguments = Object.entries(object.arguments ?? {}).reduce<{
-      [key: string]: IRArgument;
+      [key: string]: Argument;
     }>((acc, [key, value]) => {
       if (value !== undefined) {
-        acc[key] = IRArgument.fromPartial(value);
+        acc[key] = Argument.fromPartial(value);
       }
       return acc;
     }, {});
@@ -1418,20 +1295,20 @@ export const IRStage = {
   },
 };
 
-function createBaseIRStage_ArgumentsEntry(): IRStage_ArgumentsEntry {
+function createBaseStage_ArgumentsEntry(): Stage_ArgumentsEntry {
   return { key: "", value: undefined };
 }
 
-export const IRStage_ArgumentsEntry = {
+export const Stage_ArgumentsEntry = {
   encode(
-    message: IRStage_ArgumentsEntry,
+    message: Stage_ArgumentsEntry,
     writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
     }
     if (message.value !== undefined) {
-      IRArgument.encode(message.value, writer.uint32(18).fork()).ldelim();
+      Argument.encode(message.value, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -1439,11 +1316,11 @@ export const IRStage_ArgumentsEntry = {
   decode(
     input: _m0.Reader | Uint8Array,
     length?: number,
-  ): IRStage_ArgumentsEntry {
+  ): Stage_ArgumentsEntry {
     const reader =
       input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseIRStage_ArgumentsEntry();
+    const message = createBaseStage_ArgumentsEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1459,7 +1336,7 @@ export const IRStage_ArgumentsEntry = {
             break;
           }
 
-          message.value = IRArgument.decode(reader, reader.uint32());
+          message.value = Argument.decode(reader, reader.uint32());
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1470,43 +1347,66 @@ export const IRStage_ArgumentsEntry = {
     return message;
   },
 
-  fromJSON(object: any): IRStage_ArgumentsEntry {
+  fromJSON(object: any): Stage_ArgumentsEntry {
     return {
       key: isSet(object.key) ? globalThis.String(object.key) : "",
-      value: isSet(object.value)
-        ? IRArgument.fromJSON(object.value)
-        : undefined,
+      value: isSet(object.value) ? Argument.fromJSON(object.value) : undefined,
     };
   },
 
-  toJSON(message: IRStage_ArgumentsEntry): unknown {
+  toJSON(message: Stage_ArgumentsEntry): unknown {
     const obj: any = {};
     if (message.key !== "") {
       obj.key = message.key;
     }
     if (message.value !== undefined) {
-      obj.value = IRArgument.toJSON(message.value);
+      obj.value = Argument.toJSON(message.value);
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<IRStage_ArgumentsEntry>, I>>(
+  create<I extends Exact<DeepPartial<Stage_ArgumentsEntry>, I>>(
     base?: I,
-  ): IRStage_ArgumentsEntry {
-    return IRStage_ArgumentsEntry.fromPartial(base ?? ({} as any));
+  ): Stage_ArgumentsEntry {
+    return Stage_ArgumentsEntry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<IRStage_ArgumentsEntry>, I>>(
+  fromPartial<I extends Exact<DeepPartial<Stage_ArgumentsEntry>, I>>(
     object: I,
-  ): IRStage_ArgumentsEntry {
-    const message = createBaseIRStage_ArgumentsEntry();
+  ): Stage_ArgumentsEntry {
+    const message = createBaseStage_ArgumentsEntry();
     message.key = object.key ?? "";
     message.value =
       object.value !== undefined && object.value !== null
-        ? IRArgument.fromPartial(object.value)
+        ? Argument.fromPartial(object.value)
         : undefined;
     return message;
   },
 };
+
+function bytesFromBase64(b64: string): Uint8Array {
+  if ((globalThis as any).Buffer) {
+    return Uint8Array.from(globalThis.Buffer.from(b64, "base64"));
+  } else {
+    const bin = globalThis.atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; ++i) {
+      arr[i] = bin.charCodeAt(i);
+    }
+    return arr;
+  }
+}
+
+function base64FromBytes(arr: Uint8Array): string {
+  if ((globalThis as any).Buffer) {
+    return globalThis.Buffer.from(arr).toString("base64");
+  } else {
+    const bin: string[] = [];
+    arr.forEach((byte) => {
+      bin.push(globalThis.String.fromCharCode(byte));
+    });
+    return globalThis.btoa(bin.join(""));
+  }
+}
 
 type Builtin =
   | Date
@@ -1533,6 +1433,43 @@ export type Exact<P, I extends P> = P extends Builtin
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
       [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
     };
+
+function toTimestamp(date: Date): Timestamp {
+  const seconds = Math.trunc(date.getTime() / 1_000);
+  const nanos = (date.getTime() % 1_000) * 1_000_000;
+  return { seconds, nanos };
+}
+
+function fromTimestamp(t: Timestamp): Date {
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
+}
+
+function fromJsonTimestamp(o: any): Date {
+  if (o instanceof globalThis.Date) {
+    return o;
+  } else if (typeof o === "string") {
+    return new globalThis.Date(o);
+  } else {
+    return fromTimestamp(Timestamp.fromJSON(o));
+  }
+}
+
+function longToNumber(long: Long): number {
+  if (long.gt(globalThis.Number.MAX_SAFE_INTEGER)) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  if (long.lt(globalThis.Number.MIN_SAFE_INTEGER)) {
+    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
+  }
+  return long.toNumber();
+}
+
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any;
+  _m0.configure();
+}
 
 function isObject(value: any): boolean {
   return typeof value === "object" && value !== null;

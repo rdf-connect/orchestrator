@@ -3,10 +3,11 @@ syntax = "proto3";
 package rdfc;
 
 import "channel.proto";
-import "empty.proto";
 import "intermediate.proto";
+import "google/protobuf/empty.proto";
+
 
 service Runner {
-  rpc load(IRStage) returns (Empty);
+  rpc load(Stage) returns (google.protobuf.Empty);
   rpc exec(stream ChannelMessage) returns (stream ChannelMessage);
 }

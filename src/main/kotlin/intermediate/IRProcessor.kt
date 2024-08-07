@@ -6,7 +6,7 @@ class IRProcessor(
     /** The destination of the processor. */
     val target: String,
     /** The entrypoint. */
-    val entrypoint: String? = null,
+    val entrypoint: String,
     /** Processor parameters. */
     val parameters: Map<String, IRParameter> = emptyMap(),
     /** Additional parameters. These may be used by the runner for any reason. */

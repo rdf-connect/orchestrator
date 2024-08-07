@@ -64,6 +64,7 @@ abstract class GRPCRunner(
    */
   private val collector =
       FlowCollector<ChannelMessage> {
+        Log.shared.debug { it.channel.uri }
         if (it.type == ChannelMessageType.CLOSE) {
           broker.unregister(it.channel.uri)
           return@FlowCollector
@@ -115,11 +116,11 @@ abstract class GRPCRunner(
 
   override suspend fun load() {
     for (stage in stages) {
-      val payload = stage.toGRPC()
+      val payload = serialize(stage)
       try {
         grpc.load(payload)
       } catch (e: StatusException) {
-        Log.shared.fatal("Failed to load stage: ${e.cause}")
+        Log.shared.fatal("${e.status.code.name}: ${e.status.description}")
       }
     }
   }

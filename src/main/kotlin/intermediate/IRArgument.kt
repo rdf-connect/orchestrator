@@ -13,14 +13,9 @@ data class IRArgument(
     private val simple: List<String>? = null,
     // In case of complex: list of key-value pairs.
     private val complex: List<Map<String, IRArgument>>? = null,
+    // The shape of the argument.
+    val parameter: IRParameter,
 ) {
-  enum class Kind {
-    SIMPLE,
-    COMPLEX,
-  }
-
-  val kind = if (simple != null) Kind.SIMPLE else Kind.COMPLEX
-
   init {
     if (simple == null && complex == null) {
       Log.shared.fatal("IRArgument has no values.")
