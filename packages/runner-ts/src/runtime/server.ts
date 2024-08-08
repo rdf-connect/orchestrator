@@ -6,7 +6,7 @@ import {
   UntypedHandleCall,
 } from "@grpc/grpc-js";
 import { Stage } from "../proto/intermediate";
-import { Empty } from "../proto/empty";
+import { Empty } from "../proto/google/protobuf/empty";
 import { Runner } from "./runner";
 import { ChannelMessage } from "../proto/channel";
 

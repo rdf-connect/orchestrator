@@ -4,7 +4,8 @@
   "description": "Bindings and utilities to create and run TypeScript processors in the JVM Runner.",
   "scripts": {
     "run": "ts-node src/runtime/index.ts",
-    "build": "tsc && tsc-alias",
+    "proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/proto --ts_proto_opt=outputServices=grpc-js,esModuleInterop=true,importSuffix=.js --proto_path=./../../proto index.proto",
+    "build": "npm run proto && tsc && tsc-alias",
     "test": "vitest run --coverage --coverage.include src",
     "format": "eslint --fix . && prettier --write ."
   },
