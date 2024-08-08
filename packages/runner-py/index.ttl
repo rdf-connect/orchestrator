@@ -7,7 +7,7 @@ rdfc:PythonPackage
   rdfc:description "A gRPC based Python runner." ;
   rdfc:repo "https://github.com/rdf-connect/orchestrator" ;
   rdfc:license "MIT" ;
-  rdfc:prepare ( "hatch run test -h" "hatch build" ) ;
+  rdfc:prepare ( "hatch run proto" "hatch run test -h" "hatch build" ) ;
   rdfc:runners rdfc:PythonRunner .
 
 rdfc:PythonRunner
