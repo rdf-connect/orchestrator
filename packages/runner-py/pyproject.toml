@@ -34,4 +34,4 @@ system-packages = false
 installer = "uv"
 
 [tool.hatch.envs.default.scripts]
-proto = "python -m grpc_tools.protoc --proto_path=../../proto --python_out=./src/rdfc/proto --pyi_out=./src/rdfc/proto --grpc_python_out=./src/rdfc/proto ../../proto/index.proto"
+proto = "python -m grpc_tools.protoc --proto_path=../../proto --python_out=./src/rdfc/proto --pyi_out=./src/rdfc/proto --grpc_python_out=./src/rdfc/proto ../../proto/*.proto"
