@@ -7,9 +7,9 @@ repos:
     rev: v2.13.0
     hooks:
       - id: pretty-format-kotlin
-        args: [ --ktfmt ]
+        args: [--ktfmt]
   - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
     rev: v2.13.0
     hooks:
-    - id: pretty-format-java
-      args: [--autofix]
+      - id: pretty-format-java
+        args: [--autofix]

@@ -47,9 +47,9 @@ We're investigating whether to store remote dependencies in the local directory,
 
 ## Runner Development
 
-> [!NOTE]
+> \[!NOTE\]
 > This is not a full guide, but rather a placeholder for you to get started while we are working on more thorough documentation.
 
 Writing and publishing runners is more complex than processors, and have a greater degree of freedom in terms of implementation. Currently, the only supported communication protocol is gRPC, for which we've outlined a simple [server interface](./proto/index.proto).
 
-In short, runners must facilitate the loading and preparing of processors into the runtime through the use of the `load` function, which takes in a stage's intermediate representation. Processors should be idled until the `exec` function is invoked. All messages  should be handled by the `channel` function. Incoming messages are delegated to their corresponding processor, and outgoing messages are pushed into function, back to the client.
+In short, runners must facilitate the loading and preparing of processors into the runtime through the use of the `load` function, which takes in a stage's intermediate representation. Processors should be idled until the `exec` function is invoked. All messages should be handled by the `channel` function. Incoming messages are delegated to their corresponding processor, and outgoing messages are pushed into function, back to the client.

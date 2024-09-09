@@ -1,5 +1,4 @@
 name: Test Suite
-
 on:
   push:
     branches:
@@ -7,7 +6,6 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,24 +15,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'adopt'
           cache: 'gradle'
-
       - name: Set up NPM
         uses: actions/setup-node@v2
         with:
           node-version: '20'
-
       - name: Create JAR
         run: ./gradlew shadowJar --console=plain --warning-mode all
-
       - name: Build
         run: ./gradlew installDist --console=plain --warning-mode all
-
       - name: Run tests
         run: ./gradlew test --console=plain --warning-mode all

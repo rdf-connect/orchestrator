@@ -5,7 +5,7 @@
 The RDF Connect Orchestrator implements and bridges processor runners across environments and runtimes.
 
 | Runtime | Status            | Notes                                                      |
-|---------|-------------------|------------------------------------------------------------|
+| ------- | ----------------- | ---------------------------------------------------------- |
 | Kotlin  | Ready for testing | Reference implementation, directly executed on own thread. |
 | Java    | Unstable          | Requires a thread per processor.                           |
 | Node.js | Unstable          | Reference gRPC implementation.                             |
@@ -16,12 +16,12 @@ The RDF Connect Orchestrator implements and bridges processor runners across env
 
 ### Parser
 
-> [!NOTE]
+> \[!NOTE\]
 > RDF Connect pipelines are typically written in RDF. At the time of writing, only the Turtle file format is supported, but other formats will be supported soon.
 
-The first stage of the orchestrator is responsible for parsing the plain text configuration file into an intuitive and easy-to-use format. We call this the *intermediate representation*, as defined in our [Protobuf schema](./proto/intermediate.proto). This phase is strictly separated from any and all actual setup of the orchestrator and individual runners, and can therefore be customized easily by enforcing the [`Parser` interface](src/main/kotlin/parser/Parser.kt).
+The first stage of the orchestrator is responsible for parsing the plain text configuration file into an intuitive and easy-to-use format. We call this the _intermediate representation_, as defined in our [Protobuf schema](./proto/intermediate.proto). This phase is strictly separated from any and all actual setup of the orchestrator and individual runners, and can therefore be customized easily by enforcing the [`Parser` interface](src/main/kotlin/parser/Parser.kt).
 
-> [!WARNING]
+> \[!WARNING\]
 > An extended explanation of the Protobuf schema is required.
 
 ### Initialisation
@@ -30,7 +30,7 @@ As part of the [gRPC interface](./proto/index.proto), any and all runners are re
 
 It is the runners responsibility to bring the processor into the runtime, deserialize the arguments based on the parameter configuration, and call the processor's constructor.
 
-> [!NOTE]
+> \[!NOTE\]
 > Processors should not do any heavy lifting inside of their constructor. All actual computations should be done inside the `exec` function as defined in the interface of the corresponding runtime.
 
 ### Communication
@@ -48,7 +48,7 @@ Anyone may create and publish their own processors. However, to get started quic
 Interact with RDF data.
 
 | Processor                                                    | Description                    |
-|--------------------------------------------------------------|--------------------------------|
+| ------------------------------------------------------------ | ------------------------------ |
 | [`conn:RDFValidator`](./src/main/kotlin/std/RDFValidator.kt) | Validate RDF data using SHACL. |
 
 #### Network Utilities
@@ -56,7 +56,7 @@ Interact with RDF data.
 These processors interact with the network.
 
 | Processor                                              | Description                       |
-|--------------------------------------------------------|-----------------------------------|
+| ------------------------------------------------------ | --------------------------------- |
 | [`conn:HttpFetch`](./src/main/kotlin/std/HttpFetch.kt) | Reads data from an HTTP endpoint. |
 
 #### File Utilities
@@ -64,7 +64,7 @@ These processors interact with the network.
 Fetch and write data from and to the local file system.
 
 | Processor                                                | Description                                                            |
-|----------------------------------------------------------|------------------------------------------------------------------------|
+| -------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`conn:FileReader`](./src/main/kotlin/std/FileReader.kt) | Reads a file with a given `path` from the local file system.           |
 | [`conn:FileWriter`](./src/main/kotlin/std/FileWriter.kt) | Overwrites/appends a file with a given `path` using the incoming data. |
 
@@ -73,7 +73,7 @@ Fetch and write data from and to the local file system.
 At the time of writing, we support a limited set of literal types. You may also use complex data structures, which will be represented as a map.
 
 | URI            | Kotlin             | Node.js   |
-|----------------|--------------------|-----------|
+| -------------- | ------------------ | --------- |
 | `xsd:boolean`  | `boolean`          | `Boolean` |
 | `xsd:byte`     | `byte`             |           |
 | `xsd:dateTime` | `java.util.Date`   | `Date`    |
