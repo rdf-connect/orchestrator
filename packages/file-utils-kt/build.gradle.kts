@@ -7,8 +7,8 @@ group = "technology.idlab.fileutils"
 
 version = "1.0-SNAPSHOT"
 
-/** Set the Kotlin JVM version to 17. */
-kotlin { jvmToolchain(17) }
+/** Set the Kotlin JVM version to 22. */
+kotlin { jvmToolchain(22) }
 
 repositories { mavenCentral() }
 

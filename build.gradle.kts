@@ -7,17 +7,17 @@ plugins {
   id("com.google.protobuf") version "0.9.4"
 }
 
-/** JVM Runner configuration. */
+/** Orchestrator configuration. */
 group = "technology.idlab"
 
 version = "0.0.4"
 
-/** Set the Kotlin JVM version to 17. */
-kotlin { jvmToolchain(17) }
+/** Set the Kotlin JVM version to 22. */
+kotlin { jvmToolchain(22) }
 
 /**
  * Specify the entrypoint for the application. This is a simple CLI interface wrapper which
- * initializes the parsers and the runner.
+ * initializes the parsers and the orchestrator.
  */
 application { mainClass.set("technology.idlab.MainKt") }
 
@@ -69,7 +69,7 @@ repositories {
   mavenCentral()
 
   maven {
-    url = uri("https://maven.pkg.github.com/rdf-connect/jvm-runner")
+    url = uri("https://maven.pkg.github.com/rdf-connect/orchestrator")
     credentials {
       username = env.fetchOrNull("GITHUB_ACTOR") ?: System.getenv("GITHUB_ACTOR")
       password = env.fetchOrNull("GITHUB_TOKEN") ?: System.getenv("GITHUB_TOKEN")
@@ -129,7 +129,7 @@ publishing {
   repositories {
     maven {
       name = "GitHubPackages"
-      url = uri("https://maven.pkg.github.com/rdf-connect/jvm-runner")
+      url = uri("https://maven.pkg.github.com/rdf-connect/orchestrator")
       credentials {
         username = env.fetchOrNull("GITHUB_ACTOR") ?: System.getenv("GITHUB_ACTOR")
         password = env.fetchOrNull("GITHUB_TOKEN") ?: System.getenv("GITHUB_TOKEN")
@@ -139,7 +139,7 @@ publishing {
 
   publications {
     register<MavenPublication>("gpr") {
-      artifactId = "jvm-runner"
+      artifactId = "orchestrator"
       from(components["java"])
     }
   }
