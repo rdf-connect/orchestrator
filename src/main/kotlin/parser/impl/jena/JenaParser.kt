@@ -1,4 +1,4 @@
-package technology.idlab.parser.impl
+package technology.idlab.parser.impl.jena
 
 import java.io.File
 import org.apache.jena.ontology.OntModelSpec
@@ -6,10 +6,9 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
-import org.apache.jena.rdf.model.ResourceFactory.createProperty
-import org.apache.jena.rdf.model.ResourceFactory.createResource
 import org.apache.jena.shacl.vocabulary.SHACLM
 import org.apache.jena.vocabulary.RDF
+import technology.idlab.extensions.getCollection
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.subjectWithProperty
 import technology.idlab.extensions.validate
@@ -24,167 +23,6 @@ import technology.idlab.intermediate.IRStage
 import technology.idlab.parser.Parser
 import technology.idlab.resolver.Resolver
 import technology.idlab.util.Log
-
-private class RDFC {
-  companion object {
-    private const val NS = "https://www.rdf-connect.com/#"
-    val NAMESPACE = createResource(NS)!!
-    val processor = createProperty("${NS}Processor")!!
-    val `package` = createProperty("${NS}Package")!!
-    val stage = createProperty("${NS}stage")!!
-    val channel = createProperty("${NS}Channel")!!
-    val target = createProperty("${NS}target")!!
-    val metadata = createProperty("${NS}metadata")!!
-    val arguments = createProperty("${NS}arguments")!!
-    val kotlinRunner = createResource("${NS}Kotlin")!!
-    val dependency = createProperty("${NS}dependency")!!
-    val version = createProperty("${NS}version")!!
-    val author = createProperty("${NS}author")!!
-    val description = createProperty("${NS}description")!!
-    val repo = createProperty("${NS}repo")!!
-    val license = createProperty("${NS}license")!!
-    val prepare = createProperty("${NS}prepare")!!
-    val runners = createProperty("${NS}runners")!!
-    val processors = createProperty("${NS}processors")!!
-    val pipeline = createProperty("${NS}Pipeline")!!
-    val stages = createProperty("${NS}stages")!!
-    val entrypoint = createProperty("${NS}entrypoint")!!
-    val reader = createResource("${NS}Reader")!!
-    val writer = createResource("${NS}Writer")!!
-    val grpcRunner = createResource("${NS}GRPCRunner")!!
-    val builtInRunner = createResource("${NS}BuiltInRunner")!!
-  }
-}
-
-/**
- * Maps a resource to an IRParameter.Type based on the URI. Note that this implementation is
- * actually quite slow, and we should probably use Apache Jena native APIs here.
- */
-private fun Resource.toIRParameterType(): IRParameter.Type {
-  return when (this.uri) {
-    "http://www.w3.org/2001/XMLSchema#boolean" -> IRParameter.Type.BOOLEAN
-    "http://www.w3.org/2001/XMLSchema#byte" -> IRParameter.Type.BYTE
-    "http://www.w3.org/2001/XMLSchema#datetime" -> IRParameter.Type.DATE
-    "http://www.w3.org/2001/XMLSchema#double" -> IRParameter.Type.DOUBLE
-    "http://www.w3.org/2001/XMLSchema#float" -> IRParameter.Type.FLOAT
-    "http://www.w3.org/2001/XMLSchema#int" -> IRParameter.Type.INT
-    "http://www.w3.org/2001/XMLSchema#long" -> IRParameter.Type.LONG
-    "http://www.w3.org/2001/XMLSchema#string" -> IRParameter.Type.STRING
-    "https://www.rdf-connect.com/#Writer" -> IRParameter.Type.WRITER
-    "https://www.rdf-connect.com/#Reader" -> IRParameter.Type.READER
-    else -> Log.shared.fatal("Unknown datatype: ${this.uri}")
-  }
-}
-
-/**
- * Create a mapping of String to IRParameter from a SHACL property. This is a recursive
- * implementation that will automatically parse nested classes.
- */
-private fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParameter> {
-  // Retrieve required fields.
-  val minCount = objectOfProperty(property, SHACLM.minCount)?.asLiteral()?.int
-  val maxCount = objectOfProperty(property, SHACLM.maxCount)?.asLiteral()?.int
-  val node = objectOfProperty(property, SHACLM.node)?.asResource()
-  val datatype = objectOfProperty(property, SHACLM.datatype)?.asResource()
-  val clazz = objectOfProperty(property, SHACLM.class_)?.asResource()
-  val kind = objectOfProperty(property, SHACLM.nodeKind)?.asResource()
-
-  // Retrieve the path of the property.
-  val path =
-      try {
-        objectOfProperty(property, SHACLM.name)!!.asLiteral().string
-      } catch (e: Exception) {
-        Log.shared.fatal("SHACL property must have a name.")
-      }
-
-  // Determine the presence.
-  val presence =
-      if (minCount != null && minCount > 0) {
-        IRParameter.Presence.REQUIRED
-      } else {
-        IRParameter.Presence.OPTIONAL
-      }
-
-  // Determine the count.
-  val count =
-      if (maxCount != null && maxCount == 1) {
-        IRParameter.Count.SINGLE
-      } else {
-        IRParameter.Count.LIST
-      }
-
-  // Create a new parameter object.
-  val parameter =
-      if (kind != null) {
-        IRParameter(simple = IRParameter.Type.STRING, presence = presence, count = count)
-      } else if (clazz != null) {
-        IRParameter(simple = clazz.toIRParameterType(), presence = presence, count = count)
-      } else if (datatype != null) {
-        IRParameter(simple = datatype.toIRParameterType(), presence = presence, count = count)
-      } else if (node != null) {
-        IRParameter(complex = parseSHACLShape(node), presence = presence, count = count)
-      } else {
-        Log.shared.fatal("SHACL property must have either a datatype or a class.")
-      }
-
-  // Return the parameter mapped to its path.
-  return Pair(path, parameter)
-}
-
-/**
- * Parse a SHACL shape into a mapping of String to IRParameter. This is a recursive implementation
- * that will automatically parse nested classes.
- */
-private fun Model.parseSHACLShape(shape: Resource): Map<String, IRParameter> {
-  val result = mutableMapOf<String, IRParameter>()
-
-  for (property in listObjectsOfProperty(shape, SHACLM.property)) {
-    val (key, parameter) = parseSHACLProperty(property.asResource())
-    result[key] = parameter
-  }
-
-  return result
-}
-
-private fun Model.isSimpleSHACLShape(path: Resource): Boolean {
-  val property =
-      subjectWithProperty(SHACLM.path, path)
-          ?: Log.shared.fatal("No property found for path: $path")
-
-  val datatype = objectOfProperty(property, SHACLM.datatype)?.asResource()
-  val clazz = objectOfProperty(property, SHACLM.class_)?.asResource()
-  val kind = objectOfProperty(property, SHACLM.nodeKind)?.asResource()
-
-  if (listOfNotNull(datatype, clazz, kind).size > 1) {
-    Log.shared.fatal("Cannot combine sh:datatype, sh:class or sh:nodeKind.")
-  }
-
-  // A datatype always points to a literal.
-  if (datatype != null) {
-    return true
-  }
-
-  // Specific classes are always simple.
-  if (clazz != null && listOf(RDFC.channel, RDFC.reader, RDFC.writer).contains(clazz)) {
-    return true
-  }
-
-  // If the kind can optionally be a literal, it should be handled as such.
-  if (kind != null && kind == SHACLM.IRIOrLiteral) {
-    return true
-  }
-
-  // Default case: it is a complex object.
-  return false
-}
-
-private fun Model.nameOfSHACLPath(path: Resource): String {
-  val property =
-      subjectWithProperty(SHACLM.path, path)
-          ?: Log.shared.fatal("No property found for path: $path")
-  return objectOfProperty(property, SHACLM.name)?.asLiteral()?.string
-      ?: Log.shared.fatal("No name found for path: $path")
-}
 
 /**
  * Parse the arguments of a stage. This is a recursive implementation that will automatically parse
@@ -273,7 +111,7 @@ private fun Model.parseProcessor(processor: Resource): IRProcessor {
   // Parse the parameters by SHACL shape.
   val shape =
       subjectWithProperty(SHACLM.targetClass, processor)
-          ?: Log.shared.fatal("No shape found for processor: ${processor}")
+          ?: Log.shared.fatal("No shape found for processor: $processor")
   val parameters =
       listObjectsOfProperty(shape, SHACLM.property)
           .toList()
@@ -316,18 +154,6 @@ private fun Model.parseStages(pipeline: Resource): List<IRStage> {
 private fun Model.parseDependencies(pipeline: Resource?): List<IRDependency> {
   return listObjectsOfProperty(pipeline, RDFC.dependency).toList().map { dependency ->
     IRDependency(uri = dependency.toString())
-  }
-}
-
-private fun Model.getCollection(resource: Resource): List<RDFNode> {
-  val first =
-      objectOfProperty(resource, RDF.first) ?: Log.shared.fatal("No first element: $resource")
-  val rest = objectOfProperty(resource, RDF.rest) ?: Log.shared.fatal("No rest element: $resource")
-
-  return if (rest != RDF.nil) {
-    listOf(first) + getCollection(rest.asResource())
-  } else {
-    listOf(first)
   }
 }
 

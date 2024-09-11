@@ -6,6 +6,7 @@ import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.ShaclValidator
+import org.apache.jena.vocabulary.RDF
 import technology.idlab.util.Log
 
 /**
@@ -54,5 +55,24 @@ internal fun Model.subjectWithProperty(property: Property, obj: RDFNode): Resour
     this.listSubjectsWithProperty(property, obj).next()
   } catch (e: NoSuchElementException) {
     null
+  }
+}
+
+/**
+ * Parse a collection of RDF nodes into a list. This is a recursive function that will traverse the
+ * RDF list until the end.
+ *
+ * @param resource The head of the RDF list.
+ * @return The list of RDF nodes.
+ */
+internal fun Model.getCollection(resource: Resource): List<RDFNode> {
+  val first =
+      objectOfProperty(resource, RDF.first) ?: Log.shared.fatal("No first element: $resource")
+  val rest = objectOfProperty(resource, RDF.rest) ?: Log.shared.fatal("No rest element: $resource")
+
+  return if (rest != RDF.nil) {
+    listOf(first) + getCollection(rest.asResource())
+  } else {
+    listOf(first)
   }
 }

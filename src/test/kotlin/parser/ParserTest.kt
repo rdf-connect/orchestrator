@@ -8,7 +8,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.parser.Parser
-import technology.idlab.parser.impl.JenaParser
+import technology.idlab.parser.impl.jena.JenaParser
 import technology.idlab.resolver.impl.GenericResolver
 
 class ParserTest {

@@ -43,7 +43,7 @@ class ManagedProcess(
     val stream = process.inputStream.bufferedReader()
     for (line in stream.lines()) {
       if (prettyLog) {
-        Log.shared.command(line, pid = process.pid(), location = name)
+        Log.shared.command(line, location = name)
       } else {
         println(line)
       }

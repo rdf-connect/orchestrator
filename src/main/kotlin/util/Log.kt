@@ -65,7 +65,7 @@ class Log private constructor(header: Boolean = true) {
    * @param message The message to print.
    * @param level The level of the message.
    */
-  private fun output(message: String, level: Level, location: String? = null, pid: Long? = null) {
+  private fun output(message: String, level: Level, location: String? = null) {
     // Get the current time.
     val instant = Date().toInstant()
     val tz = instant.atZone(TimeZone.getDefault().toZoneId())
@@ -78,7 +78,7 @@ class Log private constructor(header: Boolean = true) {
         location
             ?: run {
               val stack = Throwable().stackTrace[4]
-              "${stack.fileName ?: "Unknown"}:${stack.lineNumber ?: "??"}"
+              "${stack.fileName ?: "Unknown"}:${stack.lineNumber}"
             }
 
     // Build the message.
@@ -170,10 +170,21 @@ class Log private constructor(header: Boolean = true) {
     output(message, Level.SEVERE, location = location)
   }
 
-  fun command(message: String, pid: Long, location: String) {
-    output(message, Level.CMD, location = location, pid = pid)
+  /**
+   * Print a command message, which will be colored yellow in the console. The location, i.e. the
+   * file and line number, will be determined by the caller.
+   *
+   * @param message The message to print.
+   */
+  fun command(message: String, location: String) {
+    output(message, Level.CMD, location = location)
   }
 
+  /**
+   * When this method is called with `false`, the logger will throw an exception instead of exiting
+   * the program. This is useful for testing purposes and should not be called during normal
+   * operation.
+   */
   internal fun setFatalMode(fatalMode: FatalMode) {
     this.fatalMode = fatalMode
   }

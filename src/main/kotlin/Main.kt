@@ -4,7 +4,7 @@ import java.io.File
 import kotlinx.coroutines.runBlocking
 import technology.idlab.extensions.rawPath
 import technology.idlab.intermediate.IRPackage
-import technology.idlab.parser.impl.JenaParser
+import technology.idlab.parser.impl.jena.JenaParser
 import technology.idlab.resolver.impl.GenericResolver
 import technology.idlab.util.Log
 import technology.idlab.util.ManagedProcess
@@ -52,7 +52,8 @@ internal suspend fun exec(path: String) {
   }
 
   // For each package, run the preparation command if it exists.
-  parser.packages.sortedBy { it.runners.size * -1 }.forEach { prepare(it) }
+  val packages = parser.packages.sortedBy { it.runners.size * -1 }
+  packages.forEach { prepare(it) }
 
   // Start the orchestrator.
   Log.shared.debug("Invoking orchestrator.")
