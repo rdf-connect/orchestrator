@@ -13,7 +13,6 @@ class RDFC {
     val target = ResourceFactory.createProperty("${NS}target")!!
     val metadata = ResourceFactory.createProperty("${NS}metadata")!!
     val arguments = ResourceFactory.createProperty("${NS}arguments")!!
-    val kotlinRunner = ResourceFactory.createResource("${NS}Kotlin")!!
     val dependency = ResourceFactory.createProperty("${NS}dependency")!!
     val version = ResourceFactory.createProperty("${NS}version")!!
     val author = ResourceFactory.createProperty("${NS}author")!!

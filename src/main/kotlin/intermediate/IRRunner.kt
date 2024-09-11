@@ -6,7 +6,7 @@ data class IRRunner(
     val uri: String,
     val directory: File? = null,
     val entrypoint: String? = null,
-    val type: IRRunner.Type,
+    val type: Type,
 ) {
   enum class Type {
     GRPC,
