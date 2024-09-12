@@ -16,7 +16,7 @@ dependencies {
   implementation("org.reflections:reflections:0.10.2")
 
   // Processor class and other utilities.
-  implementation(files("../../build/libs/technology.idlab.jvm-runner-0.0.4-all.jar"))
+  implementation(files("../../orchestrator/build/libs/technology.idlab.jvm-runner-0.0.4-all.jar"))
 
   // RDF dependencies.
   implementation("org.apache.jena:apache-jena-libs:5.0.0")

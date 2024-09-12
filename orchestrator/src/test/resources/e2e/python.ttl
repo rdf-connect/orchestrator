@@ -10,22 +10,22 @@ test:report a rdfc:Channel .
 test:validated a rdfc:Channel .
 test:unvalidated a rdfc:Channel .
 
-test:NodePipeline
+test:PythonPipeline
   a rdfc:Pipeline ;
-  rdfc:name "Node.js Testing Pipeline" ;
-  rdfc:description "Pipeline for end-to-end testing of the Node.js runner." ;
+  rdfc:name "Python Testing Pipeline" ;
+  rdfc:description "Pipeline for end-to-end testing of the Python runner." ;
   rdfc:stages
     test:FileReader ,
-    test:SHACLValidator ,
     test:FileWriter ,
-    test:ReportWriter ;
+    test:ReportWriter ,
+    test:PythonProcessor ;
   rdfc:dependency
-    <../../../../packages/runner-ts> ,
-    <../../../../packages/file-utils-ts> ,
-    <../../../../packages/shacl-validator-ts> .
+    <../../../../../packages/runner-py> ,
+    <../../../../../packages/file-utils-kt> ,
+    <../../../../../packages/shacl-validator-py> .
 
 test:FileReader
-  a rdfc:FileReaderTS ;
+  a rdfc:FileReaderKT ;
   rdfc:arguments [
     rdfc:paths
       <./data/valid.ttl> ,
@@ -33,26 +33,24 @@ test:FileReader
     rdfc:outgoing test:unvalidated ;
   ] .
 
-test:SHACLValidator
-  a rdfc:SHACLValidatorTS ;
+test:PythonProcessor
+  a rdfc:SHACLValidatorPY ;
   rdfc:arguments [
     rdfc:incoming test:unvalidated ;
     rdfc:outgoing test:validated ;
     rdfc:report test:report ;
     rdfc:shapes <./shacl/shapes.ttl> ;
-    rdfc:mime "text/turtle" ;
-    rdfc:fatal "false"^^xsd:boolean ;
   ] .
 
 test:FileWriter
-  a rdfc:FileWriterTS ;
+  a rdfc:FileWriterKT ;
   rdfc:arguments [
     rdfc:path </tmp/rdfc-testing/valid.ttl> ;
     rdfc:incoming test:validated ;
   ] .
 
 test:ReportWriter
-  a rdfc:FileWriterTS ;
+  a rdfc:FileWriterKT ;
   rdfc:arguments [
     rdfc:path </tmp/rdfc-testing/report.ttl> ;
     rdfc:incoming test:report ;
