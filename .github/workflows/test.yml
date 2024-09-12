@@ -34,9 +34,12 @@ jobs:
       # processors.
       - name: Create JAR
         run: ./gradlew shadowJar --console=plain --warning-mode all
+        working-directory: ./orchestrator
       # Attempt to execute the build step.
       - name: Build
         run: ./gradlew installDist --console=plain --warning-mode all
+        working-directory: ./orchestrator
       # Execute test suite.
       - name: Run tests
         run: ./gradlew test --console=plain --warning-mode all
+        working-directory: ./orchestrator
