@@ -95,13 +95,8 @@ class Log private constructor(header: Boolean = true) {
     }
 
     // If the message is severe, set the color to red.
-    if (level == Level.SEVERE) {
-      builder.append("\u001B[31m")
-    }
-
-    // Color the background red in fatal cases.
     if (level == Level.FATAL) {
-      builder.append("\u001B[97m\u001B[48;5;52m")
+      builder.append("\u001B[31m")
     }
 
     // The actual message.
