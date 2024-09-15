@@ -45,13 +45,13 @@ test:PythonProcessor
 test:FileWriter
   a rdfc:FileWriterKT ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing/valid.ttl> ;
+    rdfc:path </tmp/rdfc-testing-python-valid.ttl> ;
     rdfc:incoming test:validated ;
   ] .
 
 test:ReportWriter
   a rdfc:FileWriterKT ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing/report.ttl> ;
+    rdfc:path </tmp/rdfc-testing-python-report.ttl> ;
     rdfc:incoming test:report ;
   ] .

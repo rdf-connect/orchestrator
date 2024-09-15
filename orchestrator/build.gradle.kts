@@ -34,7 +34,12 @@ tasks.shadowJar {
 tasks.test {
   useJUnitPlatform()
 
-  testLogging { showStandardStreams = true }
+  /** Set concurrency. */
+  maxParallelForks = Runtime.getRuntime().availableProcessors()
+  setForkEvery(1)
+  forkEvery = 100L
+
+  testLogging { events("passed", "skipped", "failed") }
 }
 
 /** We define these explicitly due to the reliance on Protobuf and gRPC. */

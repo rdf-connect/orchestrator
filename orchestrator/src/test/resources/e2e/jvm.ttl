@@ -58,20 +58,20 @@ test:SHACLValidator
 test:HttpWriter
   a rdfc:FileWriterKT ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing/web.html> ;
+    rdfc:path </tmp/rdfc-testing-jvm-web.html> ;
     rdfc:incoming test:web ;
   ] .
 
 test:FileWriter
   a rdfc:FileWriterKT ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing/valid.ttl> ;
+    rdfc:path </tmp/rdfc-testing-jvm-valid.ttl> ;
     rdfc:incoming test:validated ;
   ] .
 
 test:ReportWriter
   a rdfc:FileWriterKT ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing/report.ttl> ;
+    rdfc:path </tmp/rdfc-testing-jvm-report.ttl> ;
     rdfc:incoming test:report ;
   ] .

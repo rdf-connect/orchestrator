@@ -47,13 +47,13 @@ test:SHACLValidator
 test:FileWriter
   a rdfc:FileWriterTS ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing/valid.ttl> ;
+    rdfc:path </tmp/rdfc-testing-node-valid.ttl> ;
     rdfc:incoming test:validated ;
   ] .
 
 test:ReportWriter
   a rdfc:FileWriterTS ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing/report.ttl> ;
+    rdfc:path </tmp/rdfc-testing-node-report.ttl> ;
     rdfc:incoming test:report ;
   ] .

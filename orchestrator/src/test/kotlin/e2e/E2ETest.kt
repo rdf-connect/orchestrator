@@ -3,34 +3,39 @@ package e2e
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertNotNull
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
-import org.jetbrains.kotlin.incremental.createDirectory
 import technology.idlab.exec
 
 class E2ETest {
-  private fun run(resource: String) {
-    // Create the output directory.
-    val directory = File("/tmp/rdfc-testing")
-    directory.createDirectory()
+  data class Config(
+      val ttl: String,
+      val valid: String,
+      val report: String,
+      val web: String? = null
+  )
 
+  private fun run(config: Config) = runBlocking {
     // Reset output files.
-    val valid = File("/tmp/rdfc-testing/valid.ttl")
+    val valid = File(config.valid)
     valid.delete()
-    val report = File("/tmp/rdfc-testing/report.ttl")
+
+    val report = File(config.report)
     report.delete()
 
+    val web =
+        if (config.web != null) {
+          File(config.web)
+        } else {
+          null
+        }
+    web?.delete()
+
     // Read the pipeline file.
-    val pipeline = this::class.java.getResource(resource)
+    val pipeline = this::class.java.getResource(config.ttl)
     assertNotNull(pipeline, "The file should exist.")
 
     // Execute the pipeline.
-    runBlocking {
-      try {
-        withTimeout(30_000) { exec(pipeline.path) }
-      } catch (_: TimeoutCancellationException) {}
-    }
+    exec(pipeline.path)
 
     // Check the output files.
     assert(valid.exists()) { "The valid file should exist." }
@@ -41,27 +46,42 @@ class E2ETest {
 
     assert(valid.readText().contains("<Ghent>"))
     assert(report.readText().contains("sh:Violation"))
+
+    if (web != null) {
+      assert(web.exists()) { "The web page should exist." }
+      assert(web.readText().contains("<title>Example Domain</title>"))
+    }
   }
 
   @Test
   fun python() {
-    run("/e2e/python.ttl")
+    val config =
+        Config(
+            "/e2e/python.ttl",
+            "/tmp/rdfc-testing-python-valid.ttl",
+            "/tmp/rdfc-testing-python-report.ttl")
+    run(config)
   }
 
   @Test
   fun node() {
-    run("/e2e/node.ttl")
+    val config =
+        Config(
+            "/e2e/node.ttl",
+            "/tmp/rdfc-testing-node-valid.ttl",
+            "/tmp/rdfc-testing-node-report.ttl")
+    run(config)
   }
 
   @Test
   fun jvm() {
-    // Remove the web page if it already exists.
-    val webPage = File("/tmp/rdfc-testing/web.html")
-    webPage.delete()
-
-    run("/e2e/jvm.ttl")
-
-    // Check if web page has been fetched and written to disk.
-    assert(webPage.readText().contains("<title>Example Domain</title>"))
+    val config =
+        Config(
+            "/e2e/jvm.ttl",
+            "/tmp/rdfc-testing-jvm-valid.ttl",
+            "/tmp/rdfc-testing-jvm-report.ttl",
+            "/tmp/rdfc-testing-jvm-web.html",
+        )
+    run(config)
   }
 }
