@@ -1,4 +1,4 @@
-import { Arguments, Log, Processor } from "jvm-runner-ts";
+import { Arguments, Log, Processor } from "rdfc";
 import rdf, { PrefixMapFactory } from "rdf-ext";
 import Serializer from "@rdfjs/serializer-turtle";
 import formatsPretty from "@rdfjs/formats/pretty.js";

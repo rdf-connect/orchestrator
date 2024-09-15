@@ -55,8 +55,6 @@ class Log private constructor(header: Boolean = true) {
 
       synchronized(System.out) { print(builder) }
     }
-
-    Runtime.getRuntime().addShutdownHook(Thread { info("The JVM is shutting down.") })
   }
 
   /**

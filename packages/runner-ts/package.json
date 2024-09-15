@@ -1,5 +1,5 @@
 {
-  "name": "jvm-runner-ts",
+  "name": "rdfc",
   "version": "0.0.1",
   "description": "Bindings and utilities to create and run TypeScript processors in the JVM Runner.",
   "scripts": {

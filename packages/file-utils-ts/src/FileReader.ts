@@ -1,4 +1,4 @@
-import { Processor, Log } from "jvm-runner-ts";
+import { Processor, Log } from "rdfc";
 import * as fs from "node:fs";
 
 export default class FileReader extends Processor {
