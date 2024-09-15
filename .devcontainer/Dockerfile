@@ -14,3 +14,8 @@ RUN pipx install --global uv
 
 # Node.js
 RUN pacman --noconfirm -Syu nodejs
+RUN pacman --noconfirm -Syu npm
+
+# gRPC code generation.
+RUN pacman --noconfirm -Syu protobuf
+
