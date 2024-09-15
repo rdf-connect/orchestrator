@@ -14,10 +14,13 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-          registry-url: https://npm.pkg.github.com/
+          registry-url: https://npm.pkg.github.com/rdf-connect
+      # Include a Protobuf and gRPC code generator.
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
       - run: npm ci
         working-directory: ./packages/runner-ts
-      - run: npm build
+      - run: npm run build
         working-directory: ./packages/runner-ts
       - run: npm publish
         env:
