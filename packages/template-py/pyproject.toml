@@ -1,0 +1,28 @@
+[project]
+name = "rdfc_template"
+version = "1.0.0"
+description = "A RDF-Connect template for Python"
+authors = [
+    { name = "jens pots", email = "jens.pots@ugent.be" },
+]
+dependencies = [
+    "rdfc @ {root:parent:uri}/runner-py/dist/rdfc-0.1.0-py3-none-any.whl"
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rdfc_template"]
+
+[tool.hatch.envs.default]
+type = "virtual"
+path = ".venv"
+system-packages = false
+installer = "uv"

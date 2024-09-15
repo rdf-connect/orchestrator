@@ -1,0 +1,3 @@
+dist
+rdfc_shacl_validator/__pycache__/
+tests/__pycache__/
