@@ -4,10 +4,18 @@ import java.io.File
 import kotlinx.coroutines.runBlocking
 import technology.idlab.extensions.rawPath
 import technology.idlab.intermediate.IRPackage
+import technology.idlab.orchestrator.Orchestrator
+import technology.idlab.orchestrator.impl.SimpleOrchestrator
 import technology.idlab.parser.impl.jena.JenaParser
 import technology.idlab.resolver.impl.GenericResolver
 import technology.idlab.util.Log
 import technology.idlab.util.ManagedProcess
+
+private enum class CliArguments(val literal: String) {
+  RunPipeline("run"),
+  CheckPipeline("check"),
+  Install("install"),
+}
 
 /**
  * Execute the preparation commands in a package. If no such commands exists, the function will
@@ -56,10 +64,16 @@ internal suspend fun exec(path: String) {
   packages.forEach { prepare(it) }
 
   // Start the orchestrator.
-  Log.shared.debug("Invoking orchestrator.")
   val pipeline = parser.pipelines[0]
-  val orchestrator = Orchestrator(pipeline.stages, parser.runners)
+  val orchestrator = SimpleOrchestrator(pipeline.stages, parser.runners)
   orchestrator.exec()
+
+  // Check the result.
+  when (orchestrator.status) {
+    Orchestrator.Status.FAILED -> Log.shared.fatal("Pipeline execution failed.")
+    Orchestrator.Status.SUCCESS -> Log.shared.info("Pipeline execution succeeded.")
+    else -> Log.shared.fatal("Pipeline execution failed.")
+  }
 }
 
 fun main(args: Array<String>) = runBlocking {

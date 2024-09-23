@@ -53,25 +53,9 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
 
-  override suspend fun load() {
+  init {
     for (stage in stages) {
-      /* Load the class into the JVM. */
-      val loader = getClassLoader(stage.processor.entrypoint)
-      val name = stage.processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
-      val clazz = Class.forName(name, true, loader) as Class<*>
-
-      /* Check if instantiatable. */
-      if (!Processor::class.java.isAssignableFrom(clazz)) {
-        Log.shared.fatal(REQUIRES_PROCESSOR_BASE_CLASS)
-      }
-
-      /* Build the argument map. */
-      val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
-
-      /* Initialize the stage with the new map. */
-      val constructor = clazz.getConstructor(Arguments::class.java)
-      val args = Arguments.from(arguments)
-      this.instances[stage.uri] = constructor.newInstance(args) as Processor
+      loadStage(stage)
     }
   }
 
@@ -169,5 +153,30 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     }
 
     return channel
+  }
+
+  /**
+   * Load a stage into the JVM.
+   *
+   * @param stage The stage to load.
+   */
+  private fun loadStage(stage: IRStage) {
+    /* Load the class into the JVM. */
+    val loader = getClassLoader(stage.processor.entrypoint)
+    val name = stage.processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
+    val clazz = Class.forName(name, true, loader) as Class<*>
+
+    /* Check if instantiatable. */
+    if (!Processor::class.java.isAssignableFrom(clazz)) {
+      Log.shared.fatal(REQUIRES_PROCESSOR_BASE_CLASS)
+    }
+
+    /* Build the argument map. */
+    val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
+
+    /* Initialize the stage with the new map. */
+    val constructor = clazz.getConstructor(Arguments::class.java)
+    val args = Arguments.from(arguments)
+    this.instances[stage.uri] = constructor.newInstance(args) as Processor
   }
 }

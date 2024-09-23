@@ -52,9 +52,6 @@ abstract class Runner(
     runBlocking { tasks.send(task) }
   }
 
-  /** Prepare the runner for execution. ALl stages must be loaded here. */
-  abstract suspend fun load()
-
   /** Start pipeline execution. */
   abstract suspend fun exec()
 

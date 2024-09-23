@@ -52,6 +52,16 @@ abstract class GRPCRunner(
           throw Exception("gRPC connection not ready.")
         }
       }
+
+      // Load all stages.
+      for (stage in stages) {
+        val payload = serialize(stage)
+        try {
+          grpc.load(payload)
+        } catch (e: StatusException) {
+          Log.shared.fatal("${e.status.code.name}: ${e.status.description}")
+        }
+      }
     }
 
     Log.shared.debug { "GRPCRunner is online." }
@@ -112,17 +122,6 @@ abstract class GRPCRunner(
     }
 
     scheduleTask { messages.send(message) }
-  }
-
-  override suspend fun load() {
-    for (stage in stages) {
-      val payload = serialize(stage)
-      try {
-        grpc.load(payload)
-      } catch (e: StatusException) {
-        Log.shared.fatal("${e.status.code.name}: ${e.status.description}")
-      }
-    }
   }
 
   override suspend fun exec() {
