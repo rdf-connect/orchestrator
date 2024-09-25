@@ -1,7 +1,9 @@
 package technology.idlab.broker
 
 /**
- * The `BrokerReceiver` may receive messages from the broker which are targeted to specific URIs.
+ * A `BrokerReceiver` may receive messages from the broker which are targeted to specific URIs.
+ *
+ * @param T The type of the data to receive.
  */
 interface BrokerClient<T> {
   /** The URI of the receiver. */

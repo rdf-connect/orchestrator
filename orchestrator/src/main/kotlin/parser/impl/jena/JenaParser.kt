@@ -272,4 +272,13 @@ class JenaParser(
     val uris = model.listObjectsOfProperty(RDFC.dependency).toList()
     return uris.map { IRDependency(it.toString()) }
   }
+
+  override fun runner(uri: String): IRRunner {
+    val resource = model.getResource(uri)
+    return model.runner(resource)
+  }
+
+  override fun stages(runner: IRRunner): List<IRStage> {
+    return model.pipelines().flatMap { it.stages }.filter { it.processor.target == runner.uri }
+  }
 }

@@ -3,6 +3,11 @@ package technology.idlab.broker
 /**
  * A broker is a simple class which takes in messages targeting a specific URI, and routes them to
  * all registered receivers.
+ *
+ * All receivers must be known during the construction of the broker, but can be removed at any
+ * other point in time.
+ *
+ * @param T The type of the data to send.
  */
 interface Broker<T> {
   /**

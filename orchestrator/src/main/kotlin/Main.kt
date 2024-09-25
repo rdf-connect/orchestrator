@@ -3,7 +3,6 @@ package technology.idlab
 import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
-import technology.idlab.orchestrator.Orchestrator
 import technology.idlab.orchestrator.impl.SimpleOrchestrator
 import technology.idlab.parser.impl.jena.JenaParser
 import technology.idlab.resolver.impl.GenericResolver
@@ -125,15 +124,8 @@ internal suspend fun exec(path: String) {
   val parser = JenaParser(listOf(listOf(config), files).flatten())
 
   // Start the orchestrator.
-  val pipeline = parser.pipelines().single()
-  val runners = parser.runners()
-  val orchestrator = SimpleOrchestrator(pipeline.stages, runners)
+  val orchestrator = SimpleOrchestrator(parser)
   orchestrator.exec()
-
-  // Check the result.
-  if (orchestrator.status != Orchestrator.Status.SUCCESS) {
-    throw PipelineException(pipeline.uri)
-  }
 
   Log.shared.info("Pipeline execution succeeded.")
 }

@@ -104,6 +104,12 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.arrow-kt:arrow-fx-coroutines:1.2.4")
 
+  // Koin dependency injection.
+  implementation(project.dependencies.platform("io.insert-koin:koin-bom:4.0.0"))
+  implementation("io.insert-koin:koin-core")
+  testImplementation("io.insert-koin:koin-test:4.0.0")
+  testImplementation("io.insert-koin:koin-test-junit5:4.0.0")
+
   // gRPC
   implementation("io.grpc:grpc-netty:1.64.0")
   implementation("io.grpc:grpc-protobuf:1.64.0")

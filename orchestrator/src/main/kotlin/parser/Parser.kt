@@ -5,6 +5,7 @@ import technology.idlab.intermediate.IRPackage
 import technology.idlab.intermediate.IRPipeline
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
+import technology.idlab.intermediate.IRStage
 
 /**
  * Parse an RDF file into an intermediate representation, and validate it against the ontology and
@@ -25,4 +26,20 @@ interface Parser {
 
   /** List of all known dependencies. */
   fun dependencies(): List<IRDependency>
+
+  /**
+   * Get a runner by its URI.
+   *
+   * @param id The URI of the runner.
+   * @return The runner with the given URI.
+   */
+  fun runner(uri: String): IRRunner
+
+  /**
+   * Get all stages for a given runner.
+   *
+   * @param runner The runner to get stages for.
+   * @return The stages for the given runner.
+   */
+  fun stages(runner: IRRunner): List<IRStage>
 }
