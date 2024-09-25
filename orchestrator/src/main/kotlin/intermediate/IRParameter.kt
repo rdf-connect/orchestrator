@@ -1,7 +1,5 @@
 package technology.idlab.intermediate
 
-import technology.idlab.util.Log
-
 data class IRParameter(
     // In case of simple: concrete but unparsed value.
     private val simple: Type? = null,
@@ -48,24 +46,19 @@ data class IRParameter(
   val kind = if (simple != null) Kind.SIMPLE else Kind.COMPLEX
 
   init {
-    if (simple == null && complex == null) {
-      Log.shared.fatal("IRParameter has no values.")
-    }
-
-    if (simple != null && complex != null) {
-      Log.shared.fatal("IRParameter has both simple and complex values.")
-    }
+    assert(simple != null || complex != null)
+    assert(simple == null || complex == null)
   }
 
   fun getSimple(): Type {
-    return simple ?: Log.shared.fatal("IRParameter is not simple.")
+    return simple ?: throw IllegalStateException("IRParameter is not simple.")
   }
 
   fun getComplex(): Map<String, IRParameter> {
-    return complex ?: Log.shared.fatal("IRParameter is not complex.")
+    return complex ?: throw IllegalStateException("IRParameter is not complex.")
   }
 
   operator fun get(key: String): IRParameter {
-    return complex?.get(key) ?: Log.shared.fatal("IRParameter is not complex.")
+    return complex?.get(key) ?: throw IllegalStateException("IRParameter is not complex.")
   }
 }

@@ -15,6 +15,8 @@ import rdfc.channelData
 import rdfc.channelMessage
 import rdfc.dataOrNull
 import runner.impl.grpc.Config
+import technology.idlab.ConnectionException
+import technology.idlab.UnrecognizedRequestException
 import technology.idlab.intermediate.IRStage
 import technology.idlab.runner.Runner
 import technology.idlab.util.Log
@@ -59,7 +61,7 @@ abstract class GRPCRunner(
         try {
           grpc.load(payload)
         } catch (e: StatusException) {
-          Log.shared.fatal("${e.status.code.name}: ${e.status.description}")
+          throw ConnectionException(e)
         }
       }
     }
@@ -81,7 +83,7 @@ abstract class GRPCRunner(
         }
 
         if (it.type == ChannelMessageType.UNRECOGNIZED) {
-          Log.shared.fatal("Channel '${it.channel.uri}' received an unrecognized message type.")
+          throw UnrecognizedRequestException()
         }
 
         // We can now assume that the message is of type DATA.
@@ -124,6 +126,12 @@ abstract class GRPCRunner(
     scheduleTask { messages.send(message) }
   }
 
+  /**
+   * Execute the runner by routing messages from the broker to the gRPC server. This function will
+   * block until the gRPC server has finished processing all messages.
+   *
+   * @throws ConnectionException If the gRPC server is not reachable.
+   */
   override suspend fun exec() {
     // Attempt to execute the pipelines.
     try {
@@ -131,7 +139,7 @@ abstract class GRPCRunner(
       grpc.exec(messages.receiveAsFlow()).collect(this@GRPCRunner.collector)
       Log.shared.debug("Ending routing messages in GRPCRunner.")
     } catch (e: StatusException) {
-      Log.shared.fatal("Failed to execute pipeline: ${e.message}")
+      throw ConnectionException(e)
     }
   }
 }

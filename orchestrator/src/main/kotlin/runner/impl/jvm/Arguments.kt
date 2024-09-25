@@ -6,7 +6,7 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.isSuperclassOf
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.typeOf
-import technology.idlab.util.Log
+import technology.idlab.InvalidArgumentAccessException
 
 /**
  * Recursively check if a value corresponds to a given KType. This function can be run either
@@ -83,7 +83,7 @@ data class Arguments(
             ?: if (type.isMarkedNullable) {
               return null as T
             } else {
-              Log.shared.fatal("Argument $name is missing")
+              throw InvalidArgumentAccessException(name, "Argument not found.")
             }
 
     // Special case: check if the type is not a list, because in that case, we would need to get the
@@ -93,7 +93,7 @@ data class Arguments(
           argumentList
         } else {
           if (argumentList.size != 1) {
-            Log.shared.fatal("Cannot obtain single argument if there is not exactly one value.")
+            throw InvalidArgumentAccessException(name, "Argument has multiple values.")
           }
 
           argumentList[0]
@@ -101,9 +101,9 @@ data class Arguments(
 
     if (safeCast(type, arg, strict)) {
       return arg as T
-    } else {
-      Log.shared.fatal("Could not parse $name to ${T::class.simpleName}")
     }
+
+    throw InvalidArgumentAccessException(name, "Could not parse $name to ${T::class.simpleName}")
   }
 
   inline operator fun <reified T> getValue(thisRef: Any, property: KProperty<*>): T {
@@ -123,7 +123,7 @@ data class Arguments(
                 if (safeCast(typeOf<Map<String, List<Any>>>(), arg)) {
                   @Suppress("UNCHECKED_CAST") (from(arg as Map<String, List<Any>>))
                 } else {
-                  Log.shared.fatal("Cannot have raw maps in arguments.")
+                  throw IllegalStateException("Cannot parse nested map.")
                 }
               } else {
                 arg

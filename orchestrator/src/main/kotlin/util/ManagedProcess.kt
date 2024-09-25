@@ -1,6 +1,5 @@
 package technology.idlab.util
 
-import io.ktor.utils.io.errors.*
 import kotlin.concurrent.thread
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -85,13 +84,7 @@ class ManagedProcess(
   /** Attempt to destroy the process immediately. Note that this will not run the exit hooks! */
   private fun destroy(): Int {
     // Destroy the process and wait for it to exit, return the code.
-    val exitCode =
-        try {
-          Log.shared.debug { "Killing process: ${this.pid()}" }
-          process.destroyForcibly().waitFor()
-        } catch (e: InterruptedException) {
-          Log.shared.fatal("Failed to kill process: ${e.message}")
-        }
+    val exitCode = process.destroyForcibly().waitFor()
 
     // Interrupt the input and output streams.
     this.incoming.interrupt()
@@ -113,15 +106,7 @@ class ManagedProcess(
       }
 
       // Create the process.
-      val process = runBlocking {
-        retries(attempts) {
-          try {
-            builder.start()
-          } catch (e: IOException) {
-            Log.shared.fatal("Failed to start process: ${e.message}")
-          }
-        }
-      }
+      val process = runBlocking { retries(attempts) { builder.start() } }
 
       return ManagedProcess(process, builder.command().joinToString(" "), prettyLog)
     }

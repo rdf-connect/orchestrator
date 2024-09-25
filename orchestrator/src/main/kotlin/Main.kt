@@ -3,14 +3,6 @@ package technology.idlab
 import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
-import technology.idlab.exception.CommandException
-import technology.idlab.exception.UnresolvedDependencyException
-import technology.idlab.exception.configuration.ConfigurationException
-import technology.idlab.exception.configuration.EmptyPipelineException
-import technology.idlab.exception.configuration.InvalidConfigurationException
-import technology.idlab.exception.configuration.NoConfigurationFoundException
-import technology.idlab.exception.configuration.NoPipelineFoundException
-import technology.idlab.exception.configuration.NoSuchRunnerException
 import technology.idlab.orchestrator.Orchestrator
 import technology.idlab.orchestrator.impl.SimpleOrchestrator
 import technology.idlab.parser.impl.jena.JenaParser
@@ -139,11 +131,11 @@ internal suspend fun exec(path: String) {
   orchestrator.exec()
 
   // Check the result.
-  when (orchestrator.status) {
-    Orchestrator.Status.FAILED -> Log.shared.fatal("Pipeline execution failed.")
-    Orchestrator.Status.SUCCESS -> Log.shared.info("Pipeline execution succeeded.")
-    else -> Log.shared.fatal("Pipeline execution failed.")
+  if (orchestrator.status != Orchestrator.Status.SUCCESS) {
+    throw PipelineException(pipeline.uri)
   }
+
+  Log.shared.info("Pipeline execution succeeded.")
 }
 
 /** Prints a help message to the console and exits the process with exit code 1. */

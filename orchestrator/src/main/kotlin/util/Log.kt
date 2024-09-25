@@ -2,8 +2,6 @@ package technology.idlab.util
 
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.system.exitProcess
-import technology.idlab.exception.UnknownException
 
 private const val TIME_PADDING = 15
 private const val LEVEL_PADDING = 10
@@ -121,20 +119,6 @@ class Log private constructor(header: Boolean = true) {
   }
 
   /**
-   * Print a fatal message, after which the program will exit with an error.
-   *
-   * @param message The message to print.
-   */
-  fun fatal(message: String, location: String? = null): Nothing {
-    output(message, Level.FATAL, location = location)
-
-    when (this.fatalMode) {
-      FatalMode.EXCEPTION -> throw UnknownException()
-      FatalMode.EXIT -> exitProcess(1)
-    }
-  }
-
-  /**
    * Print a message if and only if the debug flag is set. Note that the message will not be
    * evaluated lazily.
    *
@@ -171,15 +155,6 @@ class Log private constructor(header: Boolean = true) {
    */
   fun command(message: String, location: String) {
     output(message, Level.CMD, location = location)
-  }
-
-  /**
-   * When this method is called with `false`, the logger will throw an exception instead of exiting
-   * the program. This is useful for testing purposes and should not be called during normal
-   * operation.
-   */
-  internal fun setFatalMode(fatalMode: FatalMode) {
-    this.fatalMode = fatalMode
   }
 
   companion object {

@@ -1,19 +1,12 @@
 package runner.impl.jvm
 
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import technology.idlab.exception.OrchestratorException
+import technology.idlab.RDFCException
 import technology.idlab.runner.impl.jvm.Arguments
-import technology.idlab.util.Log
 
 class ArgumentsTest {
-  @BeforeEach
-  fun setup() {
-    Log.shared.setFatalMode(Log.FatalMode.EXCEPTION)
-  }
-
   @Test
   fun delegation() {
     val args =
@@ -42,7 +35,7 @@ class ArgumentsTest {
   @Test
   fun notSingle() {
     val args = Arguments(mapOf("key" to listOf("value1", "value2")))
-    assertThrows<OrchestratorException> { args.get<String>("key") }
+    assertThrows<RDFCException> { args.get<String>("key") }
   }
 
   @Test
@@ -61,7 +54,7 @@ class ArgumentsTest {
   fun longListWrong() {
     val args = Arguments(mapOf("key" to listOf("value1", "value2")))
 
-    assertThrows<OrchestratorException> { args.get<List<Int>>("key", strict = true) }
+    assertThrows<RDFCException> { args.get<List<Int>>("key", strict = true) }
   }
 
   @Test
@@ -73,13 +66,13 @@ class ArgumentsTest {
   @Test
   fun nonNullable() {
     val args = Arguments(mapOf())
-    assertThrows<OrchestratorException> { args.get<String>("key") }
+    assertThrows<RDFCException> { args.get<String>("key") }
   }
 
   @Test
   fun invalidCast() {
     val args = Arguments(mapOf("key" to listOf("value")))
-    assertThrows<OrchestratorException> { args.get<Int>("key") }
+    assertThrows<RDFCException> { args.get<Int>("key") }
   }
 
   @Test
@@ -107,10 +100,10 @@ class ArgumentsTest {
     assertEquals("b", secondList[0].second)
 
     // Attempt to get integer as double, in strict mode.
-    assertThrows<OrchestratorException> { args.get<Pair<Double, String>>("first", strict = true) }
+    assertThrows<RDFCException> { args.get<Pair<Double, String>>("first", strict = true) }
 
     // Attempt to get string as integer.
-    assertThrows<OrchestratorException> { args.get<Pair<Int, Int>>("first") }
+    assertThrows<RDFCException> { args.get<Pair<Int, Int>>("first") }
   }
 
   @Test
@@ -140,12 +133,12 @@ class ArgumentsTest {
     assertEquals(2, args.get<List<A>>("b", strict = true).size)
     assertEquals(2, args.get<List<A>>("c", strict = true).size)
 
-    assertThrows<OrchestratorException> { args.get<List<B>>("a", strict = true) }
+    assertThrows<RDFCException> { args.get<List<B>>("a", strict = true) }
     assertEquals(2, args.get<List<B>>("b", strict = true).size)
     assertEquals(2, args.get<List<B>>("c", strict = true).size)
 
-    assertThrows<OrchestratorException> { args.get<List<C>>("a", strict = true) }
-    assertThrows<OrchestratorException> { args.get<List<C>>("b", strict = true) }
+    assertThrows<RDFCException> { args.get<List<C>>("a", strict = true) }
+    assertThrows<RDFCException> { args.get<List<C>>("b", strict = true) }
     assertEquals(2, args.get<List<C>>("c", strict = true).size)
   }
 }

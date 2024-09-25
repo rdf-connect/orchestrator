@@ -7,7 +7,7 @@ import org.apache.jena.shacl.vocabulary.SHACLM
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.subjectWithProperty
 import technology.idlab.intermediate.IRParameter
-import technology.idlab.util.Log
+import technology.idlab.parser.ParserException
 
 /**
  * Maps a resource to an IRParameter.Type based on the URI. Note that this implementation is
@@ -25,7 +25,7 @@ private fun Resource.toIRParameterType(): IRParameter.Type {
     XSDDatatype.XSDstring.uri -> IRParameter.Type.STRING
     RDFC.writer.uri -> IRParameter.Type.WRITER
     RDFC.reader.uri -> IRParameter.Type.READER
-    else -> Log.shared.fatal("Unknown datatype: ${this.uri}")
+    else -> throw ParserException.UnknownDataType(this.uri)
   }
 }
 
@@ -47,7 +47,7 @@ private fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParamet
       try {
         objectOfProperty(property, SHACLM.name)!!.asLiteral().string
       } catch (e: Exception) {
-        Log.shared.fatal("SHACL property must have a name.")
+        throw ParserException.NoShaclPropertyName(property.uri)
       }
 
   // Determine the presence.
@@ -77,7 +77,7 @@ private fun Model.parseSHACLProperty(property: Resource): Pair<String, IRParamet
       } else if (node != null) {
         IRParameter(complex = parseSHACLShape(node), presence = presence, count = count)
       } else {
-        Log.shared.fatal("SHACL property must have either a datatype or a class.")
+        throw ParserException.NoShaclType(property.uri)
       }
 
   // Return the parameter mapped to its path.
@@ -101,15 +101,14 @@ fun Model.parseSHACLShape(shape: Resource): Map<String, IRParameter> {
 
 fun Model.isSimpleSHACLShape(path: Resource): Boolean {
   val property =
-      subjectWithProperty(SHACLM.path, path)
-          ?: Log.shared.fatal("No property found for path: $path")
+      subjectWithProperty(SHACLM.path, path) ?: throw ParserException.NoShaclPropertyFound(path.uri)
 
   val datatype = objectOfProperty(property, SHACLM.datatype)?.asResource()
   val clazz = objectOfProperty(property, SHACLM.class_)?.asResource()
   val kind = objectOfProperty(property, SHACLM.nodeKind)?.asResource()
 
   if (listOfNotNull(datatype, clazz, kind).size > 1) {
-    Log.shared.fatal("Cannot combine sh:datatype, sh:class or sh:nodeKind.")
+    throw ParserException.ConflictingShaclType(path.uri)
   }
 
   // A datatype always points to a literal.
@@ -133,8 +132,7 @@ fun Model.isSimpleSHACLShape(path: Resource): Boolean {
 
 fun Model.nameOfSHACLPath(path: Resource): String {
   val property =
-      subjectWithProperty(SHACLM.path, path)
-          ?: Log.shared.fatal("No property found for path: $path")
+      subjectWithProperty(SHACLM.path, path) ?: throw ParserException.NoShaclPropertyFound(path.uri)
   return objectOfProperty(property, SHACLM.name)?.asLiteral()?.string
-      ?: Log.shared.fatal("No name found for path: $path")
+      ?: throw ParserException.NoShaclPropertyName(path.uri)
 }

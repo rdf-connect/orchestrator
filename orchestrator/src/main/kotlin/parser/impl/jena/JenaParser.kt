@@ -8,7 +8,7 @@ import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.vocabulary.SHACLM
 import org.apache.jena.vocabulary.RDF
-import technology.idlab.exception.InvalidWorkingDirectoryException
+import technology.idlab.InvalidWorkingDirectoryException
 import technology.idlab.extensions.getCollection
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.subjectWithProperty
@@ -22,6 +22,7 @@ import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
 import technology.idlab.parser.Parser
+import technology.idlab.parser.ParserException
 import technology.idlab.util.Log
 
 /**
@@ -87,8 +88,7 @@ private fun Model.runner(runner: Resource): IRRunner {
   }
 
   val entrypoint = objectOfProperty(runner, RDFC.entrypoint)?.toString()
-  val type =
-      objectOfProperty(runner, RDF.type) ?: Log.shared.fatal("No type found for runner: $runner")
+  val type = objectOfProperty(runner, RDF.type) ?: throw ParserException.NoRunnerType(runner.uri)
 
   when (type) {
     RDFC.grpcRunner -> {
@@ -96,13 +96,13 @@ private fun Model.runner(runner: Resource): IRRunner {
     }
     RDFC.builtInRunner -> {
       if (entrypoint != null) {
-        Log.shared.fatal("Built in runner $runner has entrypoint, but will be discarded.")
+        throw ParserException.InvalidEntrypoint(runner.uri)
       }
 
       return IRRunner(runner.toString(), workingDirectory, null, IRRunner.Type.BUILT_IN)
     }
     else -> {
-      Log.shared.fatal("Unknown runner type: $type")
+      throw ParserException.UnknownRunnerType(type.toString())
     }
   }
 }
@@ -118,7 +118,7 @@ private fun Model.processor(processor: Resource): IRProcessor {
   // Parse the parameters by SHACL shape.
   val shape =
       subjectWithProperty(SHACLM.targetClass, processor)
-          ?: Log.shared.fatal("No shape found for processor: $processor")
+          ?: throw ParserException.MissingProcessorArguments(processor.uri)
   val parameters =
       listObjectsOfProperty(shape, SHACLM.property)
           .toList()
@@ -128,7 +128,7 @@ private fun Model.processor(processor: Resource): IRProcessor {
           }
           ?.let { objectOfProperty(it.asResource(), SHACLM.node)?.asResource() }
           ?.let { parseSHACLShape(it) }
-          ?: Log.shared.fatal("No argument shape found for processor: $processor")
+          ?: throw ParserException.MissingProcessorArguments(processor.uri)
 
   // Parse metadata.
   val metadata = mutableMapOf<String, String>()
@@ -137,7 +137,7 @@ private fun Model.processor(processor: Resource): IRProcessor {
         try {
           entry.asLiteral().string
         } catch (e: Exception) {
-          Log.shared.fatal("Metadata must be a literal.")
+          throw ParserException.InvalidMetadata(processor.uri)
         }
     val (key, value) = literal.split(':')
     metadata[key.trim()] = value.trim()

@@ -10,6 +10,7 @@ interface Broker<T> {
    *
    * @param uri The URI of the channel.
    * @param data The data to send.
+   * @throws BrokerException
    */
   fun send(uri: String, data: T)
 
@@ -17,6 +18,7 @@ interface Broker<T> {
    * Remove a sender from a channel. If no senders remain, the channel is closed.
    *
    * @param uri The URI to which the sender no longer wants to listen to.
+   * @throws BrokerException
    */
   fun unregister(uri: String)
 }

@@ -2,7 +2,6 @@ package technology.idlab.resolver
 
 import java.io.File
 import technology.idlab.intermediate.IRDependency
-import technology.idlab.util.Log
 
 /** Functional class which resolves a dependency based on its URI. */
 interface Resolver {
@@ -20,16 +19,16 @@ interface Resolver {
   fun initPackagesDirectory(): File {
     val packagesDir = File("rdfc_packages")
 
-    if (packagesDir.isFile()) {
-      Log.shared.fatal("A file named `rdfc_packages` exists in the current directory.")
-    }
-
+    // If the directory doesn't exist, create it.
     if (!packagesDir.exists()) {
-      packagesDir.mkdir()
+      if (!packagesDir.mkdir()) {
+        throw ResolverException.FileSystem()
+      }
     }
 
+    // Check if it is a directory.
     if (!packagesDir.isDirectory) {
-      Log.shared.fatal("Failed to create `rdfc_packages` directory.")
+      throw ResolverException.NotADirectory()
     }
 
     return packagesDir

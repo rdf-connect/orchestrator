@@ -7,7 +7,7 @@ import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.ShaclValidator
 import org.apache.jena.vocabulary.RDF
-import technology.idlab.util.Log
+import technology.idlab.InvalidConfigurationException
 
 /**
  * Given an Apache Jena model, run the SHACL validation engine against itself. This means that all
@@ -23,7 +23,7 @@ internal fun Model.validate() {
   if (!report.conforms()) {
     val out = ByteArrayOutputStream()
     report.model.write(out, "TURTLE")
-    Log.shared.fatal("Validation failed\n$out")
+    throw InvalidConfigurationException()
   }
 }
 
@@ -66,8 +66,10 @@ internal fun Model.subjectWithProperty(property: Property, obj: RDFNode): Resour
  */
 internal fun Model.getCollection(resource: Resource): List<RDFNode> {
   val first =
-      objectOfProperty(resource, RDF.first) ?: Log.shared.fatal("No first element: $resource")
-  val rest = objectOfProperty(resource, RDF.rest) ?: Log.shared.fatal("No rest element: $resource")
+      objectOfProperty(resource, RDF.first) ?: throw IndexOutOfBoundsException("No first element")
+  val rest =
+      objectOfProperty(resource, RDF.rest)
+          ?: throw IndexOutOfBoundsException("No rest element: $resource")
 
   return if (rest != RDF.nil) {
     listOf(first) + getCollection(rest.asResource())

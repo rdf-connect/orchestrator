@@ -2,6 +2,7 @@ package technology.idlab.broker.impl
 
 import technology.idlab.broker.Broker
 import technology.idlab.broker.BrokerClient
+import technology.idlab.broker.BrokerException
 import technology.idlab.util.Log
 
 typealias Clients<T> = Pair<Int, MutableSet<BrokerClient<T>>>
@@ -33,10 +34,10 @@ class SimpleBroker<T>(clients: Collection<BrokerClient<T>>) : Broker<T> {
 
   override fun send(uri: String, data: T) {
     Log.shared.debug { "Brokering message: '$uri'" }
-    val (_, receivers) = clients[uri] ?: Log.shared.fatal("Channel not registered: $uri")
+    val (_, receivers) = clients[uri] ?: throw BrokerException.UnknownChannelException(uri)
 
     if (receivers.size == 0) {
-      Log.shared.fatal("Channel no longer available: $uri")
+      throw BrokerException.DeadChannelException(uri)
     }
 
     // Send to the clients.
@@ -49,7 +50,7 @@ class SimpleBroker<T>(clients: Collection<BrokerClient<T>>) : Broker<T> {
     Log.shared.debug { "Unregistering sender from '$uri'" }
 
     // Decrease the sender count.
-    val (rc, receivers) = clients[uri] ?: Log.shared.fatal("Channel not found: $uri")
+    val (rc, receivers) = clients[uri] ?: throw BrokerException.UnknownChannelException(uri)
     clients[uri] = Pair(rc - 1, receivers)
 
     // If no writers, remain, remove the readers.

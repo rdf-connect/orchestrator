@@ -1,7 +1,5 @@
 package technology.idlab.intermediate
 
-import technology.idlab.util.Log
-
 /**
  * Intermediate representation of an argument. These can be either simple or complex, meaning they
  * contain either a list of values or a map of key-value pairs. Note that it doesn't matter whether
@@ -18,19 +16,19 @@ data class IRArgument(
 ) {
   init {
     if (simple == null && complex == null) {
-      Log.shared.fatal("IRArgument has no values.")
+      throw IllegalStateException()
     }
 
     if (simple != null && complex != null) {
-      Log.shared.fatal("IRArgument has both simple and complex values.")
+      throw IllegalStateException()
     }
   }
 
   fun getSimple(): List<String> {
-    return simple ?: Log.shared.fatal("IRArgument is not simple.")
+    return simple ?: throw IllegalStateException()
   }
 
   fun getComplex(): List<Map<String, IRArgument>> {
-    return complex ?: Log.shared.fatal("IRArgument is not complex.")
+    return complex ?: throw IllegalStateException()
   }
 }

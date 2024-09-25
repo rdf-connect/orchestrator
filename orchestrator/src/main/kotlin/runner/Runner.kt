@@ -5,6 +5,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import technology.idlab.NoSuchRunnerException
+import technology.idlab.UnsupportedRunnerTypeException
 import technology.idlab.broker.Broker
 import technology.idlab.broker.BrokerClient
 import technology.idlab.intermediate.IRRunner
@@ -59,6 +61,15 @@ abstract class Runner(
   abstract suspend fun exit()
 
   companion object {
+    /**
+     * Create a new runner based on the runner configuration. This function will create a new runner
+     * and inject the stages which the runner must execute.
+     *
+     * @param runner The runner configuration.
+     * @param stages The stages which the runner must execute.
+     * @return A new runner instance.
+     * @throws NoSuchRunnerException If the type of runner is not implemented.
+     */
     fun from(runner: IRRunner, stages: Collection<IRStage>): Runner {
       Log.shared.info("Creating runner: ${runner.uri}")
 
@@ -70,7 +81,7 @@ abstract class Runner(
         return HostedGRPCRunner.create(runner, stages)
       }
 
-      Log.shared.fatal("Unknown runner type: ${runner.type}")
+      throw UnsupportedRunnerTypeException(runner.type)
     }
   }
 }

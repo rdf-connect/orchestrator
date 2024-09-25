@@ -8,6 +8,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import technology.idlab.InvalidJarPathException
+import technology.idlab.InvalidProcessorException
+import technology.idlab.MissingMetadataException
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRStage
@@ -15,9 +18,6 @@ import technology.idlab.runner.Runner
 import technology.idlab.util.Log
 
 private const val JVM_RUNNER_URI = "https://www.rdf-connect/#JVMRunner"
-
-private const val STAGE_NO_CLASS = "Processor has no class key set."
-private const val REQUIRES_PROCESSOR_BASE_CLASS = "Class does not extend Processor."
 
 /**
  * Return a class loader. If a path is given, return a URLClassLoader which loads the JAR file at
@@ -36,7 +36,7 @@ private fun getClassLoader(path: String = ""): ClassLoader {
       try {
         URL(path)
       } catch (e: MalformedURLException) {
-        Log.shared.fatal("Invalid entrypoint '$path' for processor.")
+        throw InvalidJarPathException(path)
       }
 
   // Return a new URLClassLoader with the given URL.
@@ -159,16 +159,19 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
    * Load a stage into the JVM.
    *
    * @param stage The stage to load.
+   * @throws InvalidProcessorException If the processor is not instantiatable.
+   * @throws MissingMetadataException If the class key is missing.
    */
   private fun loadStage(stage: IRStage) {
     /* Load the class into the JVM. */
     val loader = getClassLoader(stage.processor.entrypoint)
-    val name = stage.processor.metadata["class"] ?: Log.shared.fatal(STAGE_NO_CLASS)
+    val name =
+        stage.processor.metadata["class"] ?: throw MissingMetadataException(stage.uri, "class")
     val clazz = Class.forName(name, true, loader) as Class<*>
 
     /* Check if instantiatable. */
     if (!Processor::class.java.isAssignableFrom(clazz)) {
-      Log.shared.fatal(REQUIRES_PROCESSOR_BASE_CLASS)
+      throw InvalidProcessorException(stage.processor.uri)
     }
 
     /* Build the argument map. */
