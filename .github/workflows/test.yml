@@ -36,16 +36,16 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '20'
-      # Create a JAR exposing the Orchestrator library to the individual 
+      # Create a JAR exposing the Orchestrator library to the individual
       # processors.
       - name: Create JAR
-        run: ./gradlew shadowJar --console=plain --warning-mode all
+        run: gradle shadowJar --console=plain --warning-mode all
         working-directory: ./orchestrator
       # Attempt to execute the build step.
       - name: Build
-        run: ./gradlew installDist --console=plain --warning-mode all
+        run: gradle installDist --console=plain --warning-mode all
         working-directory: ./orchestrator
       # Execute test suite.
       - name: Run tests
-        run: ./gradlew test --console=plain --warning-mode all
+        run: gradle test --console=plain --warning-mode all
         working-directory: ./orchestrator
