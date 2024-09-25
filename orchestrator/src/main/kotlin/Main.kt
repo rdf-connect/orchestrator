@@ -1,9 +1,16 @@
 package technology.idlab
 
 import java.io.File
+import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
-import technology.idlab.extensions.rawPath
-import technology.idlab.intermediate.IRPackage
+import technology.idlab.exception.CommandException
+import technology.idlab.exception.UnresolvedDependencyException
+import technology.idlab.exception.configuration.ConfigurationException
+import technology.idlab.exception.configuration.EmptyPipelineException
+import technology.idlab.exception.configuration.InvalidConfigurationException
+import technology.idlab.exception.configuration.NoConfigurationFoundException
+import technology.idlab.exception.configuration.NoPipelineFoundException
+import technology.idlab.exception.configuration.NoSuchRunnerException
 import technology.idlab.orchestrator.Orchestrator
 import technology.idlab.orchestrator.impl.SimpleOrchestrator
 import technology.idlab.parser.impl.jena.JenaParser
@@ -11,61 +18,124 @@ import technology.idlab.resolver.impl.GenericResolver
 import technology.idlab.util.Log
 import technology.idlab.util.ManagedProcess
 
-private enum class CliArguments(val literal: String) {
-  RunPipeline("run"),
-  CheckPipeline("check"),
-  Install("install"),
-}
-
 /**
- * Execute the preparation commands in a package. If no such commands exists, the function will
- * return immediately.
+ * Resolve, prepare and install all dependencies in the configuration file.
+ *
+ * @param path The path to the configuration file.
+ * @throws CommandException If a preparation command fails.
+ * @throws ConfigurationException If the configuration is invalid.
  */
-internal fun prepare(pkg: IRPackage) {
-  Log.shared.debug { "Preparing package: file://${pkg.directory.rawPath()}" }
+internal fun install(path: String) {
+  // Load the list of dependencies from the configuration file.
+  val rootParser = JenaParser(listOf(File(path)))
+  val dependencies = rootParser.dependencies()
 
-  pkg.prepare?.forEach { stmt ->
-    // Create processor builder.
-    val builder = ProcessBuilder(stmt.split(" "))
-    builder.directory(File(pkg.directory.rawPath()))
-    builder.environment()["PATH"] = System.getenv("PATH")
+  // Resolve all dependencies and load their index files into a parser.
+  val resolver = GenericResolver()
+  val files = dependencies.map { resolver.resolve(it) }
 
-    // Execute and await the process.
-    val exitCode = ManagedProcess.from(builder).waitFor()
-    if (exitCode != 0) {
-      Log.shared.fatal("Failed to prepare package in ${pkg.directory.rawPath()}.")
+  // For each package, run the preparation commands.
+  for (file in files) {
+    val parser = JenaParser(listOf(file))
+    val pkg = parser.packages().single()
+
+    for (stmt in pkg.prepare) {
+      // Create processor builder.
+      val builder = ProcessBuilder(stmt.split(" "))
+      builder.directory(file.parentFile)
+      builder.environment()["PATH"] = System.getenv("PATH")
+
+      // Execute and await the process.
+      val exitCode = ManagedProcess.from(builder).waitFor()
+      if (exitCode != 0) {
+        throw CommandException(stmt, exitCode)
+      }
     }
   }
 }
 
-/** Execute a pipeline at a given path. */
-internal suspend fun exec(path: String) {
-  Log.shared.info("Starting the RDF-Connect orchestrator.")
+/**
+ * Check if the configuration is valid.
+ *
+ * @param path The path to the configuration file.
+ * @throws ConfigurationException If the configuration is invalid.
+ */
+internal fun check(path: String) {
+  // Open file.
+  val file = File(path)
 
-  // Open file pointer.
-  val file =
-      try {
-        File(path)
-      } catch (e: NullPointerException) {
-        Log.shared.fatal("Pipeline file does not exist.")
-      }
-
-  // Parse said config to a IRPipeline.
-  Log.shared.debug("Invoking parser.")
-  val parser = JenaParser(file, GenericResolver())
-
-  // Parse the pipeline out of the configuration file.
-  if (parser.pipelines.size != 1) {
-    Log.shared.fatal("The configuration file may only contain one pipeline.")
+  // Must exist.
+  if (!file.exists()) {
+    throw NoConfigurationFoundException()
   }
 
-  // For each package, run the preparation command if it exists.
-  val packages = parser.packages.sortedBy { it.runners.size * -1 }
-  packages.forEach { prepare(it) }
+  // Must be a file.
+  if (file.isFile) {
+    throw InvalidConfigurationException()
+  }
+
+  // Cannot be empty.
+  if (file.length() == 0L) {
+    throw InvalidConfigurationException()
+  }
+
+  // Parse said config to a IRPipeline.
+  val parser = JenaParser(listOf(file))
+
+  // There must be at least one pipeline.
+  val pipelines = parser.pipelines()
+  if (pipelines.isEmpty()) {
+    throw NoPipelineFoundException()
+  }
+
+  // Every pipeline must have one or more stages.
+  for (pipeline in pipelines) {
+    if (pipeline.stages.isEmpty()) {
+      throw EmptyPipelineException(pipeline.uri)
+    }
+  }
+
+  // All stages must use a known runner.
+  val stages = pipelines.flatMap { it.stages }
+  val runners = parser.runners().map { it.uri }
+
+  for (stage in stages) {
+    if (stage.processor.target !in runners) {
+      throw NoSuchRunnerException(stage.processor.target)
+    }
+  }
+}
+
+/**
+ * Execute a pipeline at a given path.
+ *
+ * @param path The path to the pipeline configuration file.
+ * @throws ConfigurationException If the configuration is invalid.
+ * @throws CommandException If a preparation command fails.
+ */
+internal suspend fun exec(path: String) {
+  // Parse the configuration file.
+  val config = File(path)
+  val rootParser = JenaParser(listOf(config))
+
+  // Get dependencies.
+  val dependencies = rootParser.dependencies()
+  val files = dependencies.map { File("./rdfc_packages/${it.directory()}/index.ttl") }
+
+  // Check if all are resolved.
+  for (file in files) {
+    if (!file.exists()) {
+      throw UnresolvedDependencyException(file.path)
+    }
+  }
+
+  // Load all index.ttl files into a new parser.
+  val parser = JenaParser(listOf(listOf(config), files).flatten())
 
   // Start the orchestrator.
-  val pipeline = parser.pipelines[0]
-  val orchestrator = SimpleOrchestrator(pipeline.stages, parser.runners)
+  val pipeline = parser.pipelines().single()
+  val runners = parser.runners()
+  val orchestrator = SimpleOrchestrator(pipeline.stages, runners)
   orchestrator.exec()
 
   // Check the result.
@@ -76,15 +146,25 @@ internal suspend fun exec(path: String) {
   }
 }
 
+/** Prints a help message to the console and exits the process with exit code 1. */
+fun help(): Nothing {
+  println("Usage: rdf-connect <mode> <path>")
+  exitProcess(1)
+}
+
+/** The main entry point for the RDF-Connect orchestrator. */
 fun main(args: Array<String>) = runBlocking {
-  // Retrieve the pipeline configuration path from the CLI arguments.
-  if (args.size != 1) {
-    Log.shared.fatal("No pipeline file provided.")
+  // No arguments provided.
+  if (args.isEmpty()) {
+    help()
   }
 
-  // Load the configuration file.
-  val path = args[0]
-
-  // Forward the pipeline path to the executing function.
-  exec(path)
+  // Execute the chosen command.
+  when (args[0]) {
+    "exec" -> exec(args[1])
+    "check" -> check(args[1])
+    "install" -> install(args[1])
+    "help" -> help()
+    else -> help()
+  }
 }

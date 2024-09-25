@@ -11,7 +11,7 @@
   rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
   rdfc:license "MIT" ;
   rdfc:prepare (
-    "./gradlew jar"
+    "gradle jar --console=plain --warning-mode all"
   ) ;
   rdfc:processors rdfc:SHACLValidatorKT .
 

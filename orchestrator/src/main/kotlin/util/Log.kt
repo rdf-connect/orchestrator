@@ -3,7 +3,7 @@ package technology.idlab.util
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.system.exitProcess
-import technology.idlab.exception.RunnerException
+import technology.idlab.exception.UnknownException
 
 private const val TIME_PADDING = 15
 private const val LEVEL_PADDING = 10
@@ -129,7 +129,7 @@ class Log private constructor(header: Boolean = true) {
     output(message, Level.FATAL, location = location)
 
     when (this.fatalMode) {
-      FatalMode.EXCEPTION -> throw RunnerException()
+      FatalMode.EXCEPTION -> throw UnknownException()
       FatalMode.EXIT -> exitProcess(1)
     }
   }

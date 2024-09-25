@@ -28,6 +28,10 @@ interface Resolver {
       packagesDir.mkdir()
     }
 
+    if (!packagesDir.isDirectory) {
+      Log.shared.fatal("Failed to create `rdfc_packages` directory.")
+    }
+
     return packagesDir
   }
 }

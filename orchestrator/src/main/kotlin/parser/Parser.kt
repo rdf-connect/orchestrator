@@ -1,5 +1,6 @@
 package technology.idlab.parser
 
+import technology.idlab.intermediate.IRDependency
 import technology.idlab.intermediate.IRPackage
 import technology.idlab.intermediate.IRPipeline
 import technology.idlab.intermediate.IRProcessor
@@ -11,14 +12,17 @@ import technology.idlab.intermediate.IRRunner
  */
 interface Parser {
   /** The pipelines in the current configuration. */
-  val pipelines: List<IRPipeline>
+  fun pipelines(): List<IRPipeline>
 
   /** The packages in the current configuration. */
-  val packages: List<IRPackage>
+  fun packages(): List<IRPackage>
 
   /** List of all known processors. */
-  val processors: List<IRProcessor>
+  fun processors(): List<IRProcessor>
 
   /** List of all known runners. */
-  val runners: List<IRRunner>
+  fun runners(): List<IRRunner>
+
+  /** List of all known dependencies. */
+  fun dependencies(): List<IRDependency>
 }

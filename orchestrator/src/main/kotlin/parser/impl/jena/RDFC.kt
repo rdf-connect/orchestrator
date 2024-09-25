@@ -29,5 +29,6 @@ class RDFC {
     val writer = ResourceFactory.createResource("${NS}Writer")!!
     val grpcRunner = ResourceFactory.createResource("${NS}GRPCRunner")!!
     val builtInRunner = ResourceFactory.createResource("${NS}BuiltInRunner")!!
+    val workingDirectory = ResourceFactory.createProperty("${NS}wd")!!
   }
 }

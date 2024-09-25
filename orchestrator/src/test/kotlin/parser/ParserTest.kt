@@ -9,29 +9,33 @@ import kotlin.test.assertTrue
 import technology.idlab.intermediate.IRParameter
 import technology.idlab.parser.Parser
 import technology.idlab.parser.impl.jena.JenaParser
-import technology.idlab.resolver.impl.GenericResolver
 
 class ParserTest {
   private fun parse(resource: String): Parser {
     val uri = this::class.java.getResource(resource)
     val file = File(uri!!.toURI())
-    return JenaParser(file, GenericResolver())
+    val rootParser = JenaParser(listOf(file))
+    val files =
+        rootParser.dependencies().map { File(it.uri.removePrefix("file://") + "/index.ttl") }
+    return JenaParser(listOf(listOf(file), files).flatten())
   }
 
   @Test
   fun pipelines() {
     val parser = parse("/pipelines/dummy/index.ttl")
-    assertEquals(1, parser.pipelines.size, "There should be one pipeline.")
-    assertEquals(1, parser.pipelines[0].stages.size, "There should be one stage.")
-    assertEquals(1, parser.packages.size, "There should be one package.")
-    assertEquals(1, parser.packages[0].processors.size, "There should be one processor.")
+    val pipelines = parser.pipelines()
+    val packages = parser.packages()
+    assertEquals(1, pipelines.size, "There should be one pipeline.")
+    assertEquals(1, pipelines[0].stages.size, "There should be one stage.")
+    assertEquals(1, pipelines.size, "There should be one package.")
+    assertEquals(1, packages[0].processors.size, "There should be one processor.")
   }
 
   @Test
   fun packages() {
     // Parse the package in the file.
     val parser = parse("/pipelines/dummy/index.ttl")
-    val pkg = parser.packages[0]
+    val pkg = parser.packages().single()
 
     // Check the contents of the data class.
     assertEquals("1.0.0", pkg.version)
@@ -39,11 +43,11 @@ class ParserTest {
     assertEquals("A simple description.", pkg.description)
     assertEquals("https://example.com.git", pkg.repo)
     assertEquals("MIT", pkg.license)
-    assertEquals(4, pkg.prepare?.size)
-    assertEquals("make", pkg.prepare?.get(0))
-    assertEquals("make install", pkg.prepare?.get(1))
-    assertEquals("make test", pkg.prepare?.get(2))
-    assertEquals("make clean", pkg.prepare?.get(3))
+    assertEquals(4, pkg.prepare.size)
+    assertEquals("make", pkg.prepare.get(0))
+    assertEquals("make install", pkg.prepare.get(1))
+    assertEquals("make test", pkg.prepare.get(2))
+    assertEquals("make clean", pkg.prepare.get(3))
 
     // Check the processors.
     assertEquals(1, pkg.processors.size)
@@ -57,7 +61,7 @@ class ParserTest {
   @Test
   fun processors() {
     val parser = parse("/pipelines/basic/index.ttl")
-    val processors = parser.packages.map { it.processors }.flatten()
+    val processors = parser.packages().map { it.processors }.flatten()
 
     assertEquals(1, processors.size, "There should be one processor.")
 
@@ -109,11 +113,9 @@ class ParserTest {
 
   @Test
   fun stages() {
-    val uri = this::class.java.getResource("/pipelines/basic/index.ttl")
-    val file = File(uri!!.toURI())
-    val parser = JenaParser(file, GenericResolver())
-
-    val stages = parser.pipelines[0].stages
+    val parser = parse("/pipelines/basic/index.ttl")
+    val pipelines = parser.pipelines()
+    val stages = pipelines.single().stages
 
     // Get the stage.
     assertEquals(1, stages.size, "There should be one stage.")

@@ -17,8 +17,7 @@ import technology.idlab.util.Log
 internal fun Model.validate() {
   // SHACL runs against the graph, so we need to convert first. Then, simply call a new validation
   // instance and test the graph against itself.
-  val graph = this.graph
-  val report = ShaclValidator.get().validate(graph, graph)
+  val report = ShaclValidator.get().validate(this.graph, this.graph)
 
   // Exit if the validation failed by logging the report.
   if (!report.conforms()) {

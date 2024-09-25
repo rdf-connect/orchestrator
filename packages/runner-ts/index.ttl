@@ -15,4 +15,5 @@ rdfc:NodePackage
 
 rdfc:NodeRunner
   a rdfc:GRPCRunner ;
+  rdfc:wd <.> ;
   rdfc:entrypoint "node build/runtime" .

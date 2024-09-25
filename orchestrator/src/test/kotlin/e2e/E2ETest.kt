@@ -5,6 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
 import technology.idlab.exec
+import technology.idlab.install
 
 class E2ETest {
   data class Config(
@@ -35,6 +36,7 @@ class E2ETest {
     assertNotNull(pipeline, "The file should exist.")
 
     // Execute the pipeline.
+    install(pipeline.path)
     exec(pipeline.path)
 
     // Check the output files.

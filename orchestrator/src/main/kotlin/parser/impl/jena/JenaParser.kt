@@ -8,6 +8,7 @@ import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.vocabulary.SHACLM
 import org.apache.jena.vocabulary.RDF
+import technology.idlab.exception.InvalidWorkingDirectoryException
 import technology.idlab.extensions.getCollection
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.subjectWithProperty
@@ -21,14 +22,13 @@ import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
 import technology.idlab.parser.Parser
-import technology.idlab.resolver.Resolver
 import technology.idlab.util.Log
 
 /**
  * Parse the arguments of a stage. This is a recursive implementation that will automatically parse
  * nested classes. Recursion will continue until all objects found are literals.
  */
-private fun Model.parseArguments(
+private fun Model.arguments(
     node: Resource,
     parameters: Map<String, IRParameter>
 ): Map<String, IRArgument> {
@@ -62,7 +62,7 @@ private fun Model.parseArguments(
       list.add(v.toString())
     } else {
       val list = complex.getOrPut(key) { mutableListOf() }
-      val nested = parseArguments(value.asResource(), params.getComplex())
+      val nested = arguments(value.asResource(), params.getComplex())
       list.add(nested)
     }
   }
@@ -76,8 +76,15 @@ private fun Model.parseArguments(
       }
 }
 
-private fun Model.parseRunner(directory: File, runner: Resource): IRRunner {
+private fun Model.runner(runner: Resource): IRRunner {
   Log.shared.debug("Parsing runner: $runner")
+
+  val workingDirectoryPath =
+      objectOfProperty(runner, RDFC.workingDirectory)?.toString()?.removePrefix("file://")
+  val workingDirectory = if (workingDirectoryPath != null) File(workingDirectoryPath) else null
+  if (workingDirectory != null && !workingDirectory.exists()) {
+    throw InvalidWorkingDirectoryException(workingDirectory.toString())
+  }
 
   val entrypoint = objectOfProperty(runner, RDFC.entrypoint)?.toString()
   val type =
@@ -85,14 +92,14 @@ private fun Model.parseRunner(directory: File, runner: Resource): IRRunner {
 
   when (type) {
     RDFC.grpcRunner -> {
-      return IRRunner(runner.toString(), directory, entrypoint, IRRunner.Type.GRPC)
+      return IRRunner(runner.toString(), workingDirectory, entrypoint, IRRunner.Type.GRPC)
     }
     RDFC.builtInRunner -> {
       if (entrypoint != null) {
         Log.shared.fatal("Built in runner $runner has entrypoint, but will be discarded.")
       }
 
-      return IRRunner(runner.toString(), directory, null, IRRunner.Type.BUILT_IN)
+      return IRRunner(runner.toString(), workingDirectory, null, IRRunner.Type.BUILT_IN)
     }
     else -> {
       Log.shared.fatal("Unknown runner type: $type")
@@ -100,7 +107,7 @@ private fun Model.parseRunner(directory: File, runner: Resource): IRRunner {
   }
 }
 
-private fun Model.parseProcessor(processor: Resource): IRProcessor {
+private fun Model.processor(processor: Resource): IRProcessor {
   Log.shared.debug("Parsing processor: $processor")
 
   val uri = processor.toString()
@@ -142,22 +149,22 @@ private fun Model.parseProcessor(processor: Resource): IRProcessor {
   return IRProcessor(uri, target, entrypoint, parameters, metadata)
 }
 
-private fun Model.parseStages(pipeline: Resource): List<IRStage> {
+private fun Model.stages(pipeline: Resource): List<IRStage> {
   return listObjectsOfProperty(pipeline, RDFC.stages).toList().map { stage ->
     val processorURI = objectOfProperty(stage.asResource(), RDF.type)!!.asResource()
-    val processor = parseProcessor(processorURI)
+    val processor = processor(processorURI)
     val arguments = objectOfProperty(stage.asResource(), RDFC.arguments)!!.asResource()
-    IRStage(stage.toString(), processor, parseArguments(arguments, processor.parameters))
+    IRStage(stage.toString(), processor, arguments(arguments, processor.parameters))
   }
 }
 
-private fun Model.parseDependencies(pipeline: Resource?): List<IRDependency> {
+private fun Model.dependencies(pipeline: Resource?): List<IRDependency> {
   return listObjectsOfProperty(pipeline, RDFC.dependency).toList().map { dependency ->
     IRDependency(uri = dependency.toString())
   }
 }
 
-private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
+private fun Model.pkg(pkg: Resource): IRPackage {
   Log.shared.debug("Parsing package: $pkg")
 
   // Get all of its properties.
@@ -167,11 +174,8 @@ private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
   val repo = objectOfProperty(pkg, RDFC.repo)
   val license = objectOfProperty(pkg, RDFC.license)
   val processors =
-      listObjectsOfProperty(pkg, RDFC.processors).toList().map { parseProcessor(it.asResource()) }
-  val runners =
-      listObjectsOfProperty(pkg, RDFC.runners).toList().map {
-        parseRunner(directory, it.asResource())
-      }
+      listObjectsOfProperty(pkg, RDFC.processors).toList().map { processor(it.asResource()) }
+  val runners = listObjectsOfProperty(pkg, RDFC.runners).toList().map { runner(it.asResource()) }
 
   val prepareCollection = objectOfProperty(pkg, RDFC.prepare)
   val prepare =
@@ -183,7 +187,6 @@ private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
 
   // Parse the properties to strings if required, and return the package IR.
   return IRPackage(
-      directory = directory,
       version = version?.toString(),
       author = author?.toString(),
       description = description.toString(),
@@ -195,105 +198,78 @@ private fun Model.parsePackage(directory: File, pkg: Resource): IRPackage {
   )
 }
 
-private fun Model.parsePackages(directory: File): List<IRPackage> {
-  return listSubjectsWithProperty(RDF.type, RDFC.`package`).toList().map {
-    parsePackage(directory, it)
-  }
+private fun Model.packages(): List<IRPackage> {
+  return listSubjectsWithProperty(RDF.type, RDFC.`package`).toList().map { pkg(it) }
 }
 
-private fun Model.parsePipeline(pipeline: Resource): IRPipeline {
+private fun Model.pipeline(pipeline: Resource): IRPipeline {
   Log.shared.debug("Parsing pipeline: $pipeline")
 
   return IRPipeline(
       uri = pipeline.uri,
-      stages = parseStages(pipeline),
-      dependencies = parseDependencies(pipeline),
+      stages = stages(pipeline),
+      dependencies = dependencies(pipeline),
   )
 }
 
-private fun Model.parsePipelines(): List<IRPipeline> {
-  return listSubjectsWithProperty(RDF.type, RDFC.pipeline).toList().map { parsePipeline(it) }
+private fun Model.pipelines(): List<IRPipeline> {
+  return listSubjectsWithProperty(RDF.type, RDFC.pipeline).toList().map { pipeline(it) }
 }
 
 class JenaParser(
     /** A file pointer to the pipeline configuration entrypoint. */
-    file: File,
-    /** Dependency resolver. */
-    private val resolver: Resolver
+    files: List<File>,
 ) : Parser {
   /** The Apache Jena model. */
   private val model: Model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
-
-  /** The pipelines in the current configuration. */
-  override val pipelines: List<IRPipeline>
-
-  /** The packages in the current configuration. */
-  override val packages: List<IRPackage>
-
-  /** List of all known processors. */
-  override val processors: List<IRProcessor>
-
-  /** List of all known runners. */
-  override val runners: List<IRRunner>
 
   init {
     // Load the RDF-Connect ontology.
     val resource = this::class.java.getResource("/pipeline.ttl")
     val config = resource!!.path!!
-    this.load(config)
+    this.model.read(config, "TURTLE")
 
     // Load the pipeline file into the parser.
-    this.load(file.path)
+    for (file in files) {
+      this.model.read(file.path, "TURTLE")
+    }
 
-    // Retrieve dependencies.
-    val dependencies = this.dependencies()
-
-    // Resolve all dependencies.
-    this.packages =
-        dependencies
-            .map {
-              val path = resolver.resolve(it)
-              val mdl = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
-              mdl.read(path.toString(), "TURTLE")
-              val result = mdl.parsePackages(path.parentFile)
-              model.add(mdl)
-              result
-            }
-            .flatten()
-
-    // Since we updated the model, we will once again check if the SHACL shapes are valid.
+    // Confirm that the values loaded into the model are valid.
     this.model.validate()
+  }
 
-    // Parse the file.
-    this.pipelines = this.pipelines()
-    this.processors = this.packages.map { it.processors }.flatten()
+  override fun pipelines(): List<IRPipeline> {
+    return model.pipelines()
+  }
 
-    // Packaged runners.
-    val runners = this.packages.map { it.runners }.toMutableList()
+  override fun packages(): List<IRPackage> {
+    return model.packages()
+  }
+
+  override fun processors(): List<IRProcessor> {
+    return model.packages().map { it.processors }.flatten()
+  }
+
+  override fun runners(): List<IRRunner> {
+    val result = mutableListOf<IRRunner>()
+
+    // Add all package runners.
+    for (pkg in packages()) {
+      result.addAll(pkg.runners)
+    }
 
     // Retrieve built in runners.
-    val builtInRunners =
-        this.model.listSubjectsWithProperty(RDF.type, RDFC.builtInRunner).toList().map {
-          IRRunner(it.toString(), type = IRRunner.Type.BUILT_IN)
-        }
-    runners.add(builtInRunners)
+    val builtIn = model.listSubjectsWithProperty(RDF.type, RDFC.builtInRunner).toList()
+    for (uri in builtIn) {
+      val runner = IRRunner(uri.toString(), type = IRRunner.Type.BUILT_IN)
+      result.add(runner)
+    }
 
-    // Combine both runner types.
-    this.runners = runners.flatten()
+    return result
   }
 
-  /** Parse the file as a list of pipelines, returning its containing stages and dependencies. */
-  private fun pipelines(): List<IRPipeline> {
-    return model.parsePipelines()
-  }
-
-  /** Retrieve all dependencies in a given file. */
-  private fun dependencies(): List<IRDependency> {
-    return model.parseDependencies(null as Resource?)
-  }
-
-  /** Load an additional file into the parser. */
-  private fun load(path: String) {
-    this.model.read(path, "TURTLE")
+  override fun dependencies(): List<IRDependency> {
+    val uris = model.listObjectsOfProperty(RDFC.dependency).toList()
+    return uris.map { IRDependency(it.toString()) }
   }
 }
