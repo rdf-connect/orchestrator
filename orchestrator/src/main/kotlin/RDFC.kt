@@ -1,4 +1,4 @@
-package technology.idlab.parser.impl.jena
+package technology.idlab
 
 import org.apache.jena.rdf.model.ResourceFactory
 

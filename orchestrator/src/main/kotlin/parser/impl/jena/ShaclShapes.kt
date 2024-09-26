@@ -4,6 +4,7 @@ import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.vocabulary.SHACLM
+import technology.idlab.RDFC
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.subjectWithProperty
 import technology.idlab.intermediate.IRParameter
