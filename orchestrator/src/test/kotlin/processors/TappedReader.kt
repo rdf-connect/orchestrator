@@ -37,6 +37,7 @@ class TappedReader(args: Arguments) : Processor(args) {
             mapOf(
                 "input" to
                     IRParameter(
+                        "",
                         IRParameter.Type.READER,
                         presence = IRParameter.Presence.REQUIRED,
                         count = IRParameter.Count.SINGLE,
@@ -55,6 +56,7 @@ class TappedReader(args: Arguments) : Processor(args) {
                       listOf(channelURI),
                       parameter =
                           IRParameter(
+                              "",
                               IRParameter.Type.READER,
                               presence = IRParameter.Presence.REQUIRED,
                               count = IRParameter.Count.SINGLE,

@@ -28,6 +28,13 @@ interface Parser {
   fun dependencies(): List<IRDependency>
 
   /**
+   * List of all dependencies of a given pipeline.
+   *
+   * @param pipelineUri The URI of the pipeline as a raw string.
+   */
+  fun dependencies(pipelineUri: String): List<IRDependency>
+
+  /**
    * Get a runner by its URI.
    *
    * @param id The URI of the runner.

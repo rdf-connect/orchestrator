@@ -7,7 +7,16 @@ abstract class ParserException : RDFCException() {
   /** The argument in the SHACL shape is not a recognized data type. */
   class UnknownDataType(private val uri: String) : ParserException()
 
+  /**
+   * The processor did not list a target runner.
+   *
+   * @param uri The URI of the processor.
+   */
+  class NoRunnerSpecified(private val uri: String) : ParserException()
+
   class NoShaclType(private val uri: String) : ParserException()
+
+  class MissingShaclPath : ParserException()
 
   class ConflictingShaclType(private val uri: String) : ParserException()
 

@@ -1,6 +1,8 @@
 package technology.idlab.intermediate
 
 data class IRParameter(
+    // The URI of the parameter.
+    val uri: String,
     // In case of simple: concrete but unparsed value.
     private val simple: Type? = null,
     // In case of complex: list of key-value pairs.

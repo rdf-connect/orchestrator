@@ -37,6 +37,7 @@ class TappedWriter(args: Arguments) : Processor(args) {
             mapOf(
                 "output" to
                     IRParameter(
+                        "",
                         IRParameter.Type.WRITER,
                         presence = IRParameter.Presence.REQUIRED,
                         count = IRParameter.Count.SINGLE,
@@ -55,6 +56,7 @@ class TappedWriter(args: Arguments) : Processor(args) {
                       listOf(channelURI),
                       parameter =
                           IRParameter(
+                              "",
                               IRParameter.Type.WRITER,
                               presence = IRParameter.Presence.REQUIRED,
                               count = IRParameter.Count.SINGLE,

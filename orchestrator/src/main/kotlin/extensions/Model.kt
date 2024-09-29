@@ -2,6 +2,7 @@ package technology.idlab.extensions
 
 import java.io.ByteArrayOutputStream
 import org.apache.jena.rdf.model.Model
+import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
@@ -17,7 +18,8 @@ import technology.idlab.InvalidConfigurationException
 internal fun Model.validate() {
   // SHACL runs against the graph, so we need to convert first. Then, simply call a new validation
   // instance and test the graph against itself.
-  val report = ShaclValidator.get().validate(this.graph, this.graph)
+  val clone = ModelFactory.createDefaultModel().add(this)
+  val report = ShaclValidator.get().validate(this.graph, clone.graph)
 
   // Exit if the validation failed by logging the report.
   if (!report.conforms()) {
