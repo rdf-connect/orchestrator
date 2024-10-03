@@ -2,8 +2,8 @@ package technology.idlab.resolver.impl
 
 import java.io.File
 import technology.idlab.intermediate.IRDependency
+import technology.idlab.log.Log
 import technology.idlab.resolver.Resolver
-import technology.idlab.util.Log
 
 /** Resolve a Git repository by cloning it locally and reading its configuration file. */
 class GitResolver : Resolver {

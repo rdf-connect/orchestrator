@@ -30,9 +30,9 @@ import technology.idlab.intermediate.parameter.LiteralParameter
 import technology.idlab.intermediate.parameter.NestedParameter
 import technology.idlab.intermediate.parameter.Parameter
 import technology.idlab.intermediate.runner.RunnerType
+import technology.idlab.log.Log
 import technology.idlab.parser.Parser
 import technology.idlab.parser.ParserException
-import technology.idlab.util.Log
 
 class JenaParser(
     /** A file pointer to the pipeline configuration entrypoint. */

@@ -18,8 +18,8 @@ import runner.impl.grpc.Config
 import technology.idlab.ConnectionException
 import technology.idlab.UnrecognizedRequestException
 import technology.idlab.intermediate.IRStage
+import technology.idlab.log.Log
 import technology.idlab.runner.Runner
-import technology.idlab.util.Log
 import technology.idlab.util.retries
 
 /**

@@ -4,6 +4,7 @@ import kotlin.concurrent.thread
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import technology.idlab.extensions.rawPath
+import technology.idlab.log.Log
 
 /**
  * A wrapper class for processes which automatically logs the output of the process, and which
@@ -42,7 +43,7 @@ class ManagedProcess(
     val stream = process.inputStream.bufferedReader()
     for (line in stream.lines()) {
       if (prettyLog) {
-        Log.shared.command(line, location = name)
+        Log.shared.command(line)
       } else {
         println(line)
       }
@@ -53,7 +54,7 @@ class ManagedProcess(
   private val outgoing = thread {
     val stream = process.errorStream.bufferedReader()
     for (line in stream.lines()) {
-      Log.shared.severe(line, location = name)
+      Log.shared.severe(line)
     }
   }
 

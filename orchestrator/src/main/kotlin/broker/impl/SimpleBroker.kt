@@ -3,7 +3,7 @@ package technology.idlab.broker.impl
 import technology.idlab.broker.Broker
 import technology.idlab.broker.BrokerClient
 import technology.idlab.broker.BrokerException
-import technology.idlab.util.Log
+import technology.idlab.log.Log
 
 typealias Clients<T> = Pair<Int, MutableSet<BrokerClient<T>>>
 

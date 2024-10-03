@@ -15,8 +15,8 @@ import technology.idlab.intermediate.IRStage
 import technology.idlab.intermediate.argument.LiteralArgument
 import technology.idlab.intermediate.argument.NestedArgument
 import technology.idlab.intermediate.parameter.LiteralParameterType
+import technology.idlab.log.Log
 import technology.idlab.runner.Runner
-import technology.idlab.util.Log
 
 private const val JVM_RUNNER_URI = "https://www.rdf-connect/#JVMRunner"
 

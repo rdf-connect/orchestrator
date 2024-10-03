@@ -3,10 +3,10 @@ package technology.idlab
 import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
+import technology.idlab.log.Log
 import technology.idlab.orchestrator.impl.SimpleOrchestrator
 import technology.idlab.parser.impl.JenaParser
 import technology.idlab.resolver.impl.GenericResolver
-import technology.idlab.util.Log
 import technology.idlab.util.ManagedProcess
 
 /**
