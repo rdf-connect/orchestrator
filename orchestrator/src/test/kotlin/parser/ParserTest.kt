@@ -4,9 +4,14 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.LiteralArgument
+import technology.idlab.intermediate.LiteralParameter
+import technology.idlab.intermediate.LiteralParameterType
+import technology.idlab.intermediate.NestedArgument
+import technology.idlab.intermediate.NestedParameter
 import technology.idlab.parser.Parser
 import technology.idlab.parser.impl.JenaParser
 
@@ -51,7 +56,7 @@ class ParserTest {
 
     // Check the processors.
     assertEquals(1, pkg.processors.size)
-    assertEquals(IRParameter.Count.SINGLE, pkg.processors[0].parameters["message"]?.count)
+    assertTrue(pkg.processors[0].parameters["message"].single)
 
     // Check the runners.
     assertEquals(1, pkg.runners.size)
@@ -61,54 +66,72 @@ class ParserTest {
   @Test
   fun processors() {
     val parser = parse("/pipelines/basic/index.ttl")
-    val processors = parser.packages().map { it.processors }.flatten()
 
-    assertEquals(1, processors.size, "There should be one processor.")
+    val processors = parser.packages().map { it.processors }.flatten()
+    assertEquals(1, processors.size)
 
     // Get processor and check its values.
     val processor = processors.find { it.uri.endsWith("Processor") }
-    assertNotNull(processor, "Processor should exist.")
-    assertContains(processor.metadata.keys, "class", "processor processor should have a class key.")
-    assertEquals(
-        "MyProcessor",
-        processor.metadata["class"],
-        "Processor should have a 'class' key with value 'MyProcessor'.")
-    assertEquals(3, processor.parameters.size, "processor processor should have two parameters.")
+    assertNotNull(processor)
+    assertContains(processor.metadata.keys, "class")
+    assertEquals("MyProcessor", processor.metadata["class"])
+    assertEquals(3, processor.parameters.type.size)
 
     // Check its arguments.
     val arg1 = processor.parameters["arg1"]
-    assertNotNull(arg1, "Parameter arg1 should exist.")
-    assertEquals(
-        IRParameter.Type.STRING, arg1.getSimple(), "Parameter arg1 should be of type string.")
-    assertEquals(IRParameter.Count.SINGLE, arg1.count, "Parameter arg1 should be a single value.")
-    assertEquals(IRParameter.Presence.REQUIRED, arg1.presence, "Parameter arg1 should be required.")
+    assertNotNull(arg1)
+
+    if (arg1 !is LiteralParameter) {
+      throw AssertionError()
+    }
+
+    assertEquals(LiteralParameterType.STRING, arg1.type)
+    assertTrue(arg1.single)
+    assertFalse(arg1.optional)
 
     val arg2 = processor.parameters["arg2"]
-    assertNotNull(arg2, "Parameter arg2 should exist.")
-    assertEquals(
-        IRParameter.Type.INT, arg2.getSimple(), "Parameter arg2 should be of type integer.")
-    assertEquals(IRParameter.Count.LIST, arg2.count, "Parameter arg2 should be an array.")
-    assertEquals(IRParameter.Presence.OPTIONAL, arg2.presence, "Parameter arg2 should optional.")
+    assertNotNull(arg2)
+
+    if (arg2 !is LiteralParameter) {
+      throw AssertionError()
+    }
+
+    assertEquals(LiteralParameterType.INT, arg2.type)
+    assertFalse(arg2.single)
+    assertTrue(arg2.optional)
 
     val arg3 = processor.parameters["arg3"]
-    assertNotNull(arg3, "Parameter arg3 should exist.")
-    assertEquals(2, arg3.getComplex().size, "Parameter arg3 should have two values.")
-    assertEquals(IRParameter.Count.SINGLE, arg3.count, "Parameter arg3 should be a single value.")
-    assertEquals(IRParameter.Presence.REQUIRED, arg3.presence, "Parameter arg3 should be required.")
+    assertNotNull(arg3)
+
+    if (arg3 !is NestedParameter) {
+      throw AssertionError()
+    }
+
+    assertEquals(2, arg3.type.size)
+    assertTrue(arg3.single)
+    assertFalse(arg3.optional)
 
     val arg4 = arg3["arg4"]
-    assertNotNull(arg4, "Parameter arg4 should exist.")
-    assertEquals(
-        IRParameter.Type.STRING, arg4.getSimple(), "Parameter arg4 should be of type string.")
-    assertEquals(IRParameter.Count.SINGLE, arg4.count, "Parameter arg4 should be a single value.")
-    assertEquals(IRParameter.Presence.REQUIRED, arg4.presence, "Parameter arg4 should be required.")
+    assertNotNull(arg4)
+
+    if (arg4 !is LiteralParameter) {
+      throw AssertionError()
+    }
+
+    assertEquals(LiteralParameterType.STRING, arg4.type)
+    assertTrue(arg4.single)
+    assertFalse(arg4.optional)
 
     val arg5 = arg3["arg5"]
-    assertNotNull(arg5, "Parameter arg5 should exist.")
-    assertEquals(
-        IRParameter.Type.INT, arg5.getSimple(), "Parameter arg5 should be of type integer.")
-    assertEquals(IRParameter.Count.SINGLE, arg5.count, "Parameter arg5 should be a single value.")
-    assertEquals(IRParameter.Presence.OPTIONAL, arg5.presence, "Parameter arg5 should be optional.")
+    assertNotNull(arg5)
+
+    if (arg5 !is LiteralParameter) {
+      throw AssertionError()
+    }
+
+    assertEquals(LiteralParameterType.INT, arg5.type)
+    assertTrue(arg5.single)
+    assertTrue(arg5.optional)
   }
 
   @Test
@@ -118,41 +141,66 @@ class ParserTest {
     val stages = pipelines.single().stages
 
     // Get the stage.
-    assertEquals(1, stages.size, "There should be one stage.")
+    assertEquals(1, stages.size)
     val stage = stages[0]
-    assertTrue(stage.processor.uri.endsWith("Processor"), "Stage should use the correct processor.")
+    assertTrue(stage.processor.uri.endsWith("Processor"))
 
     // Parse first argument.
     val arg1 = stage.arguments["arg1"]
-    assertNotNull(arg1, "arg1 should exist.")
-    assertEquals(1, arg1.getSimple().size, "arg1 should have one value")
-    assertEquals("Hello, World!", arg1.getSimple()[0], "arg1 should be 'Hello, World!'.")
+    assertNotNull(arg1)
+
+    if (arg1 !is LiteralArgument) {
+      throw AssertionError()
+    }
+
+    assertEquals(1, arg1.values.size)
+    assertEquals("Hello, World!", arg1.values[0])
 
     // Parse second argument.
     val arg2 = stage.arguments["arg2"]
     assertNotNull(arg2, "arg2 should exist.")
-    val arg2Values = arg2.getSimple().sorted()
-    assertEquals(3, arg2.getSimple().size, "arg2 should have three values")
-    assertEquals("1", arg2Values[0], "arg2 should be '1'.")
-    assertEquals("2", arg2Values[1], "arg2 should be '2'.")
-    assertEquals("3", arg2Values[2], "arg2 should be '3'.")
+
+    if (arg2 !is LiteralArgument) {
+      throw AssertionError()
+    }
+
+    val arg2Values = arg2.values.sorted()
+    assertEquals(3, arg2.values.size)
+    assertEquals("1", arg2Values[0])
+    assertEquals("2", arg2Values[1])
+    assertEquals("3", arg2Values[2])
 
     // Parse third argument.
     val arg3 = stage.arguments["arg3"]
-    assertNotNull(arg3, "arg3 should exist.")
-    assertEquals(1, arg3.getComplex().size, "arg3 should have one instance")
-    val arg = arg3.getComplex()[0]
+    assertNotNull(arg3)
+
+    if (arg3 !is NestedArgument) {
+      throw AssertionError()
+    }
+
+    assertEquals(1, arg3.values.size)
+    val arg = arg3.values[0]
 
     // Parse fourth argument.
     val arg4 = arg["arg4"]
-    assertNotNull(arg4, "arg4 should exist.")
-    assertEquals(1, arg4.getSimple().size, "arg4 should have one value")
-    assertEquals("Hello, World!", arg4.getSimple()[0], "arg4 should be 'Hello, World!'.")
+    assertNotNull(arg4)
+
+    if (arg4 !is LiteralArgument) {
+      throw AssertionError()
+    }
+
+    assertEquals(1, arg4.values.size, "arg4 should have one value")
+    assertEquals("Hello, World!", arg4.values[0])
 
     // Parse fifth argument.
     val arg5 = arg["arg5"]
-    assertNotNull(arg5, "arg5 should exist.")
-    assertEquals(1, arg5.getSimple().size, "arg5 should have one value")
-    assertEquals("1", arg5.getSimple()[0], "arg5 should be '1'.")
+    assertNotNull(arg5)
+
+    if (arg5 !is LiteralArgument) {
+      throw AssertionError()
+    }
+
+    assertEquals(1, arg5.values.size)
+    assertEquals("1", arg5.values[0])
   }
 }

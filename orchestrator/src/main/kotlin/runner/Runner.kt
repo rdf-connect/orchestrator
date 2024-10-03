@@ -32,10 +32,10 @@ abstract class Runner(
   final override lateinit var broker: Broker<ByteArray>
 
   /** The URIs the runner wants to listen to. */
-  final override val receiving: Set<String> = this.stages.map { it.getReaders() }.flatten().toSet()
+  final override val receiving: Set<String> = this.stages.map { it.readers() }.flatten().toSet()
 
   /** The URIs the runners wants to send to. */
-  final override val sending: List<String> = this.stages.map { it.getWriters() }.flatten()
+  final override val sending: List<String> = this.stages.map { it.writers() }.flatten()
 
   /**
    * All incoming tasks will be handled in a first-in first-out based, in order to guarantee their

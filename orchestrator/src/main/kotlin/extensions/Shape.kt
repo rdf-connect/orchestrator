@@ -4,7 +4,9 @@ import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.parser.PropertyShape
 import org.apache.jena.shacl.parser.Shape
 import org.apache.jena.shacl.vocabulary.SHACLM
-import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.LiteralParameter
+import technology.idlab.intermediate.NestedParameter
+import technology.idlab.intermediate.Parameter
 
 /**
  * Check if the shape is closed.
@@ -29,8 +31,8 @@ fun Shape.property(path: Resource): PropertyShape? {
  *
  * @return A map of IRParameter instances.
  */
-fun Shape.asArguments(): Map<String, IRParameter> {
-  val result = mutableMapOf<String, IRParameter>()
+fun Shape.asArguments(): Map<String, Parameter> {
+  val result = mutableMapOf<String, Parameter>()
 
   for (property in this.propertyShapes) {
     // Access the property shape.
@@ -42,27 +44,16 @@ fun Shape.asArguments(): Map<String, IRParameter> {
     val node = property.node()
 
     // Determine if the parameter is optional or required.
-    val presence =
-        if (minCount == 0) {
-          IRParameter.Presence.OPTIONAL
-        } else {
-          IRParameter.Presence.REQUIRED
-        }
+    val optional = minCount == 0
 
     // Determine if the parameter is a list or a single value.
-    val count =
-        if (maxCount == 1) {
-          IRParameter.Count.SINGLE
-        } else {
-          IRParameter.Count.LIST
-        }
+    val count = maxCount == 1
 
     // Create a new IRParameter instance.
     if (datatype == null && node != null) {
-      result[name] =
-          IRParameter(uri, complex = node.asArguments(), presence = presence, count = count)
+      result[name] = NestedParameter(uri, node.asArguments(), single = count, optional = optional)
     } else if (datatype != null && node == null) {
-      result[name] = IRParameter(uri, simple = datatype, presence = presence, count = count)
+      result[name] = LiteralParameter(uri, datatype, single = count, optional = optional)
     } else {
       throw IllegalStateException()
     }

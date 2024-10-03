@@ -6,7 +6,7 @@ import org.apache.jena.shacl.parser.PropertyShape
 import org.apache.jena.shacl.parser.Shape
 import org.apache.jena.shacl.vocabulary.SHACLM
 import technology.idlab.RDFC
-import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.LiteralParameterType
 import technology.idlab.parser.ParserException
 
 /**
@@ -78,23 +78,23 @@ fun PropertyShape.node(): Shape? {
  *
  * @return The datatype constraint.
  */
-fun PropertyShape.datatype(): IRParameter.Type? {
+fun PropertyShape.datatype(): LiteralParameterType? {
   val nodeQuery = this.shapeGraph.find(this.shapeNode, SHACLM.datatype.asNode(), null)
 
   // There should be only one datatype constraint.
   val node = nodeQuery.toList().singleOrNull() ?: return null
 
   return when (node.`object`.uri) {
-    XSDDatatype.XSDboolean.uri -> IRParameter.Type.BOOLEAN
-    XSDDatatype.XSDbyte.uri -> IRParameter.Type.BYTE
-    XSDDatatype.XSDdateTime.uri -> IRParameter.Type.DATE
-    XSDDatatype.XSDdouble.uri -> IRParameter.Type.DOUBLE
-    XSDDatatype.XSDfloat.uri -> IRParameter.Type.FLOAT
-    XSDDatatype.XSDint.uri -> IRParameter.Type.INT
-    XSDDatatype.XSDdouble.uri -> IRParameter.Type.LONG
-    XSDDatatype.XSDstring.uri -> IRParameter.Type.STRING
-    RDFC.writer.uri -> IRParameter.Type.WRITER
-    RDFC.reader.uri -> IRParameter.Type.READER
+    XSDDatatype.XSDboolean.uri -> LiteralParameterType.BOOLEAN
+    XSDDatatype.XSDbyte.uri -> LiteralParameterType.BYTE
+    XSDDatatype.XSDdateTime.uri -> LiteralParameterType.DATE
+    XSDDatatype.XSDdouble.uri -> LiteralParameterType.DOUBLE
+    XSDDatatype.XSDfloat.uri -> LiteralParameterType.FLOAT
+    XSDDatatype.XSDint.uri -> LiteralParameterType.INT
+    XSDDatatype.XSDdouble.uri -> LiteralParameterType.LONG
+    XSDDatatype.XSDstring.uri -> LiteralParameterType.STRING
+    RDFC.writer.uri -> LiteralParameterType.WRITER
+    RDFC.reader.uri -> LiteralParameterType.READER
     else -> throw ParserException.UnknownDataType(node.`object`.uri)
   }
 }
@@ -109,7 +109,7 @@ fun PropertyShape.path(): String {
   return node.`object`.toString()
 }
 
-fun PropertyShape.class_(): IRParameter.Type? {
+fun PropertyShape.class_(): LiteralParameterType? {
   val classQuery = this.shapeGraph.find(this.shapeNode, SHACLM.class_.asNode(), null)
   val kindQuery = this.shapeGraph.find(this.shapeNode, SHACLM.nodeKind.asNode(), null)
 
@@ -117,9 +117,9 @@ fun PropertyShape.class_(): IRParameter.Type? {
   val node = classQuery.toList().singleOrNull() ?: kindQuery.toList().singleOrNull() ?: return null
 
   return when (node.`object`.uri) {
-    RDFC.writer.uri -> IRParameter.Type.WRITER
-    RDFC.reader.uri -> IRParameter.Type.READER
-    SHACLM.IRIOrLiteral.uri -> IRParameter.Type.STRING
+    RDFC.writer.uri -> LiteralParameterType.WRITER
+    RDFC.reader.uri -> LiteralParameterType.READER
+    SHACLM.IRIOrLiteral.uri -> LiteralParameterType.STRING
     else -> throw ParserException.UnknownDataType(node.`object`.uri)
   }
 }

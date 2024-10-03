@@ -1,34 +1,58 @@
 package technology.idlab.intermediate
 
-/**
- * Intermediate representation of an argument. These can be either simple or complex, meaning they
- * contain either a list of values or a map of key-value pairs. Note that it doesn't matter whether
- * the presence of an argument is required or optional, as well as whether it is a single value or a
- * list of values. This is because the parser should have already taken care of these details.
- */
-data class IRArgument(
-    // In case of simple: concrete but unparsed value.
-    private val simple: List<String>? = null,
-    // In case of complex: list of key-value pairs.
-    private val complex: List<Map<String, IRArgument>>? = null,
-    // The shape of the argument.
+sealed interface Argument {
+  val parameter: Parameter
+
+  fun findAll(type: LiteralParameterType, parameter: Parameter): List<String>
+}
+
+class LiteralArgument(
+    override val parameter: LiteralParameter,
+    val values: MutableList<String> = mutableListOf(),
+) : Argument {
+  override fun findAll(type: LiteralParameterType, parameter: Parameter): List<String> {
+    if (parameter !is LiteralParameter) {
+      return emptyList()
+    }
+
+    return if (parameter.type == type) {
+      this.values
+    } else {
+      emptyList()
+    }
+  }
+}
+
+class NestedArgument(
+    override val parameter: NestedParameter,
+    val values: MutableList<Map<String, Argument>> = mutableListOf(),
+) : Argument {
+  override fun findAll(type: LiteralParameterType, parameter: Parameter): List<String> {
+    if (parameter !is NestedParameter) {
+      throw IllegalStateException()
+    }
+
+    val result = mutableListOf<String>()
+
+    for (value in this.values) {
+      for ((key, argument) in value) {
+        result.addAll(argument.findAll(type, parameter[key]))
+      }
+    }
+
+    return result
+  }
+}
+
+class IRArgument(
     val parameter: IRParameter,
+    val values: Map<String, Argument> = mutableMapOf(),
 ) {
-  init {
-    if (simple == null && complex == null) {
-      throw IllegalStateException()
-    }
-
-    if (simple != null && complex != null) {
-      throw IllegalStateException()
-    }
+  operator fun get(key: String): Argument {
+    return values[key] ?: throw IllegalArgumentException("Argument $key not found.")
   }
 
-  fun getSimple(): List<String> {
-    return simple ?: throw IllegalStateException()
-  }
-
-  fun getComplex(): List<Map<String, IRArgument>> {
-    return complex ?: throw IllegalStateException()
+  fun findAll(type: LiteralParameterType, parameter: Parameter): List<String> {
+    return this.values.values.map { it.findAll(type, parameter) }.flatten()
   }
 }

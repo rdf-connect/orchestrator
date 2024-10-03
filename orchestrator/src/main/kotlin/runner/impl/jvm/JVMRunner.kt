@@ -1,6 +1,5 @@
 package technology.idlab.runner.impl.jvm
 
-import arrow.core.zip
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLClassLoader
@@ -12,8 +11,10 @@ import technology.idlab.InvalidJarPathException
 import technology.idlab.InvalidProcessorException
 import technology.idlab.MissingMetadataException
 import technology.idlab.intermediate.IRArgument
-import technology.idlab.intermediate.IRParameter
 import technology.idlab.intermediate.IRStage
+import technology.idlab.intermediate.LiteralArgument
+import technology.idlab.intermediate.LiteralParameterType
+import technology.idlab.intermediate.NestedArgument
 import technology.idlab.runner.Runner
 import technology.idlab.util.Log
 
@@ -101,21 +102,49 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     reader?.close()
   }
 
-  private fun instantiate(
-      serialized: Map<String, Pair<IRParameter, IRArgument>>
-  ): Map<String, List<Any>> {
-    return serialized.mapValues { (_, map) ->
-      val (parameter, arguments) = map
+  private fun IRArgument.unmarshall(): Map<String, List<Any>> {
+    val result = mutableMapOf<String, List<Any>>()
 
-      when (parameter.kind) {
-        IRParameter.Kind.SIMPLE -> {
-          arguments.getSimple().map { instantiate(parameter.getSimple(), it) }
-        }
-        IRParameter.Kind.COMPLEX -> {
-          arguments.getComplex().map { instantiate(parameter.getComplex().zip(it)) }
-        }
-      }
+    for ((name, argument) in this.values) {
+      result[name] =
+          when (argument) {
+            is LiteralArgument -> argument.unmarshall()
+            is NestedArgument -> argument.unmarshall()
+          }
     }
+
+    return result
+  }
+
+  private fun NestedArgument.unmarshall(): List<Map<String, Any>> {
+    val result = mutableListOf<Map<String, Any>>()
+
+    for (value in this.values) {
+      val innerResult = mutableMapOf<String, Any>()
+
+      for ((name, argument) in value) {
+        innerResult[name] =
+            when (argument) {
+              is LiteralArgument -> argument.unmarshall()
+              is NestedArgument -> argument.unmarshall()
+            }
+      }
+
+      result.add(innerResult)
+    }
+
+    return result
+  }
+
+  private fun LiteralArgument.unmarshall(): List<Any> {
+    val result = mutableListOf<Any>()
+
+    for (value in values) {
+      val unmarshalled = parameter.type.unmarshall(value)
+      result.add(unmarshalled)
+    }
+
+    return result
   }
 
   /**
@@ -124,18 +153,18 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
    * @param type The type of the parameter.
    * @param value The string value to parse.
    */
-  private fun instantiate(type: IRParameter.Type, value: String): Any {
-    return when (type) {
-      IRParameter.Type.BOOLEAN -> value.toBoolean()
-      IRParameter.Type.BYTE -> value.toByte()
-      IRParameter.Type.DATE -> TODO()
-      IRParameter.Type.DOUBLE -> value.toDouble()
-      IRParameter.Type.FLOAT -> value.toFloat()
-      IRParameter.Type.INT -> value.toInt()
-      IRParameter.Type.LONG -> value.toLong()
-      IRParameter.Type.STRING -> value
-      IRParameter.Type.WRITER -> createWriter(value)
-      IRParameter.Type.READER -> this.readers.getOrPut(value) { Channel() }
+  private fun LiteralParameterType.unmarshall(value: String): Any {
+    return when (this) {
+      LiteralParameterType.BOOLEAN -> value.toBoolean()
+      LiteralParameterType.BYTE -> value.toByte()
+      LiteralParameterType.DATE -> TODO()
+      LiteralParameterType.DOUBLE -> value.toDouble()
+      LiteralParameterType.FLOAT -> value.toFloat()
+      LiteralParameterType.INT -> value.toInt()
+      LiteralParameterType.LONG -> value.toLong()
+      LiteralParameterType.STRING -> value
+      LiteralParameterType.WRITER -> createWriter(value)
+      LiteralParameterType.READER -> readers.getOrPut(value) { Channel() }
     }
   }
 
@@ -175,7 +204,7 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     }
 
     /* Build the argument map. */
-    val arguments = this.instantiate(stage.processor.parameters.zip(stage.arguments))
+    val arguments = stage.arguments.unmarshall()
 
     /* Initialize the stage with the new map. */
     val constructor = clazz.getConstructor(Arguments::class.java)

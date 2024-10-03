@@ -8,7 +8,7 @@ class IRProcessor(
     /** The entrypoint. */
     val entrypoint: String,
     /** Processor parameters. */
-    val parameters: Map<String, IRParameter> = emptyMap(),
+    val parameters: IRParameter = IRParameter(uri, emptyMap()),
     /** Additional parameters. These may be used by the runner for any reason. */
     val metadata: Map<String, String> = emptyMap()
 )

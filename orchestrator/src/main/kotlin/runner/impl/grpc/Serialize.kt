@@ -4,84 +4,72 @@ import com.google.protobuf.Timestamp
 import com.google.protobuf.kotlin.toByteStringUtf8
 import rdfc.Intermediate as GRPC
 import rdfc.Intermediate
-import technology.idlab.intermediate.IRArgument
-import technology.idlab.intermediate.IRParameter
+import technology.idlab.intermediate.Argument
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
+import technology.idlab.intermediate.LiteralArgument
+import technology.idlab.intermediate.LiteralParameterType
+import technology.idlab.intermediate.NestedArgument
 
-private fun serialize(type: IRParameter.Type, serialized: String): Intermediate.ArgumentLiteral =
+private fun serialize(arg: LiteralArgument, serialized: String): Intermediate.ArgumentLiteral =
     rdfc.argumentLiteral {
-      when (type) {
-        IRParameter.Type.BOOLEAN -> {
+      when (arg.parameter.type) {
+        LiteralParameterType.BOOLEAN -> {
           bool = serialized == "true"
         }
-        IRParameter.Type.BYTE -> {
+        LiteralParameterType.BYTE -> {
           bytes = serialized.toByteStringUtf8()
         }
-        IRParameter.Type.DATE -> {
+        LiteralParameterType.DATE -> {
           timestamp = Timestamp.parseFrom(serialized.toByteArray())
         }
-        IRParameter.Type.DOUBLE -> {
+        LiteralParameterType.DOUBLE -> {
           double = serialized.toDouble()
         }
-        IRParameter.Type.FLOAT -> {
+        LiteralParameterType.FLOAT -> {
           float = serialized.toFloat()
         }
-        IRParameter.Type.INT -> {
+        LiteralParameterType.INT -> {
           int32 = serialized.toInt()
         }
-        IRParameter.Type.LONG -> {
+        LiteralParameterType.LONG -> {
           int64 = serialized.toLong()
         }
-        IRParameter.Type.STRING -> {
+        LiteralParameterType.STRING -> {
           string = serialized
         }
-        IRParameter.Type.WRITER -> {
+        LiteralParameterType.WRITER -> {
           writer = rdfc.writer { uri = serialized }
         }
-        IRParameter.Type.READER -> {
+        LiteralParameterType.READER -> {
           reader = rdfc.reader { uri = serialized }
         }
       }
     }
 
-private fun serialize(
-    type: IRParameter.Type,
-    serialized: List<String>
-): Intermediate.ArgumentLiteral.List =
-    rdfc.ArgumentLiteralKt.list {
-      for (element in serialized) {
-        values.add(serialize(type, element))
+private fun serialize(arg: Argument): Intermediate.Argument {
+  return when (arg) {
+    is LiteralArgument -> {
+      rdfc.argument {
+        this.literals =
+            rdfc.ArgumentLiteralKt.list { values.addAll(arg.values.map { serialize(arg, it) }) }
       }
     }
-
-private fun serialize(serialized: Map<String, IRArgument>): Intermediate.ArgumentMap =
-    rdfc.argumentMap { values.putAll(serialized.mapValues { serialize(it.value) }) }
-
-private fun serialize(serialized: List<Map<String, IRArgument>>): Intermediate.ArgumentMap.List =
-    rdfc.ArgumentMapKt.list { values.addAll(serialized.map { serialize(it) }) }
-
-private fun serialize(arg: IRArgument): Intermediate.Argument =
-    rdfc.argument {
-      when (Pair(arg.parameter.count, arg.parameter.kind)) {
-        Pair(IRParameter.Count.SINGLE, IRParameter.Kind.SIMPLE) -> {
-          val type = arg.parameter.getSimple()
-          val serialized = arg.getSimple()[0]
-          this.literal = serialize(type, serialized)
-        }
-        Pair(IRParameter.Count.LIST, IRParameter.Kind.SIMPLE) -> {
-          val type = arg.parameter.getSimple()
-          val serialized = arg.getSimple()
-          this.literals = serialize(type, serialized)
-        }
-        Pair(IRParameter.Count.SINGLE, IRParameter.Kind.COMPLEX) -> {
-          this.map = serialize(arg.getComplex()[0])
-        }
-        Pair(IRParameter.Count.LIST, IRParameter.Kind.COMPLEX) -> {
-          this.maps = serialize(arg.getComplex())
-        }
+    is NestedArgument -> {
+      rdfc.argument {
+        this.maps =
+            rdfc.ArgumentMapKt.list {
+              for (nestedArgument in arg.values) {
+                values.add(
+                    rdfc.argumentMap {
+                      values.putAll(nestedArgument.mapValues { serialize(it.value) })
+                    })
+              }
+            }
       }
     }
+  }
+}
 
 private fun serialize(processor: IRProcessor): GRPC.Processor {
   return rdfc.processor {
@@ -95,6 +83,9 @@ internal fun serialize(stage: IRStage): GRPC.Stage {
   return rdfc.stage {
     uri = stage.uri
     processor = serialize(stage.processor)
-    arguments.putAll(stage.arguments.mapValues { serialize(it.value) })
+
+    for ((key, value) in stage.arguments.values) {
+      arguments[key] = serialize(value)
+    }
   }
 }

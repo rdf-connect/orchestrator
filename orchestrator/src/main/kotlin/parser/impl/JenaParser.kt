@@ -7,14 +7,15 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.Shapes
 import org.apache.jena.vocabulary.RDF
-import targeting
 import technology.idlab.RDFC
 import technology.idlab.extensions.asArguments
 import technology.idlab.extensions.getCollection
 import technology.idlab.extensions.node
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.property
+import technology.idlab.extensions.targeting
 import technology.idlab.extensions.validate
+import technology.idlab.intermediate.Argument
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRDependency
 import technology.idlab.intermediate.IRPackage
@@ -23,6 +24,11 @@ import technology.idlab.intermediate.IRPipeline
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
+import technology.idlab.intermediate.LiteralArgument
+import technology.idlab.intermediate.LiteralParameter
+import technology.idlab.intermediate.NestedArgument
+import technology.idlab.intermediate.NestedParameter
+import technology.idlab.intermediate.Parameter
 import technology.idlab.parser.Parser
 import technology.idlab.parser.ParserException
 import technology.idlab.util.Log
@@ -57,26 +63,26 @@ class JenaParser(
     this.model.validate()
   }
 
+  private fun arguments(uri: Resource, parameters: IRParameter): IRArgument {
+    val result = arguments(uri, parameters.type)
+    return IRArgument(parameters, result)
+  }
+
   /**
    * Parse the arguments of a stage. This is a recursive implementation that will automatically
    * parse nested classes. Recursion will continue until all objects found are literals.
    */
-  private fun arguments(
-      argumentsUri: Resource,
-      parameters: Map<String, IRParameter>
-  ): Map<String, IRArgument> {
-    val simple = mutableMapOf<String, MutableList<String>>()
-    val complex = mutableMapOf<String, MutableList<Map<String, IRArgument>>>()
+  private fun arguments(uri: Resource, parameters: Map<String, Parameter>): Map<String, Argument> {
+    val result = mutableMapOf<String, Argument>()
 
     for ((name, parameter) in parameters) {
-      val key = model.createProperty(parameter.uri)
-      val valueUris = model.listObjectsOfProperty(argumentsUri, key).toList()
+      val path = model.createProperty(parameter.uri)
+      val arguments = model.listObjectsOfProperty(uri, path).toList()
 
       // If the value is null, we may either skip it if it's not required or throw an exception if
-      // it
-      // is.
-      if (valueUris.isEmpty()) {
-        if (parameter.presence == IRParameter.Presence.REQUIRED) {
+      // it is.
+      if (arguments.isEmpty()) {
+        if (!parameter.optional) {
           throw Exception()
         } else {
           continue
@@ -84,11 +90,9 @@ class JenaParser(
       }
 
       // If the parameter is simple, just add it to the list as a literal or resource.
-      if (parameter.kind == IRParameter.Kind.SIMPLE) {
-        val list = simple.getOrPut(name) { mutableListOf() }
-
+      if (parameter is LiteralParameter) {
         val values =
-            valueUris.map {
+            arguments.map {
               if (it.isLiteral) {
                 it.asLiteral().value.toString()
               } else {
@@ -96,27 +100,26 @@ class JenaParser(
               }
             }
 
-        list.addAll(values)
+        val argument = result.getOrPut(name) { LiteralArgument(parameter) }
+
+        if (argument is LiteralArgument) {
+          argument.values.addAll(values)
+        } else {
+          throw IllegalStateException()
+        }
       }
 
-      if (parameter.kind == IRParameter.Kind.COMPLEX) {
-        val list = complex.getOrPut(name) { mutableListOf() }
+      if (parameter is NestedParameter) {
+        val values = arguments.map { arguments(it.asResource(), parameter.type) }
 
-        val values = valueUris.map { arguments(it.asResource(), parameter.getComplex()) }
+        val argument = result.getOrPut(name) { NestedArgument(parameter) }
 
-        list.addAll(values)
+        if (argument is NestedArgument) {
+          argument.values.addAll(values)
+        } else {
+          throw IllegalStateException()
+        }
       }
-    }
-
-    // Combine both simple and complex mappings as a single map to IRArguments.
-    val result = mutableMapOf<String, IRArgument>()
-
-    for ((key, value) in simple) {
-      result[key] = IRArgument(simple = value, parameter = parameters[key]!!)
-    }
-
-    for ((key, value) in complex) {
-      result[key] = IRArgument(complex = value, parameter = parameters[key]!!)
     }
 
     return result
@@ -210,7 +213,8 @@ class JenaParser(
     // Get entrypoint.
     val entrypoint = model.objectOfProperty(processor, RDFC.entrypoint)!!.toString()
 
-    return IRProcessor(processor.toString(), target.toString(), entrypoint, parameters, metadata)
+    return IRProcessor(
+        processor.toString(), target.toString(), entrypoint, IRParameter("", parameters), metadata)
   }
 
   override fun packages(): List<IRPackage> {

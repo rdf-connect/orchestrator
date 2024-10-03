@@ -1,3 +1,5 @@
+package technology.idlab.extensions
+
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.Shapes
 import org.apache.jena.shacl.parser.Shape
