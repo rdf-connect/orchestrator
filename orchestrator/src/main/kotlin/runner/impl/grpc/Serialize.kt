@@ -4,12 +4,12 @@ import com.google.protobuf.Timestamp
 import com.google.protobuf.kotlin.toByteStringUtf8
 import rdfc.Intermediate as GRPC
 import rdfc.Intermediate
-import technology.idlab.intermediate.Argument
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRStage
-import technology.idlab.intermediate.LiteralArgument
-import technology.idlab.intermediate.LiteralParameterType
-import technology.idlab.intermediate.NestedArgument
+import technology.idlab.intermediate.argument.Argument
+import technology.idlab.intermediate.argument.LiteralArgument
+import technology.idlab.intermediate.argument.NestedArgument
+import technology.idlab.intermediate.parameter.LiteralParameterType
 
 private fun serialize(arg: LiteralArgument, serialized: String): Intermediate.ArgumentLiteral =
     rdfc.argumentLiteral {
@@ -84,7 +84,7 @@ internal fun serialize(stage: IRStage): GRPC.Stage {
     uri = stage.uri
     processor = serialize(stage.processor)
 
-    for ((key, value) in stage.arguments.values) {
+    for ((key, value) in stage.arguments.root) {
       arguments[key] = serialize(value)
     }
   }

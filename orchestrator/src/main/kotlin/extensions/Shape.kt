@@ -4,9 +4,9 @@ import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.parser.PropertyShape
 import org.apache.jena.shacl.parser.Shape
 import org.apache.jena.shacl.vocabulary.SHACLM
-import technology.idlab.intermediate.LiteralParameter
-import technology.idlab.intermediate.NestedParameter
-import technology.idlab.intermediate.Parameter
+import technology.idlab.intermediate.parameter.LiteralParameter
+import technology.idlab.intermediate.parameter.NestedParameter
+import technology.idlab.intermediate.parameter.Parameter
 
 /**
  * Check if the shape is closed.

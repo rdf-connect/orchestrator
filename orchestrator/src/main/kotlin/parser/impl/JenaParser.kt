@@ -15,7 +15,6 @@ import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.property
 import technology.idlab.extensions.targeting
 import technology.idlab.extensions.validate
-import technology.idlab.intermediate.Argument
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRDependency
 import technology.idlab.intermediate.IRPackage
@@ -24,11 +23,13 @@ import technology.idlab.intermediate.IRPipeline
 import technology.idlab.intermediate.IRProcessor
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
-import technology.idlab.intermediate.LiteralArgument
-import technology.idlab.intermediate.LiteralParameter
-import technology.idlab.intermediate.NestedArgument
-import technology.idlab.intermediate.NestedParameter
-import technology.idlab.intermediate.Parameter
+import technology.idlab.intermediate.argument.Argument
+import technology.idlab.intermediate.argument.LiteralArgument
+import technology.idlab.intermediate.argument.NestedArgument
+import technology.idlab.intermediate.parameter.LiteralParameter
+import technology.idlab.intermediate.parameter.NestedParameter
+import technology.idlab.intermediate.parameter.Parameter
+import technology.idlab.intermediate.runner.RunnerType
 import technology.idlab.parser.Parser
 import technology.idlab.parser.ParserException
 import technology.idlab.util.Log
@@ -65,7 +66,7 @@ class JenaParser(
 
   private fun arguments(uri: Resource, parameters: IRParameter): IRArgument {
     val result = arguments(uri, parameters.type)
-    return IRArgument(parameters, result)
+    return IRArgument(result)
   }
 
   /**
@@ -76,7 +77,7 @@ class JenaParser(
     val result = mutableMapOf<String, Argument>()
 
     for ((name, parameter) in parameters) {
-      val path = model.createProperty(parameter.uri)
+      val path = model.createProperty(parameter.path)
       val arguments = model.listObjectsOfProperty(uri, path).toList()
 
       // If the value is null, we may either skip it if it's not required or throw an exception if
@@ -214,7 +215,7 @@ class JenaParser(
     val entrypoint = model.objectOfProperty(processor, RDFC.entrypoint)!!.toString()
 
     return IRProcessor(
-        processor.toString(), target.toString(), entrypoint, IRParameter("", parameters), metadata)
+        processor.toString(), target.toString(), entrypoint, IRParameter(parameters), metadata)
   }
 
   override fun packages(): List<IRPackage> {
@@ -237,7 +238,7 @@ class JenaParser(
     // Retrieve built in runners.
     val builtIn = model.listSubjectsWithProperty(RDF.type, RDFC.builtInRunner).toList()
     for (uri in builtIn) {
-      val runner = IRRunner(uri.toString(), type = IRRunner.Type.BUILT_IN)
+      val runner = IRRunner(uri.toString(), type = RunnerType.BuiltIn)
       result.add(runner)
     }
 
@@ -304,14 +305,14 @@ class JenaParser(
 
     val type =
         when (model.objectOfProperty(runner, RDF.type)) {
-          RDFC.builtInRunner -> IRRunner.Type.BUILT_IN
-          RDFC.grpcRunner -> IRRunner.Type.GRPC
+          RDFC.builtInRunner -> RunnerType.BuiltIn
+          RDFC.grpcRunner -> RunnerType.GRPC
           null -> throw ParserException.NoRunnerType(runner.uri)
           else -> throw ParserException.UnknownRunnerType(runner.uri)
         }
 
     // Check if the entrypoint is valid.
-    if (type == IRRunner.Type.BUILT_IN && entrypoint != null) {
+    if (type == RunnerType.BuiltIn && entrypoint != null) {
       throw ParserException.InvalidEntrypoint(runner.uri)
     }
 

@@ -7,11 +7,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import technology.idlab.intermediate.LiteralArgument
-import technology.idlab.intermediate.LiteralParameter
-import technology.idlab.intermediate.LiteralParameterType
-import technology.idlab.intermediate.NestedArgument
-import technology.idlab.intermediate.NestedParameter
+import technology.idlab.intermediate.argument.LiteralArgument
+import technology.idlab.intermediate.argument.NestedArgument
+import technology.idlab.intermediate.parameter.LiteralParameter
+import technology.idlab.intermediate.parameter.LiteralParameterType
+import technology.idlab.intermediate.parameter.NestedParameter
 import technology.idlab.parser.Parser
 import technology.idlab.parser.impl.JenaParser
 

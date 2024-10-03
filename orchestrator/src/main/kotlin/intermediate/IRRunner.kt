@@ -1,15 +1,11 @@
 package technology.idlab.intermediate
 
 import java.io.File
+import technology.idlab.intermediate.runner.RunnerType
 
 data class IRRunner(
     val uri: String,
     val directory: File? = null,
     val entrypoint: String? = null,
-    val type: Type,
-) {
-  enum class Type {
-    GRPC,
-    BUILT_IN,
-  }
-}
+    val type: RunnerType,
+)

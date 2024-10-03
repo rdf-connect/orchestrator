@@ -1,6 +1,6 @@
 package technology.idlab
 
-import technology.idlab.intermediate.IRRunner
+import technology.idlab.intermediate.runner.RunnerType
 
 abstract class RDFCException : Exception()
 
@@ -111,7 +111,7 @@ class NoSuchRunnerException(private val runnerUri: String) : RDFCException()
  *
  * @param type The type which was used, but not implemented.
  */
-class UnsupportedRunnerTypeException(private val type: IRRunner.Type) : RDFCException()
+class UnsupportedRunnerTypeException(private val type: RunnerType) : RDFCException()
 
 /**
  * Metadata was expected, but not found.

@@ -12,9 +12,9 @@ import technology.idlab.InvalidProcessorException
 import technology.idlab.MissingMetadataException
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRStage
-import technology.idlab.intermediate.LiteralArgument
-import technology.idlab.intermediate.LiteralParameterType
-import technology.idlab.intermediate.NestedArgument
+import technology.idlab.intermediate.argument.LiteralArgument
+import technology.idlab.intermediate.argument.NestedArgument
+import technology.idlab.intermediate.parameter.LiteralParameterType
 import technology.idlab.runner.Runner
 import technology.idlab.util.Log
 
@@ -105,7 +105,7 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
   private fun IRArgument.unmarshall(): Map<String, List<Any>> {
     val result = mutableMapOf<String, List<Any>>()
 
-    for ((name, argument) in this.values) {
+    for ((name, argument) in this.root) {
       result[name] =
           when (argument) {
             is LiteralArgument -> argument.unmarshall()

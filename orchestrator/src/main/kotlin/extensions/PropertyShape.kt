@@ -6,7 +6,7 @@ import org.apache.jena.shacl.parser.PropertyShape
 import org.apache.jena.shacl.parser.Shape
 import org.apache.jena.shacl.vocabulary.SHACLM
 import technology.idlab.RDFC
-import technology.idlab.intermediate.LiteralParameterType
+import technology.idlab.intermediate.parameter.LiteralParameterType
 import technology.idlab.parser.ParserException
 
 /**

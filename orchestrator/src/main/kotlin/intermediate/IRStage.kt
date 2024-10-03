@@ -1,5 +1,7 @@
 package technology.idlab.intermediate
 
+import technology.idlab.intermediate.parameter.LiteralParameterType
+
 data class IRStage(
     // The URI of the stage.
     val uri: String,
@@ -9,10 +11,10 @@ data class IRStage(
     val arguments: IRArgument,
 ) {
   fun readers(): List<String> {
-    return arguments.findAll(LiteralParameterType.READER, processor.parameters)
+    return arguments.findAll(LiteralParameterType.READER)
   }
 
   fun writers(): List<String> {
-    return arguments.findAll(LiteralParameterType.WRITER, processor.parameters)
+    return arguments.findAll(LiteralParameterType.WRITER)
   }
 }

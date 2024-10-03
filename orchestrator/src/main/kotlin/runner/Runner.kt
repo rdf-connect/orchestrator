@@ -11,9 +11,9 @@ import technology.idlab.broker.Broker
 import technology.idlab.broker.BrokerClient
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
+import technology.idlab.intermediate.runner.RunnerType
 import technology.idlab.runner.impl.grpc.HostedGRPCRunner
 import technology.idlab.runner.impl.jvm.JVMRunner
-import technology.idlab.util.Log
 
 abstract class Runner(
     /** The stages which the runner must execute. */
@@ -70,18 +70,16 @@ abstract class Runner(
      * @return A new runner instance.
      * @throws NoSuchRunnerException If the type of runner is not implemented.
      */
-    fun from(runner: IRRunner, stages: Collection<IRStage>): Runner {
-      Log.shared.info("Creating runner: ${runner.uri}")
-
-      if (runner.uri == "https://www.rdf-connect.com/#JVMRunner") {
-        return JVMRunner(stages)
-      }
-
-      if (runner.type == IRRunner.Type.GRPC) {
-        return HostedGRPCRunner.create(runner, stages)
-      }
-
-      throw UnsupportedRunnerTypeException(runner.type)
-    }
+    fun from(runner: IRRunner, stages: Collection<IRStage>): Runner =
+        when (runner.type) {
+          RunnerType.BuiltIn -> {
+            if (runner.uri == "https://www.rdf-connect.com/#JVMRunner") {
+              JVMRunner(stages)
+            } else {
+              throw UnsupportedRunnerTypeException(runner.type)
+            }
+          }
+          RunnerType.GRPC -> HostedGRPCRunner.create(runner, stages)
+        }
   }
 }
