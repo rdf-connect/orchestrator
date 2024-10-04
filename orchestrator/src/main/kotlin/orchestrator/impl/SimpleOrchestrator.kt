@@ -5,7 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import technology.idlab.broker.Broker
-import technology.idlab.broker.impl.SimpleBroker
+import technology.idlab.broker.simple.SimpleBroker
 import technology.idlab.orchestrator.Orchestrator
 import technology.idlab.parser.Parser
 import technology.idlab.runner.Runner

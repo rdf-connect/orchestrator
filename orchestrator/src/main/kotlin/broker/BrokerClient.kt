@@ -13,10 +13,10 @@ interface BrokerClient<T> {
   var broker: Broker<T>
 
   /** The URIs the client wants to listen to. */
-  val receiving: Set<String>
+  val receiving: Collection<String>
 
   /** The URIs the clients wants to send to. */
-  val sending: List<String>
+  val sending: Collection<String>
 
   /**
    * Receive a new message from the broker. Note that this is a suspending, and should only return
