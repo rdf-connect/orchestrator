@@ -5,6 +5,7 @@ plugins {
   id("maven-publish")
   id("co.uzzu.dotenv.gradle") version "4.0.0"
   id("com.google.protobuf") version "0.9.4"
+  id("org.jetbrains.dokka") version "1.9.20"
 }
 
 /** Orchestrator configuration. */
