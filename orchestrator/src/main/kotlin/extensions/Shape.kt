@@ -50,12 +50,12 @@ fun Shape.asArguments(): Map<String, Parameter> {
     val count = maxCount == 1
 
     // Create a new IRParameter instance.
-    if (datatype == null && node != null) {
+    if (node != null) {
+      check(datatype == null) { "A node cannot have a datatype." }
       result[name] = NestedParameter(uri, node.asArguments(), single = count, optional = optional)
-    } else if (datatype != null && node == null) {
-      result[name] = LiteralParameter(uri, datatype, single = count, optional = optional)
     } else {
-      throw IllegalStateException()
+      check(datatype != null) { "A property must have a datatype." }
+      result[name] = LiteralParameter(uri, datatype, single = count, optional = optional)
     }
   }
 

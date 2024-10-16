@@ -13,7 +13,7 @@ suspend fun <T> retries(times: Int, milliseconds: Long = 1000, block: suspend ()
     coroutineScope {
       var exception: Exception? = null
 
-      for (i in 0 until times) {
+      for (unused in 0 until times) {
         try {
           return@coroutineScope block()
         } catch (e: Exception) {

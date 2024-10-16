@@ -24,13 +24,11 @@ class LocalResolver : Resolver {
     }
 
     // File must be a symbolic link.
-    if (!targetPath.isSymbolicLink()) {
-      throw IllegalStateException("The file already exists and is not a symbolic link.")
-    }
+    check(targetPath.isSymbolicLink()) { "The file already exists and is not a symbolic link." }
 
     // The link must be correct.
-    if (targetPath.readSymbolicLink() != sourcePath) {
-      throw IllegalStateException("The symbolic link does not point to the correct file.")
+    check(targetPath.readSymbolicLink() == sourcePath) {
+      "The symbolic link does not point to the correct file."
     }
 
     // Don't do anything if the link is correct.

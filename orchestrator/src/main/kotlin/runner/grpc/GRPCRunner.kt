@@ -154,9 +154,7 @@ open class GRPCRunner(config: GRPCConfig, stages: Collection<IRStage>) : Runner(
      * @return A new GRPCRunner.
      */
     fun hostLocally(runner: IRRunner, stages: Collection<IRStage>): GRPCRunner {
-      if (runner.type != RunnerType.GRPC) {
-        throw IllegalArgumentException("Runner must be of type GRPC.")
-      }
+      require(runner.type == RunnerType.GRPC) { "Runner must be of type GRPC." }
 
       // Create a new config for the runner. We run the server on a random port in [5000-10000] for
       // now, but should be configurable later.

@@ -102,24 +102,16 @@ class JenaParser(
             }
 
         val argument = result.getOrPut(name) { LiteralArgument(parameter) }
-
-        if (argument is LiteralArgument) {
-          argument.values.addAll(values)
-        } else {
-          throw IllegalStateException()
-        }
+        check(argument is LiteralArgument)
+        argument.values.addAll(values)
       }
 
       if (parameter is NestedParameter) {
         val values = arguments.map { arguments(it.asResource(), parameter.type) }
 
         val argument = result.getOrPut(name) { NestedArgument(parameter) }
-
-        if (argument is NestedArgument) {
-          argument.values.addAll(values)
-        } else {
-          throw IllegalStateException()
-        }
+        check(argument is NestedArgument)
+        argument.values.addAll(values)
       }
     }
 

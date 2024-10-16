@@ -1,11 +1,13 @@
 package broker
 
+import broker.exception.DeadChannelException
+import broker.exception.NoRegisteredSenderException
+import broker.exception.UnknownChannelException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.assertThrows
 import technology.idlab.broker.Broker
 import technology.idlab.broker.BrokerClient
-import technology.idlab.broker.BrokerException
 import technology.idlab.broker.simple.SimpleBroker
 
 /** This abstract class provides some simple tests for concrete broker implementations. */
@@ -62,22 +64,16 @@ abstract class BrokerTest {
 
     val broker = SimpleBroker(setOf(sender))
 
-    assertThrows<BrokerException.DeadChannelException> {
-      broker.send("https://example.com/#channel", 0)
-    }
+    assertThrows<DeadChannelException> { broker.send("https://example.com/#channel", 0) }
   }
 
   @Test
   fun unknownChannel() {
     val (_, _, broker) = setup()
 
-    assertThrows<BrokerException.UnknownChannelException> {
-      broker.send("https://example.com/#unknown", 0)
-    }
+    assertThrows<UnknownChannelException> { broker.send("https://example.com/#unknown", 0) }
 
-    assertThrows<BrokerException.UnknownChannelException> {
-      broker.unregister("https://example.com/#unknown")
-    }
+    assertThrows<UnknownChannelException> { broker.unregister("https://example.com/#unknown") }
   }
 
   @Test
@@ -101,17 +97,13 @@ abstract class BrokerTest {
 
     val broker = SimpleBroker(setOf(receiver))
 
-    assertThrows<BrokerException.NoRegisteredSenderException> {
-      broker.send("https://example.com/#channel", 0)
-    }
+    assertThrows<NoRegisteredSenderException> { broker.send("https://example.com/#channel", 0) }
   }
 
   @Test
   fun closeUnknownChannel() {
     val (_, _, broker) = setup()
 
-    assertThrows<BrokerException.UnknownChannelException> {
-      broker.unregister("https://example.com/#unknown")
-    }
+    assertThrows<UnknownChannelException> { broker.unregister("https://example.com/#unknown") }
   }
 }

@@ -120,11 +120,10 @@ data class Arguments(
           args.mapValues { (_, list) ->
             list.map { arg ->
               if (arg::class.isSubclassOf(Map::class)) {
-                if (safeCast(typeOf<Map<String, List<Any>>>(), arg)) {
-                  @Suppress("UNCHECKED_CAST") (from(arg as Map<String, List<Any>>))
-                } else {
-                  throw IllegalStateException("Cannot parse nested map.")
+                check(safeCast(typeOf<Map<String, List<Any>>>(), arg)) {
+                  "Cannot parse nested map."
                 }
+                @Suppress("UNCHECKED_CAST") (from(arg as Map<String, List<Any>>))
               } else {
                 arg
               }

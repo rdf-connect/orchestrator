@@ -10,6 +10,9 @@ private const val LEVEL_PADDING = 10
 private const val FILE_PADDING = 39
 private const val MESSAGE_PADDING = 87
 
+/** Indicates how many stack frames must be traversed to be back at the caller of the logger. */
+private const val STACK_TRACE_DEPTH = 4
+
 /**
  * A simple logging class that prints messages to the console. The class is a singleton, and all
  * messages are outputted to the console. The class has three levels of logging: DEBUG, INFO, and
@@ -47,7 +50,7 @@ class PrettyLog(level: LogLevel) : Log(level) {
     val file =
         location
             ?: run {
-              val stack = Throwable().stackTrace[4]
+              val stack = Throwable().stackTrace[STACK_TRACE_DEPTH]
               "${stack.fileName ?: "Unknown"}:${stack.lineNumber}"
             }
 

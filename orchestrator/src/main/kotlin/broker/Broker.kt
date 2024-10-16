@@ -7,7 +7,12 @@ package technology.idlab.broker
  * All receivers must be known during the construction of the broker, but can be removed at any
  * other point in time.
  *
+ * If a channel has no remaining senders, it must be closed automatically. The receivers must be
+ * notified of this.
+ *
  * @param T The type of the data to send.
+ * @see BrokerClient
+ * @see BrokerException
  */
 interface Broker<T> {
   /**
