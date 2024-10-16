@@ -1,6 +1,7 @@
 package technology.idlab.parser.impl
 
 import java.io.File
+import javax.naming.ConfigurationException
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
@@ -14,6 +15,7 @@ import technology.idlab.extensions.node
 import technology.idlab.extensions.objectOfProperty
 import technology.idlab.extensions.property
 import technology.idlab.extensions.targeting
+import technology.idlab.extensions.toTurtleString
 import technology.idlab.extensions.validate
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRDependency
@@ -61,7 +63,10 @@ class JenaParser(
     this.shapes = Shapes.parse(model)
 
     // Confirm that the values loaded into the model are valid.
-    this.model.validate()
+    val report = model.validate()
+    if (!report.conforms()) {
+      throw ConfigurationException(report.toTurtleString())
+    }
   }
 
   private fun arguments(uri: Resource, parameters: IRParameter): IRArgument {

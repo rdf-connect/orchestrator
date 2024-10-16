@@ -1,32 +1,22 @@
 package technology.idlab.extensions
 
-import java.io.ByteArrayOutputStream
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Property
 import org.apache.jena.rdf.model.RDFNode
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.ShaclValidator
+import org.apache.jena.shacl.ValidationReport
 import org.apache.jena.vocabulary.RDF
-import technology.idlab.InvalidConfigurationException
 
 /**
- * Given an Apache Jena model, run the SHACL validation engine against itself. This means that all
- * shapes embedded in the model will be used to validate the model itself. If the validation fails,
- * the program will exit with a fatal error.
+ * Run a model through a SHACL validator which is defined by the shapes within the model itself.
+ *
+ * @return The validation report.
  */
-internal fun Model.validate() {
-  // SHACL runs against the graph, so we need to convert first. Then, simply call a new validation
-  // instance and test the graph against itself.
+internal fun Model.validate(): ValidationReport {
   val clone = ModelFactory.createDefaultModel().add(this)
-  val report = ShaclValidator.get().validate(this.graph, clone.graph)
-
-  // Exit if the validation failed by logging the report.
-  if (!report.conforms()) {
-    val out = ByteArrayOutputStream()
-    report.model.write(out, "TURTLE")
-    throw InvalidConfigurationException()
-  }
+  return ShaclValidator.get().validate(this.graph, clone.graph)
 }
 
 /**
@@ -67,11 +57,8 @@ internal fun Model.subjectWithProperty(property: Property, obj: RDFNode): Resour
  * @return The list of RDF nodes.
  */
 internal fun Model.getCollection(resource: Resource): List<RDFNode> {
-  val first =
-      objectOfProperty(resource, RDF.first) ?: throw IndexOutOfBoundsException("No first element")
-  val rest =
-      objectOfProperty(resource, RDF.rest)
-          ?: throw IndexOutOfBoundsException("No rest element: $resource")
+  val first = checkNotNull(objectOfProperty(resource, RDF.first)) { "No first element" }
+  val rest = checkNotNull(objectOfProperty(resource, RDF.rest)) { "No rest element" }
 
   return if (rest != RDF.nil) {
     listOf(first) + getCollection(rest.asResource())

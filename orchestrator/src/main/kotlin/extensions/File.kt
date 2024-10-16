@@ -10,6 +10,7 @@ import java.io.File
 fun File.rawPath(): String {
   var path = this.path.removePrefix("file:")
 
+  // Remove all but the first leading slash.
   while (this.path.startsWith("//")) {
     path = path.removePrefix("/")
   }

@@ -99,7 +99,7 @@ fun PropertyShape.datatype(): LiteralParameterType? {
   }
 }
 
-/** Return the path of a property as a URI. */
+/** @return The path of the property as a URI. */
 fun PropertyShape.path(): String {
   val result = this.shapeGraph.find(this.shapeNode, SHACLM.path.asNode(), null)
 
@@ -109,7 +109,8 @@ fun PropertyShape.path(): String {
   return node.`object`.toString()
 }
 
-fun PropertyShape.class_(): LiteralParameterType? {
+/** @return The parameter type of the property shape. */
+fun PropertyShape.clazz(): LiteralParameterType? {
   val classQuery = this.shapeGraph.find(this.shapeNode, SHACLM.class_.asNode(), null)
   val kindQuery = this.shapeGraph.find(this.shapeNode, SHACLM.nodeKind.asNode(), null)
 
