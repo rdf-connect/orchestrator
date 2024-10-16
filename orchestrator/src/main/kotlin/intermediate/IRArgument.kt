@@ -3,6 +3,11 @@ package technology.idlab.intermediate
 import technology.idlab.intermediate.argument.Argument
 import technology.idlab.intermediate.parameter.LiteralParameterType
 
+/**
+ * Representation of the arguments of a given stage in IR.
+ *
+ * @param root A map of strings to arguments.
+ */
 class IRArgument(
     val root: Map<String, Argument> = mutableMapOf(),
 ) {

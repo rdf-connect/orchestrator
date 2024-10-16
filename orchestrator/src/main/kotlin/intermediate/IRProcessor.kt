@@ -1,14 +1,19 @@
 package technology.idlab.intermediate
 
+/**
+ * A representation of a processor in IR. A processor is a piece of code which can be executed by a
+ * runner and has access to specific parameters.
+ *
+ * @property uri The URI of the processor.
+ * @property target The URI of the runner which should execute this processor.
+ * @property entrypoint The location of the entrypoint.
+ * @property parameters The parameters which should be passed to the processor.
+ * @property metadata Additional parameters which may be used by the runner.
+ */
 class IRProcessor(
-    /** The URI of the processor. */
     val uri: String,
-    /** The destination of the processor. */
     val target: String,
-    /** The entrypoint. */
     val entrypoint: String,
-    /** Processor parameters. */
     val parameters: IRParameter,
-    /** Additional parameters. These may be used by the runner for any reason. */
     val metadata: Map<String, String> = emptyMap()
 )

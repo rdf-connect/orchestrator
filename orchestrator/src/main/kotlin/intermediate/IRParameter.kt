@@ -2,9 +2,12 @@ package technology.idlab.intermediate
 
 import technology.idlab.intermediate.parameter.Parameter
 
-class IRParameter(
-    val type: Map<String, Parameter>,
-) {
+/**
+ * A representation of a parameter in IR.
+ *
+ * @property type The type of the parameter.
+ */
+class IRParameter(val type: Map<String, Parameter>) {
   /**
    * Get the parameter with the given key.
    *

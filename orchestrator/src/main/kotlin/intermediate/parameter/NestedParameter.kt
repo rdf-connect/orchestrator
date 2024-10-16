@@ -1,6 +1,10 @@
 package technology.idlab.intermediate.parameter
 
-/** Representation of nested parameter in IR. */
+/**
+ * Representation of nested parameter in IR.
+ *
+ * @param type The map of parameters.
+ */
 open class NestedParameter(
     override val path: String,
     val type: Map<String, Parameter>,
@@ -14,6 +18,8 @@ open class NestedParameter(
    * @return The parameter.
    */
   operator fun get(key: String): Parameter {
-    return type[key] ?: throw IllegalArgumentException("Parameter $key not found.")
+    val result = type[key]
+    check(result != null) { "Parameter $key not found." }
+    return result
   }
 }

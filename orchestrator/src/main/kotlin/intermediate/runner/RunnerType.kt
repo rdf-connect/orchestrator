@@ -2,8 +2,8 @@ package technology.idlab.intermediate.runner
 
 /** The types of runner supported by the Orchestrator. */
 enum class RunnerType {
-  // A runner which communicates over GRPC.
+  /** A runner which communicates over GRPC. */
   GRPC,
-  // A runner which is built into the Orchestrator.
+  /** A runner which is built into the Orchestrator. */
   BuiltIn,
 }

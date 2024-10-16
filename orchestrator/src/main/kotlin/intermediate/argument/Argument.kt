@@ -3,9 +3,12 @@ package technology.idlab.intermediate.argument
 import technology.idlab.intermediate.parameter.LiteralParameterType
 import technology.idlab.intermediate.parameter.Parameter
 
-/** IR representation of a concrete argument. It holds it's corresponding parameter as a field. */
+/**
+ * A concrete argument and it's corresponding parameter.
+ *
+ * @property parameter The parameter that this argument corresponds to.
+ */
 sealed interface Argument {
-  // The parameter that this argument corresponds to.
   val parameter: Parameter
 
   /**
