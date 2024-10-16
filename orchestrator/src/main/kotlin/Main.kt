@@ -3,6 +3,7 @@ package technology.idlab
 import java.io.File
 import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
+import technology.idlab.intermediate.IRPackage
 import technology.idlab.log.Log
 import technology.idlab.orchestrator.impl.SimpleOrchestrator
 import technology.idlab.parser.impl.JenaParser
@@ -22,18 +23,24 @@ internal fun install(path: String) {
   val dependencies = rootParser.dependencies()
 
   // Resolve all dependencies and load their index files into a parser.
+  data class PackageDirectory(val pkg: IRPackage, val index: File)
+
   val resolver = GenericResolver()
-  val files = dependencies.map { resolver.resolve(it) }
+  val packages =
+      dependencies
+          .map {
+            val resolved = resolver.resolve(it)
+            val parser = JenaParser(listOf(resolved))
+            PackageDirectory(parser.packages().single(), resolved)
+          }
+          .sortedBy { -1 * it.pkg.runners.count() }
 
   // For each package, run the preparation commands.
-  for (file in files) {
-    val parser = JenaParser(listOf(file))
-    val pkg = parser.packages().single()
-
+  for ((pkg, indexFile) in packages) {
     for (stmt in pkg.prepare) {
       // Create processor builder.
       val builder = ProcessBuilder(stmt.split(" "))
-      builder.directory(file.parentFile)
+      builder.directory(indexFile.parentFile)
       builder.environment()["PATH"] = System.getenv("PATH")
 
       // Execute and await the process.
