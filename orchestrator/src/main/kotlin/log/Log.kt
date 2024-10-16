@@ -2,12 +2,17 @@ package technology.idlab.log
 
 import technology.idlab.log.pretty.PrettyLog
 
-abstract class Log(
-    // The current log level. Messages with a level lower than this will not be printed.
-    private val level: LogLevel
-) {
+/**
+ * Logging in the orchestrator can be implemented very broadly. We define a very simple interface
+ * which allows messages to be submitted at a variety of levels. Actual implementations may be as
+ * simple as printing to the console or as complex as sending messages to a remote server.
+ *
+ * @property level The log level. Messages with a level lower than this will not be printed.
+ */
+abstract class Log(private val level: LogLevel) {
   /**
-   * Print a message to the output using a given level.
+   * Print a message to the output using a given level. This is the only method that must be
+   * implemented by subclasses, but it should not be called directly by clients.
    *
    * @param message The message to print.
    * @param level The level of the message.
