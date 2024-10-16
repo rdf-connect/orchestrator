@@ -13,11 +13,10 @@ import technology.idlab.runner.Runner
 /**
  * A simple implementation of an orchestrator which only succeeds if all runners succeed without
  * intervention.
+ *
+ * @property parser The parser which is used to parse the configuration.
  */
-class SimpleOrchestrator(
-    /** Configuration of the pipeline. */
-    parser: Parser
-) : Orchestrator {
+class SimpleOrchestrator(parser: Parser) : Orchestrator {
   /** Message broker. */
   private val broker: Broker<ByteArray>
 
@@ -26,14 +25,14 @@ class SimpleOrchestrator(
 
   /** Load all stages into their respective runners. */
   init {
-    val result = mutableListOf<Runner>()
+    val runners = mutableListOf<Runner>()
 
     for (runner in parser.runners()) {
       val stages = parser.stages(runner)
-      result.add(Runner.from(runner, stages))
+      runners.add(Runner.from(runner, stages))
     }
 
-    this.runners = result
+    this.runners = runners
   }
 
   /** Initialize a broker. */

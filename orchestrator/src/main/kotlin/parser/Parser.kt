@@ -37,7 +37,7 @@ interface Parser {
   /**
    * Get a runner by its URI.
    *
-   * @param id The URI of the runner.
+   * @param uri The URI of the runner.
    * @return The runner with the given URI.
    */
   fun runner(uri: String): IRRunner

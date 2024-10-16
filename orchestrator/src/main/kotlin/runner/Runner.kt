@@ -37,16 +37,12 @@ abstract class Runner(protected val stages: Collection<IRStage>) : BrokerClient<
   /** The tasks to run concurrently, in a FIFO order. */
   private val tasks = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
-  /** Reference to the broker, set via dependency injection. */
+  // BrokerClient implementation.
   final override lateinit var broker: Broker<ByteArray>
-
-  /** The URIs the runner wants to listen to. */
   final override val receiving = stages.map { it.readers() }.flatten()
-
-  /** The URIs the runners wants to send to. */
   final override val sending = stages.map { it.writers() }.flatten()
 
-  /**
+  /*
    * All incoming tasks will be handled in a first-in first-out based, in order to guarantee their
    * order.
    */
@@ -58,7 +54,11 @@ abstract class Runner(protected val stages: Collection<IRStage>) : BrokerClient<
     }
   }
 
-  /** Schedule a new task to execute. */
+  /**
+   * Schedule a new task to execute in the local [scope].
+   *
+   * @param task The task to execute.
+   */
   fun scheduleTask(task: suspend () -> Unit) {
     runBlocking { tasks.send(task) }
   }

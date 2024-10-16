@@ -13,15 +13,23 @@ import technology.idlab.log.Log
  * throws an error when the process itself logs to the error stream.
  *
  * @param process The process to manage.
- * @property job The job which manages the coroutine scope.
- * @property coroutineScope The coroutine scope which manages IO operations for the process.
- * @property hooks The exit hooks that must be run when the process exits.
  */
 class ProcessManager(
     val process: Process,
 ) {
+  /** The job used to manage the [coroutineScope]. */
   private val job = Job()
+
+  /**
+   * The coroutine scope which manages IO operations for the process. The lifecycle is managed by
+   * [job].
+   */
   private val coroutineScope = CoroutineScope(job + Dispatchers.Default)
+
+  /**
+   * Functions that must be executed when the process halts. The integer argument is the exit code
+   * of the process.
+   */
   private val hooks = mutableListOf<suspend (Int) -> Unit>()
 
   init {
