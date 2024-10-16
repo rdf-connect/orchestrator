@@ -19,7 +19,6 @@ private data class ChannelClients<T>(
  * of the clients using a simple string-to-ChannelClients map.
  */
 class SimpleBroker<T>(clients: Collection<BrokerClient<T>>) : Broker<T> {
-
   /** The collection of readers and writers for each channel. */
   private val channels: MutableMap<String, ChannelClients<T>>
 

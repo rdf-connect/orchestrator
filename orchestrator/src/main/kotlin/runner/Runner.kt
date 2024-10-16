@@ -12,13 +12,22 @@ import technology.idlab.broker.BrokerClient
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
 import technology.idlab.intermediate.runner.RunnerType
-import technology.idlab.runner.impl.grpc.HostedGRPCRunner
-import technology.idlab.runner.impl.jvm.JVMRunner
+import technology.idlab.runner.grpc.GRPCRunner
+import technology.idlab.runner.jvm.JVMRunner
 
-abstract class Runner(
-    /** The stages which the runner must execute. */
-    protected val stages: Collection<IRStage>
-) : BrokerClient<ByteArray> {
+/**
+ * A runner is responsible for executing a set of stages concurrently. A concrete implementation
+ * must provide support for a specific type of architecture, such as Java Virtual Machine processors
+ * or specific remote procedure call (RPC) protocols.
+ *
+ * All runners are registered as broker clients, meaning they can send and receive messages from the
+ * orchestrator. The channels listened and send to are determined by the stages the runner is
+ * responsible for. It is the runners responsibility to either propagate the messages to and from
+ * the individual stages, either by executing them locally or by sending them to a remote location.
+ *
+ * @param stages The stages for which the runner is responsible.
+ */
+abstract class Runner(protected val stages: Collection<IRStage>) : BrokerClient<ByteArray> {
   /** A job to control the `CoroutineScope`. */
   private val job = Job()
 
@@ -32,10 +41,10 @@ abstract class Runner(
   final override lateinit var broker: Broker<ByteArray>
 
   /** The URIs the runner wants to listen to. */
-  final override val receiving: Set<String> = this.stages.map { it.readers() }.flatten().toSet()
+  final override val receiving = stages.map { it.readers() }.flatten()
 
   /** The URIs the runners wants to send to. */
-  final override val sending: List<String> = this.stages.map { it.writers() }.flatten()
+  final override val sending = stages.map { it.writers() }.flatten()
 
   /**
    * All incoming tasks will be handled in a first-in first-out based, in order to guarantee their
@@ -79,7 +88,7 @@ abstract class Runner(
               throw UnsupportedRunnerTypeException(runner.type)
             }
           }
-          RunnerType.GRPC -> HostedGRPCRunner.create(runner, stages)
+          RunnerType.GRPC -> GRPCRunner.hostLocally(runner, stages)
         }
   }
 }

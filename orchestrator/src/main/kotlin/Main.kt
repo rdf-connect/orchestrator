@@ -6,8 +6,8 @@ import kotlinx.coroutines.runBlocking
 import technology.idlab.log.Log
 import technology.idlab.orchestrator.impl.SimpleOrchestrator
 import technology.idlab.parser.impl.JenaParser
+import technology.idlab.process.ProcessManager
 import technology.idlab.resolver.impl.GenericResolver
-import technology.idlab.util.ManagedProcess
 
 /**
  * Resolve, prepare and install all dependencies in the configuration file.
@@ -37,7 +37,7 @@ internal fun install(path: String) {
       builder.environment()["PATH"] = System.getenv("PATH")
 
       // Execute and await the process.
-      val exitCode = ManagedProcess.from(builder).waitFor()
+      val exitCode = ProcessManager(builder).process.waitFor()
       if (exitCode != 0) {
         throw CommandException(stmt, exitCode)
       }

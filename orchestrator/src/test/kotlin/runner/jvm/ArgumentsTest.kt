@@ -1,10 +1,10 @@
-package runner.impl.jvm
+package runner.jvm
 
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import technology.idlab.RDFCException
-import technology.idlab.runner.impl.jvm.Arguments
+import technology.idlab.runner.jvm.Arguments
 
 class ArgumentsTest {
   @Test

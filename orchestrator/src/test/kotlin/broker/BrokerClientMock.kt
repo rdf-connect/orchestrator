@@ -7,8 +7,6 @@ import technology.idlab.broker.BrokerClient
  * A broker client which registers all collects all calls in collections for testing purposes only.
  */
 class BrokerClientMock(
-    /** The URI of the client. */
-    override val uri: String = "https://example.com/#client",
     /** The collections of channels to which the client will listen. */
     override val receiving: Collection<String> = setOf(),
     /** the collection of channels to which the client mauy write. */

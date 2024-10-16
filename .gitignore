@@ -1,8 +1,9 @@
 .idea
 .env
-
+gradlew
+gradlew.bat
 *.class
-
+__pycache__
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

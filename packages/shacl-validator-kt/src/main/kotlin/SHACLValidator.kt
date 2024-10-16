@@ -8,11 +8,11 @@ import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.RiotException
 import org.apache.jena.shacl.ShaclValidator
-import technology.idlab.runner.impl.jvm.Arguments
-import technology.idlab.runner.impl.jvm.Processor
-import technology.idlab.util.Log
+import technology.idlab.RDFCException
+import technology.idlab.runner.jvm.Arguments
+import technology.idlab.runner.jvm.KotlinProcessor
 
-class SHACLValidator(args: Arguments) : Processor(args) {
+class SHACLValidator(args: Arguments) : KotlinProcessor(args) {
   /** Default values. */
   private val errorIsFatalDefault = false
 
@@ -29,14 +29,17 @@ class SHACLValidator(args: Arguments) : Processor(args) {
 
   init {
     // Initialize the shape graph and validator.
-    Log.shared.debug { "Loading: $shapes" }
+    log.debug { "Loading: $shapes" }
 
     // Create a new model with the SHACL shapesGraph.
     val model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
     try {
       model.read(shapes, "TURTLE")
     } catch (e: RiotException) {
-      Log.shared.fatal("Failed to read SHACL shapesGraph from file://$shapes")
+      throw object : RDFCException() {
+        override val message = "Failed to read SHACL shapesGraph."
+        override val cause = e
+      }
     }
 
     // Assign its graph to the shapesGraph field.
@@ -52,17 +55,20 @@ class SHACLValidator(args: Arguments) : Processor(args) {
       try {
         model.read(data.inputStream(), null, "TURTLE")
       } catch (e: RiotException) {
-        Log.shared.fatal("Failed to read incoming RDF data.")
+        throw object : RDFCException() {
+          override val message = "Failed to read incoming RDF data."
+          override val cause = e
+        }
       }
 
       // Validate the model.
       val report = validator.validate(shapesGraph, model.graph)
 
       if (report.conforms()) {
-        Log.shared.debug { "Validation successful." }
+        log.debug { "Validation successful." }
         outgoing.send(data)
       } else {
-        Log.shared.debug { "Validation failed." }
+        log.debug { "Validation failed." }
         // Write report to a string.
         val out = ByteArrayOutputStream()
         report.model.write(out, "TURTLE")
@@ -70,7 +76,9 @@ class SHACLValidator(args: Arguments) : Processor(args) {
 
         // Throw a fatal error if needed.
         if (fatal ?: errorIsFatalDefault) {
-          Log.shared.fatal("Validation error is fatal.")
+          throw object : RDFCException() {
+            override val message = "Validation error is fatal."
+          }
         }
       }
     }

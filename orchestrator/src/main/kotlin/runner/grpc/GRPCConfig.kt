@@ -1,4 +1,4 @@
-package runner.impl.grpc
+package technology.idlab.runner.grpc
 
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
@@ -10,7 +10,7 @@ import io.grpc.ManagedChannelBuilder
  * @param host The host of the gRPC server.
  * @param port The port of the gRPC server.
  */
-data class Config(val uri: String, val host: String, val port: Int) {
+data class GRPCConfig(val uri: String, val host: String, val port: Int) {
   fun connect(): ManagedChannel {
     return ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
   }

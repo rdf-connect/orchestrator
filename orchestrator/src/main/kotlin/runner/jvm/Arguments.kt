@@ -1,4 +1,4 @@
-package technology.idlab.runner.impl.jvm
+package technology.idlab.runner.jvm
 
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType

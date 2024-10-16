@@ -1,8 +1,12 @@
-package technology.idlab.runner.impl.jvm
+package technology.idlab.runner.jvm
 
 import technology.idlab.log.Log
 
-abstract class Processor(
+/**
+ * Processors are the building blocks of RDF-Connect. They are responsible for executing the actual
+ * logic inside a pipeline. This class models a processor targeting the JVMRunner
+ */
+abstract class KotlinProcessor(
     /**
      * The arguments of a processor are stored in a map and can be accessed by name. Type safety is
      * assured through the use of Kotlin reflection.

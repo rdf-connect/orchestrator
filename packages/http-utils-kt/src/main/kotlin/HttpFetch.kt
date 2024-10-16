@@ -7,10 +7,11 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.channels.SendChannel
-import technology.idlab.runner.impl.jvm.Arguments
-import technology.idlab.runner.impl.jvm.Processor
+import technology.idlab.RDFCException
+import technology.idlab.runner.jvm.Arguments
+import technology.idlab.runner.jvm.KotlinProcessor
 
-class HttpFetch(args: Arguments) : Processor(args) {
+class HttpFetch(args: Arguments) : KotlinProcessor(args) {
   /** Meta configuration. */
   private var engine: HttpClientEngine = CIO.create()
 
@@ -43,7 +44,9 @@ class HttpFetch(args: Arguments) : Processor(args) {
 
     // Check validity of result.
     if (!res.status.isSuccess()) {
-      log.fatal("ERROR: Status code ${res.status.value} received from $endpoint")
+      throw object : RDFCException() {
+        override val message = "Status code ${res.status.value} received from $endpoint"
+      }
     }
 
     // Push the result to the output.

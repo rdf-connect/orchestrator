@@ -1,4 +1,4 @@
-package technology.idlab.runner.impl.jvm
+package technology.idlab.runner.jvm
 
 import java.net.MalformedURLException
 import java.net.URL
@@ -15,10 +15,7 @@ import technology.idlab.intermediate.IRStage
 import technology.idlab.intermediate.argument.LiteralArgument
 import technology.idlab.intermediate.argument.NestedArgument
 import technology.idlab.intermediate.parameter.LiteralParameterType
-import technology.idlab.log.Log
 import technology.idlab.runner.Runner
-
-private const val JVM_RUNNER_URI = "https://www.rdf-connect/#JVMRunner"
 
 /**
  * Return a class loader. If a path is given, return a URLClassLoader which loads the JAR file at
@@ -45,11 +42,8 @@ private fun getClassLoader(path: String = ""): ClassLoader {
 }
 
 class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
-  /** The URI of this runner. */
-  override val uri = JVM_RUNNER_URI
-
   /** Map of all stages in the runner. */
-  private val instances = mutableMapOf<String, Processor>()
+  private val instances = mutableMapOf<String, KotlinProcessor>()
 
   /** Incoming messages are delegated to sub channels. These are mapped by their URI. */
   private val readers = mutableMapOf<String, Channel<ByteArray>>()
@@ -67,7 +61,7 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
 
   /** Closes all readers and exits the runner. */
   override suspend fun exit() {
-    for (reader in this.readers.values) {
+    for (reader in readers.values) {
       reader.close()
     }
   }
@@ -76,32 +70,29 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
    * Propagate a message to the correct reader channel.
    *
    * @param uri The URI of the reader to send the message to.
+   * @throws Exception If the reader is not found.
    */
   override fun receiveBrokerMessage(uri: String, data: ByteArray) {
-    val reader = this.readers[uri]
-
-    if (reader == null) {
-      Log.shared.debug { "Channel not found: '$uri'" }
-    }
-
-    scheduleTask { reader?.send(data) }
+    val reader = readers[uri] ?: throw Exception("Channel not found: '$uri'")
+    scheduleTask { reader.send(data) }
   }
 
   /**
    * Close a reader by removing it from the `readers` map and close the channel.
    *
    * @param uri The URI of the reader to close.
+   * @throws Exception If the reader is not found.
    */
   override fun closingBrokerChannel(uri: String) {
-    val reader = this.readers[uri]
-
-    if (reader == null) {
-      Log.shared.debug { "Channel not found: '$uri'" }
-    }
-
-    reader?.close()
+    val reader = this.readers[uri] ?: throw Exception("Channel not found: '$uri'")
+    scheduleTask { reader.close() }
   }
 
+  /**
+   * Unmarshall an argument map to a concrete object, usable by JVM processors.
+   *
+   * @return A map of argument names to their values.
+   */
   private fun IRArgument.unmarshall(): Map<String, List<Any>> {
     val result = mutableMapOf<String, List<Any>>()
 
@@ -116,6 +107,11 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     return result
   }
 
+  /**
+   * Unmarshall a nested argument to a list of maps.
+   *
+   * @return A list of maps, where each map represents a nested argument.
+   */
   private fun NestedArgument.unmarshall(): List<Map<String, Any>> {
     val result = mutableListOf<Map<String, Any>>()
 
@@ -136,6 +132,11 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     return result
   }
 
+  /**
+   * Unmarshall a literal argument to a list of concrete objects.
+   *
+   * @return A list of concrete objects.
+   */
   private fun LiteralArgument.unmarshall(): List<Any> {
     val result = mutableListOf<Any>()
 
@@ -168,7 +169,12 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     }
   }
 
-  /** Create a new channel which */
+  /**
+   * Create a new writer which writes to a given channel.
+   *
+   * @param uri The URI of the writer.
+   * @return A channel representing the writer as a `SendChannel` object.
+   */
   private fun createWriter(uri: String): SendChannel<ByteArray> {
     val channel = Channel<ByteArray>()
 
@@ -178,6 +184,7 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
         broker.send(uri, data)
       }
 
+      // If all data has been sent, unregister the writer.
       broker.unregister(uri)
     }
 
@@ -199,7 +206,7 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     val clazz = Class.forName(name, true, loader) as Class<*>
 
     /* Check if instantiatable. */
-    if (!Processor::class.java.isAssignableFrom(clazz)) {
+    if (!KotlinProcessor::class.java.isAssignableFrom(clazz)) {
       throw InvalidProcessorException(stage.processor.uri)
     }
 
@@ -209,6 +216,6 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     /* Initialize the stage with the new map. */
     val constructor = clazz.getConstructor(Arguments::class.java)
     val args = Arguments.from(arguments)
-    this.instances[stage.uri] = constructor.newInstance(args) as Processor
+    this.instances[stage.uri] = constructor.newInstance(args) as KotlinProcessor
   }
 }

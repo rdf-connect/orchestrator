@@ -12,7 +12,7 @@ abstract class Log(
    * @param message The message to print.
    * @param level The level of the message.
    */
-  abstract fun log(message: String, level: LogLevel)
+  abstract fun log(message: String, level: LogLevel, location: String? = null)
 
   /**
    * Print a message if and only if the debug flag is set. Note that the message will not be
@@ -52,8 +52,8 @@ abstract class Log(
    *
    * @param message The message to print.
    */
-  fun command(message: String) {
-    log(message, LogLevel.CMD)
+  fun command(location: String, message: String) {
+    log(message, LogLevel.CMD, location)
   }
 
   /**

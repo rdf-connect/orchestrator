@@ -2,10 +2,12 @@ package technology.idlab.fileutils
 
 import java.io.File
 import kotlinx.coroutines.channels.ReceiveChannel
-import technology.idlab.runner.impl.jvm.Arguments
-import technology.idlab.runner.impl.jvm.Processor
+import technology.idlab.RDFCException
+import technology.idlab.runner.jvm.Arguments
+import technology.idlab.runner.jvm.KotlinProcessor
 
-class FileWriter(args: Arguments) : Processor(args) {
+/** A simple processor which writes all incoming data to a file. */
+class FileWriter(args: Arguments) : KotlinProcessor(args) {
   /** Processor default values. */
   private val overwriteDefault = true
   private val appendDefault = false
@@ -20,12 +22,16 @@ class FileWriter(args: Arguments) : Processor(args) {
   init {
     // Sanity check.
     if (overwrite == true && append == true) {
-      log.fatal("Cannot overwrite and append at the same time")
+      throw object : RDFCException() {
+        override val message = "Cannot overwrite and append to file at the same time."
+      }
     }
 
     // Do not overwrite the file if it exists.
     if (file.exists() && !(overwrite ?: overwriteDefault)) {
-      log.fatal("File ${file.path} already exists")
+      throw object : RDFCException() {
+        override val message = "File ${file.path} already exists."
+      }
     }
 
     // Overwrite file if not exists.

@@ -1,4 +1,4 @@
-package technology.idlab.runner.impl.grpc
+package technology.idlab.runner.grpc
 
 import com.google.protobuf.Timestamp
 import com.google.protobuf.kotlin.toByteStringUtf8
@@ -50,22 +50,33 @@ private fun serialize(arg: LiteralArgument, serialized: String): Intermediate.Ar
 private fun serialize(arg: Argument): Intermediate.Argument {
   return when (arg) {
     is LiteralArgument -> {
-      rdfc.argument {
-        this.literals =
-            rdfc.ArgumentLiteralKt.list { values.addAll(arg.values.map { serialize(arg, it) }) }
+      if (arg.parameter.single) {
+        rdfc.argument { literal = serialize(arg, arg.values.single()) }
+      } else {
+        rdfc.argument {
+          this.literals =
+              rdfc.ArgumentLiteralKt.list { values.addAll(arg.values.map { serialize(arg, it) }) }
+        }
       }
     }
     is NestedArgument -> {
       rdfc.argument {
-        this.maps =
-            rdfc.ArgumentMapKt.list {
-              for (nestedArgument in arg.values) {
-                values.add(
-                    rdfc.argumentMap {
-                      values.putAll(nestedArgument.mapValues { serialize(it.value) })
-                    })
+        if (arg.parameter.single) {
+          this.map =
+              rdfc.argumentMap {
+                values.putAll(arg.values.single().mapValues { serialize(it.value) })
               }
-            }
+        } else {
+          this.maps =
+              rdfc.ArgumentMapKt.list {
+                for (nestedArgument in arg.values) {
+                  values.add(
+                      rdfc.argumentMap {
+                        values.putAll(nestedArgument.mapValues { serialize(it.value) })
+                      })
+                }
+              }
+        }
       }
     }
   }

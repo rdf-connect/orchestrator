@@ -6,9 +6,6 @@ package technology.idlab.broker
  * @param T The type of the data to receive.
  */
 interface BrokerClient<T> {
-  /** The URI of the receiver. */
-  val uri: String
-
   /** Reference to the broker itself. */
   var broker: Broker<T>
 

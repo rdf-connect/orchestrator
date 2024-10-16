@@ -25,14 +25,9 @@ abstract class BrokerTest {
    * @return A triple containing the sender, receiver, and broker.
    */
   private fun setup(): Triple<BrokerClientMock, BrokerClientMock, Broker<Int>> {
-    val sender =
-        BrokerClientMock(
-            uri = "https://example.com/#sender", sending = listOf("https://example.com/#channel"))
+    val sender = BrokerClientMock(sending = listOf("https://example.com/#channel"))
 
-    val receiver =
-        BrokerClientMock(
-            uri = "https://example.com/#receiver",
-            receiving = setOf("https://example.com/#channel"))
+    val receiver = BrokerClientMock(receiving = setOf("https://example.com/#channel"))
 
     val broker = setup(setOf(sender, receiver))
 
@@ -63,9 +58,7 @@ abstract class BrokerTest {
 
   @Test
   fun deadChannel() {
-    val sender =
-        BrokerClientMock(
-            uri = "https://example.com/#sender", sending = listOf("https://example.com/#channel"))
+    val sender = BrokerClientMock(sending = listOf("https://example.com/#channel"))
 
     val broker = SimpleBroker(setOf(sender))
 
@@ -104,10 +97,7 @@ abstract class BrokerTest {
 
   @Test
   fun noSender() {
-    val receiver =
-        BrokerClientMock(
-            uri = "https://example.com/#receiver",
-            receiving = setOf("https://example.com/#channel"))
+    val receiver = BrokerClientMock(receiving = setOf("https://example.com/#channel"))
 
     val broker = SimpleBroker(setOf(receiver))
 

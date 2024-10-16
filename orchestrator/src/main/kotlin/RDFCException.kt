@@ -1,6 +1,7 @@
 package technology.idlab
 
 import technology.idlab.intermediate.runner.RunnerType
+import technology.idlab.log.Log
 
 abstract class RDFCException : Exception()
 
@@ -15,7 +16,11 @@ class CommandException(
     private val command: String,
     /** The exit code of the failed command. */
     private val exitCode: Int,
-) : RDFCException()
+) : RDFCException() {
+  init {
+    Log.shared.severe("Command failed with exit code $exitCode: $command")
+  }
+}
 
 /**
  * An exception was thrown during the execution of the pipeline.
