@@ -132,6 +132,9 @@ dependencies {
   // Hide SLF4J warnings.
   implementation("org.slf4j:slf4j-nop:2.0.7")
 
+  // Git resolver.
+  implementation("org.eclipse.jgit:org.eclipse.jgit:7.0.0.202409031743-r")
+
   // Initialize testing.
   testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
