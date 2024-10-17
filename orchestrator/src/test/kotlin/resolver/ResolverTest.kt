@@ -1,5 +1,6 @@
 package resolver
 
+import java.nio.file.Files
 import kotlin.test.Test
 import technology.idlab.intermediate.IRDependency
 import technology.idlab.resolver.Resolver
@@ -17,7 +18,14 @@ abstract class ResolverTest {
 
     // Determine the target directory of the dependency. If it exists, delete it.
     val directory = resolver.directoryOf(dependency)
-    directory.deleteRecursively()
+    if (directory.exists()) {
+      val path = directory.toPath()
+      if (Files.isSymbolicLink(path)) {
+        Files.delete(path)
+      } else {
+        directory.deleteRecursively()
+      }
+    }
 
     // Resolve the dependency.
     val index = resolver.resolve(dependency)

@@ -20,7 +20,7 @@ interface Resolver {
    * error.
    */
   fun createTargetDirectory(): File {
-    val packagesDir = File(PACKAGES_DIR)
+    val packagesDir = File(".").resolve(PACKAGES_DIR).canonicalFile
 
     // If the directory doesn't exist, create it.
     if (!packagesDir.exists()) {
@@ -49,7 +49,8 @@ interface Resolver {
    * @return The path to the directory of the dependency.
    */
   fun directoryOf(dependency: IRDependency): File {
-    return createTargetDirectory().resolve(dependency.directory()).canonicalFile
+    val path = "${createTargetDirectory()}/${dependency.directory()}"
+    return File(path).absoluteFile
   }
 
   /**
@@ -60,6 +61,6 @@ interface Resolver {
    * @return The path to the `index.ttl` file of the dependency.
    */
   fun indexOf(dependency: IRDependency): File {
-    return createTargetDirectory().resolve(dependency.index()).canonicalFile
+    return directoryOf(dependency).resolve("index.ttl").absoluteFile
   }
 }

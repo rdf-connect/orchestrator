@@ -13,7 +13,7 @@ class LocalResolver : Resolver {
   override fun resolve(dependency: IRDependency): File {
     val directory = createTargetDirectory()
     val target = directory.resolve(dependency.directory()).toPath()
-    val source = Path(dependency.uri.removePrefix("file://"))
+    val source = Path(dependency.uri)
     val index = indexOf(dependency)
 
     // If the target file does not exist, create a symbolic link.
