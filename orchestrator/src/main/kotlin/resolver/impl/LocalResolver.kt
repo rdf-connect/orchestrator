@@ -11,10 +11,11 @@ import technology.idlab.resolver.Resolver
 /** Resolve a file on the local file system. */
 class LocalResolver : Resolver {
   override fun resolve(dependency: IRDependency): File {
+    val uri = dependency.uri.removePrefix("file:")
     val directory = createTargetDirectory()
     val target = directory.resolve(dependency.directory()).toPath()
-    val source = Path(dependency.uri)
-    val index = indexOf(dependency)
+    val source = Path(uri)
+    val index = indexOf(dependency).canonicalFile
 
     // If the target file does not exist, create a symbolic link.
     if (!target.toFile().exists()) {

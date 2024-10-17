@@ -118,17 +118,17 @@ internal suspend fun exec(path: String) {
 
   // Get dependencies.
   val dependencies = rootParser.dependencies()
-  val files = dependencies.map { File("./rdfc_packages/${it.directory()}/index.ttl") }
+  val indexFiles = dependencies.map { GenericResolver().resolve(it) }
 
   // Check if all are resolved.
-  for (file in files) {
-    if (!file.exists()) {
-      throw UnresolvedDependencyException(file.path)
+  for (indexFile in indexFiles) {
+    if (!indexFile.exists()) {
+      throw UnresolvedDependencyException(indexFile.path)
     }
   }
 
   // Load all index.ttl files into a new parser.
-  val parser = JenaParser(listOf(listOf(config), files).flatten())
+  val parser = JenaParser(listOf(listOf(config), indexFiles).flatten())
 
   // Start the orchestrator.
   val orchestrator = SimpleOrchestrator(parser)
