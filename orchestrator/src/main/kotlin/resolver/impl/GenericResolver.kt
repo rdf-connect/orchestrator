@@ -3,7 +3,7 @@ package technology.idlab.resolver.impl
 import java.io.File
 import technology.idlab.intermediate.IRDependency
 import technology.idlab.resolver.Resolver
-import technology.idlab.resolver.ResolverException.UnknownDependencyType
+import technology.idlab.resolver.exception.UnresolvableException
 
 class GenericResolver : Resolver {
   override fun resolve(dependency: IRDependency): File {
@@ -12,7 +12,7 @@ class GenericResolver : Resolver {
     } else if (dependency.uri.startsWith("git://")) {
       GitResolver().resolve(dependency)
     } else {
-      throw UnknownDependencyType(dependency.uri)
+      throw UnresolvableException(dependency.uri)
     }
   }
 }

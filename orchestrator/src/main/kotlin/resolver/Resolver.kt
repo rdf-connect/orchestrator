@@ -24,20 +24,14 @@ interface Resolver {
 
     // If the directory doesn't exist, create it.
     if (!packagesDir.exists()) {
-      if (!packagesDir.mkdir()) {
-        throw ResolverException.FileSystem()
-      }
+      check(packagesDir.mkdir()) { "Failed to create the packages directory." }
 
       // Create a `.gitignore` file in the directory which ignores all packages.
       val gitIgnore = packagesDir.resolve(".gitignore")
       gitIgnore.writeText("*")
     }
 
-    // Check if it is a directory.
-    if (!packagesDir.isDirectory) {
-      throw ResolverException.NotADirectory()
-    }
-
+    check(packagesDir.isDirectory) { "The packages directory is not a directory." }
     return packagesDir
   }
 
