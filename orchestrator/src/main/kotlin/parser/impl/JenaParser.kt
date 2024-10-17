@@ -34,7 +34,11 @@ import technology.idlab.intermediate.parameter.Parameter
 import technology.idlab.intermediate.runner.RunnerType
 import technology.idlab.log.Log
 import technology.idlab.parser.Parser
-import technology.idlab.parser.ParserException
+import technology.idlab.parser.exception.InvalidEntrypointException
+import technology.idlab.parser.exception.MissingArgumentsException
+import technology.idlab.parser.exception.MissingRunnerException
+import technology.idlab.parser.exception.MissingRunnerTypeException
+import technology.idlab.parser.exception.UnknownRunnerTypeException
 
 class JenaParser(
     /** A file pointer to the pipeline configuration entrypoint. */
@@ -192,13 +196,13 @@ class JenaParser(
     // Determine the target runner.
     val target =
         model.objectOfProperty(processor, RDFC.target)
-            ?: throw ParserException.NoRunnerSpecified(processor.uri)
+            ?: throw MissingRunnerException(processor.uri)
     val shape = shapes.targeting(processor).single()
 
     // The arguments are a nested shape in the processor config.
     val parameters =
         shape.property(RDFC.arguments)?.node()?.asArguments()
-            ?: throw ParserException.MissingProcessorArguments(processor.uri)
+            ?: throw MissingArgumentsException(processor.uri)
 
     // Parse metadata.
     val metadata = mutableMapOf<String, String>()
@@ -304,13 +308,13 @@ class JenaParser(
         when (model.objectOfProperty(runner, RDF.type)) {
           RDFC.builtInRunner -> RunnerType.BuiltIn
           RDFC.grpcRunner -> RunnerType.GRPC
-          null -> throw ParserException.NoRunnerType(runner.uri)
-          else -> throw ParserException.UnknownRunnerType(runner.uri)
+          null -> throw MissingRunnerTypeException(runner.uri)
+          else -> throw UnknownRunnerTypeException(runner.uri)
         }
 
     // Check if the entrypoint is valid.
     if (type == RunnerType.BuiltIn && entrypoint != null) {
-      throw ParserException.InvalidEntrypoint(runner.uri)
+      throw InvalidEntrypointException(runner.uri)
     }
 
     return IRRunner(runner.toString(), wd, entrypoint.toString(), type)

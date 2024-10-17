@@ -7,7 +7,8 @@ import org.apache.jena.shacl.parser.Shape
 import org.apache.jena.shacl.vocabulary.SHACLM
 import technology.idlab.RDFC
 import technology.idlab.intermediate.parameter.LiteralParameterType
-import technology.idlab.parser.ParserException
+import technology.idlab.parser.exception.MissingShaclPathException
+import technology.idlab.parser.exception.UnknownDataTypeException
 
 /**
  * Get the maxCount constraint of a property shape.
@@ -95,7 +96,7 @@ fun PropertyShape.datatype(): LiteralParameterType? {
     XSDDatatype.XSDstring.uri -> LiteralParameterType.STRING
     RDFC.writer.uri -> LiteralParameterType.WRITER
     RDFC.reader.uri -> LiteralParameterType.READER
-    else -> throw ParserException.UnknownDataType(node.`object`.uri)
+    else -> throw UnknownDataTypeException(node.`object`.uri)
   }
 }
 
@@ -104,7 +105,7 @@ fun PropertyShape.path(): String {
   val result = this.shapeGraph.find(this.shapeNode, SHACLM.path.asNode(), null)
 
   // There should be only one path constraint.
-  val node = result.toList().singleOrNull() ?: throw ParserException.MissingShaclPath()
+  val node = result.toList().singleOrNull() ?: throw MissingShaclPathException()
 
   return node.`object`.toString()
 }
@@ -121,6 +122,6 @@ fun PropertyShape.clazz(): LiteralParameterType? {
     RDFC.writer.uri -> LiteralParameterType.WRITER
     RDFC.reader.uri -> LiteralParameterType.READER
     SHACLM.IRIOrLiteral.uri -> LiteralParameterType.STRING
-    else -> throw ParserException.UnknownDataType(node.`object`.uri)
+    else -> throw UnknownDataTypeException(node.`object`.uri)
   }
 }
