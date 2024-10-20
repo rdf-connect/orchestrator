@@ -21,14 +21,10 @@ jobs:
         with:
           java-version: '22'
           distribution: 'adopt'
-          cache: 'gradle'
-          cache-dependency-path: | # optional
-            orchestrator/*.gradle*
-            orchestrator/**/gradle-wrapper.properties
       # Include a Protobuf and gRPC code generator.
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
-      # Install hatch to support the Python runtime.
+      # Install Hatch to support the Python runtime.
       - name: Setup Hatch
         uses: pypa/hatch@install
       # Install npm in order to support TypeScript and the Node.js runtime.
@@ -36,16 +32,19 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '20'
-      # Create a JAR exposing the Orchestrator library to the individual
-      # processors.
+      # Generate the `rdfc-runner` JAR for processor packages.
       - name: Create JAR
-        run: gradle shadowJar --console=plain --warning-mode all
-        working-directory: ./orchestrator
-      # Attempt to execute the build step.
-      - name: Build
-        run: gradle installDist --console=plain --warning-mode all
-        working-directory: ./orchestrator
-      # Execute test suite.
-      - name: Run tests
+        run: gradle jar --console=plain --warning-mode all
+        working-directory: ./orchestrator/rdfc-processor
+      # Run tests for the `rdfc-core` package.
+      - name: Run tests `rdfc-core`
         run: gradle test --console=plain --warning-mode all
-        working-directory: ./orchestrator
+        working-directory: ./orchestrator/rdfc-core
+      # Run tests for the `rdfc-processor` package.
+      - name: Run tests `rdfc-core`
+        run: gradle test --console=plain --warning-mode all
+        working-directory: ./orchestrator/rdfc-processor
+      # Run tests for the `rdfc-orchestrator` package.
+      - name: Run tests `rdfc-orchestrator`
+        run: gradle test --console=plain --warning-mode all
+        working-directory: ./orchestrator/rdfc-orchestrator
