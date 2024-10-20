@@ -1,8 +1,11 @@
-plugins { kotlin("jvm") version "2.0.21" }
+plugins {
+  kotlin("jvm") version "2.0.21"
+  id("maven-publish")
+}
 
 group = "technology.idlab"
 
-version = "0.0.4"
+version = "0.0.1"
 
 kotlin { jvmToolchain(22) }
 
@@ -27,5 +30,27 @@ tasks.test {
   testLogging {
     events("passed", "skipped", "failed")
     showStandardStreams = true
+  }
+}
+
+publishing {
+  repositories {
+    maven {
+      name = "GitHubPackages"
+      url = uri("https://maven.pkg.github.com/rdf-connect/orchestrator")
+      credentials {
+        username = env.fetchOrNull("GITHUB_ACTOR") ?: System.getenv("GITHUB_ACTOR")
+        password = env.fetchOrNull("GITHUB_TOKEN") ?: System.getenv("GITHUB_TOKEN")
+      }
+    }
+  }
+
+  publications {
+    create<MavenPublication>("gpr") {
+      from(components["java"])
+      groupId = "technology.idlab"
+      artifactId = "rdfc-processor"
+      version = "0.0.1"
+    }
   }
 }

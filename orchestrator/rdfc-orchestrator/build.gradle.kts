@@ -6,7 +6,7 @@ plugins {
 
 group = "technology.idlab"
 
-version = "0.0.4"
+version = "0.0.1"
 
 kotlin { jvmToolchain(22) }
 
