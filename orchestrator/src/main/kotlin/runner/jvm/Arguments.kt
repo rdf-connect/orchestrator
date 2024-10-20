@@ -6,7 +6,7 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.isSuperclassOf
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.typeOf
-import technology.idlab.InvalidArgumentAccessException
+import technology.idlab.runner.exception.InvalidArgumentAccessException
 
 /**
  * Recursively check if a value corresponds to a given KType. This function can be run either

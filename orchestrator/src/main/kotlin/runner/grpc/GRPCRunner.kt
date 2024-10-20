@@ -3,7 +3,6 @@ package technology.idlab.runner.grpc
 import com.google.protobuf.ByteString
 import io.grpc.ConnectivityState
 import io.grpc.ManagedChannel
-import io.grpc.StatusException
 import java.io.File
 import kotlin.random.Random
 import kotlin.random.nextUInt
@@ -16,14 +15,13 @@ import rdfc.RunnerGrpcKt.RunnerCoroutineStub
 import rdfc.channel
 import rdfc.channelData
 import rdfc.channelMessage
-import technology.idlab.ConnectionException
-import technology.idlab.UnrecognizedRequestException
 import technology.idlab.extensions.rawPath
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
 import technology.idlab.intermediate.runner.RunnerType
 import technology.idlab.process.ProcessManager
 import technology.idlab.runner.Runner
+import technology.idlab.runner.exception.UnrecognizedRequestException
 import technology.idlab.util.retries
 
 /**
@@ -31,13 +29,11 @@ import technology.idlab.util.retries
  * an exception if the connection repeatedly fails.
  *
  * @param attempts The number of attempts to connect to the server.
- * @throws Exception If the connection is not ready after the given number of attempts.
+ * @throws IllegalStateException If the connection is not ready after the given number of attempts.
  */
 private suspend fun ManagedChannel.attemptConnection(attempts: Int) {
   retries(attempts) {
-    if (this.getState(true) != ConnectivityState.READY) {
-      throw Exception("gRPC connection not ready.")
-    }
+    check(this.getState(true) == ConnectivityState.READY) { "gRPC connection not ready." }
   }
 }
 
@@ -66,11 +62,7 @@ open class GRPCRunner(config: GRPCConfig, stages: Collection<IRStage>) : Runner(
       // Load all stages.
       for (stage in stages) {
         val payload = serialize(stage)
-        try {
-          grpc.load(payload)
-        } catch (e: StatusException) {
-          throw ConnectionException(e)
-        }
+        grpc.load(payload)
       }
     }
   }
@@ -133,15 +125,9 @@ open class GRPCRunner(config: GRPCConfig, stages: Collection<IRStage>) : Runner(
   /**
    * Execute the runner by routing messages from the broker to the gRPC server. This function will
    * block until the gRPC server has finished processing all messages.
-   *
-   * @throws ConnectionException If the gRPC server is not reachable.
    */
   override suspend fun exec() {
-    try {
-      grpc.exec(messages.receiveAsFlow()).collect(::incomingMessageHandler)
-    } catch (e: StatusException) {
-      throw ConnectionException(e)
-    }
+    grpc.exec(messages.receiveAsFlow()).collect(::incomingMessageHandler)
   }
 
   companion object {

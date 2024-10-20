@@ -14,8 +14,6 @@ import technology.idlab.resolver.impl.GenericResolver
  * Resolve, prepare and install all dependencies in the configuration file.
  *
  * @param path The path to the configuration file.
- * @throws CommandException If a preparation command fails.
- * @throws ConfigurationException If the configuration is invalid.
  */
 internal fun install(path: String) {
   // Load the list of dependencies from the configuration file.
@@ -45,9 +43,7 @@ internal fun install(path: String) {
 
       // Execute and await the process.
       val exitCode = ProcessManager(builder).process.waitFor()
-      if (exitCode != 0) {
-        throw CommandException(stmt, exitCode)
-      }
+      check(exitCode == 0) { "Command finished with non-zero exit code $exitCode: $stmt" }
     }
   }
 }
@@ -56,41 +52,23 @@ internal fun install(path: String) {
  * Check if the configuration is valid.
  *
  * @param path The path to the configuration file.
- * @throws ConfigurationException If the configuration is invalid.
  */
-internal fun check(path: String) {
-  // Open file.
+internal fun checkConfiguration(path: String) {
   val file = File(path)
 
-  // Must exist.
-  if (!file.exists()) {
-    throw NoConfigurationFoundException()
-  }
-
-  // Must be a file.
-  if (file.isFile) {
-    throw InvalidConfigurationException()
-  }
-
-  // Cannot be empty.
-  if (file.length() == 0L) {
-    throw InvalidConfigurationException()
-  }
+  // The file must exist and contain data.
+  check(file.exists()) { "No configuration file found at path: $path" }
+  check(file.isFile) { "Configuration file must be a file." }
+  check(file.length() > 0L) { "Configuration file cannot be empty." }
 
   // Parse said config to a IRPipeline.
   val parser = JenaParser(listOf(file))
-
-  // There must be at least one pipeline.
   val pipelines = parser.pipelines()
-  if (pipelines.isEmpty()) {
-    throw NoPipelineFoundException()
-  }
+  check(pipelines.isNotEmpty()) { "No pipelines found in configuration." }
 
   // Every pipeline must have one or more stages.
   for (pipeline in pipelines) {
-    if (pipeline.stages.isEmpty()) {
-      throw EmptyPipelineException(pipeline.uri)
-    }
+    check(pipeline.stages.isNotEmpty()) { "Pipeline must contain one or more stages." }
   }
 
   // All stages must use a known runner.
@@ -98,8 +76,8 @@ internal fun check(path: String) {
   val runners = parser.runners().map { it.uri }
 
   for (stage in stages) {
-    if (stage.processor.target !in runners) {
-      throw NoSuchRunnerException(stage.processor.target)
+    check(stage.processor.target in runners) {
+      "No runner found for stage: ${stage.processor.target}"
     }
   }
 }
@@ -108,8 +86,6 @@ internal fun check(path: String) {
  * Execute a pipeline at a given path.
  *
  * @param path The path to the pipeline configuration file.
- * @throws ConfigurationException If the configuration is invalid.
- * @throws CommandException If a preparation command fails.
  */
 internal suspend fun exec(path: String) {
   // Parse the configuration file.
@@ -122,9 +98,7 @@ internal suspend fun exec(path: String) {
 
   // Check if all are resolved.
   for (indexFile in indexFiles) {
-    if (!indexFile.exists()) {
-      throw UnresolvedDependencyException(indexFile.path)
-    }
+    check(indexFile.exists()) { "Dependency not resolved: ${indexFile.path}" }
   }
 
   // Load all index.ttl files into a new parser.
@@ -153,7 +127,7 @@ fun main(args: Array<String>) = runBlocking {
   // Execute the chosen command.
   when (args[0]) {
     "exec" -> exec(args[1])
-    "check" -> check(args[1])
+    "check" -> checkConfiguration(args[1])
     "install" -> install(args[1])
     "help" -> help()
     else -> help()

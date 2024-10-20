@@ -5,13 +5,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import technology.idlab.NoSuchRunnerException
-import technology.idlab.UnsupportedRunnerTypeException
 import technology.idlab.broker.Broker
 import technology.idlab.broker.BrokerClient
 import technology.idlab.intermediate.IRRunner
 import technology.idlab.intermediate.IRStage
 import technology.idlab.intermediate.runner.RunnerType
+import technology.idlab.runner.exception.NoSuchRunnerException
+import technology.idlab.runner.exception.UnsupportedRunnerTypeException
 import technology.idlab.runner.grpc.GRPCRunner
 import technology.idlab.runner.jvm.JVMRunner
 

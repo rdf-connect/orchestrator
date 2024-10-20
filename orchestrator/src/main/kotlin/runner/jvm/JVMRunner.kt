@@ -1,20 +1,17 @@
 package technology.idlab.runner.jvm
 
-import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLClassLoader
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import technology.idlab.InvalidJarPathException
-import technology.idlab.InvalidProcessorException
-import technology.idlab.MissingMetadataException
 import technology.idlab.intermediate.IRArgument
 import technology.idlab.intermediate.IRStage
 import technology.idlab.intermediate.argument.LiteralArgument
 import technology.idlab.intermediate.argument.NestedArgument
 import technology.idlab.intermediate.parameter.LiteralParameterType
+import technology.idlab.log.Log
 import technology.idlab.runner.Runner
 
 /**
@@ -29,15 +26,8 @@ private fun getClassLoader(path: String = ""): ClassLoader {
     return ClassLoader.getSystemClassLoader()
   }
 
-  // Parse the path as a URL.
-  val url =
-      try {
-        URL(path)
-      } catch (e: MalformedURLException) {
-        throw InvalidJarPathException(path)
-      }
-
   // Return a new URLClassLoader with the given URL.
+  val url = URL(path)
   return URLClassLoader(listOf(url).toTypedArray())
 }
 
@@ -54,12 +44,12 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     }
   }
 
-  /** Execute all stages in the runner by calling their `exec` method in parallel. */
+  /* Execute all stages in the runner by calling their `exec` method in parallel. */
   override suspend fun exec() = coroutineScope {
     this@JVMRunner.instances.values.map { launch { it.exec() } }.forEach { it.join() }
   }
 
-  /** Closes all readers and exits the runner. */
+  /* Closes all readers and exits the runner. */
   override suspend fun exit() {
     for (reader in readers.values) {
       reader.close()
@@ -77,11 +67,8 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
     scheduleTask { reader.send(data) }
   }
 
-  /**
+  /*
    * Close a reader by removing it from the `readers` map and close the channel.
-   *
-   * @param uri The URI of the reader to close.
-   * @throws Exception If the reader is not found.
    */
   override fun closingBrokerChannel(uri: String) {
     val reader = this.readers[uri] ?: throw Exception("Channel not found: '$uri'")
@@ -151,7 +138,6 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
   /**
    * Parse a string to a concrete object using a parameter type.
    *
-   * @param type The type of the parameter.
    * @param value The string value to parse.
    */
   private fun LiteralParameterType.unmarshall(value: String): Any {
@@ -195,19 +181,18 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
    * Load a stage into the JVM.
    *
    * @param stage The stage to load.
-   * @throws InvalidProcessorException If the processor is not instantiatable.
-   * @throws MissingMetadataException If the class key is missing.
    */
   private fun loadStage(stage: IRStage) {
     /* Load the class into the JVM. */
+    Log.shared.debug { "Loading stage: ${stage.uri}" }
     val loader = getClassLoader(stage.processor.entrypoint)
-    val name =
-        stage.processor.metadata["class"] ?: throw MissingMetadataException(stage.uri, "class")
+    val name = checkNotNull(stage.processor.metadata["class"]) { "Missing class key in processor." }
+    Log.shared.debug { "Loading JVM class: $name" }
     val clazz = Class.forName(name, true, loader) as Class<*>
 
     /* Check if instantiatable. */
-    if (!KotlinProcessor::class.java.isAssignableFrom(clazz)) {
-      throw InvalidProcessorException(stage.processor.uri)
+    check(KotlinProcessor::class.java.isAssignableFrom(clazz)) {
+      "Processor is not instantiatable."
     }
 
     /* Build the argument map. */
