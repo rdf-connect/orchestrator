@@ -19,4 +19,13 @@ dependencies {
   testImplementation(kotlin("test"))
 }
 
-tasks.test { useJUnitPlatform() }
+tasks.test {
+  useJUnitPlatform()
+
+  maxParallelForks = 1
+
+  testLogging {
+    events("passed", "skipped", "failed")
+    showStandardStreams = true
+  }
+}

@@ -24,5 +24,13 @@ dependencies {
   testImplementation(kotlin("test"))
 }
 
-// Configure testing.
-tasks.test { useJUnitPlatform() }
+tasks.test {
+  useJUnitPlatform()
+
+  maxParallelForks = 1
+
+  testLogging {
+    events("passed", "skipped", "failed")
+    showStandardStreams = true
+  }
+}

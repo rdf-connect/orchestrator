@@ -53,7 +53,16 @@ dependencies {
   testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
-tasks.test { useJUnitPlatform() }
+tasks.test {
+  useJUnitPlatform()
+
+  maxParallelForks = 1
+
+  testLogging {
+    events("passed", "skipped", "failed")
+    showStandardStreams = true
+  }
+}
 
 /** We define these explicitly due to the reliance on Protobuf and gRPC. */
 sourceSets { main { proto { srcDir("../../proto") } } }
