@@ -7,11 +7,10 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.channels.SendChannel
-import technology.idlab.RDFCException
-import technology.idlab.runner.jvm.Arguments
-import technology.idlab.runner.jvm.KotlinProcessor
+import technology.idlab.rdfc.processor.Arguments
+import technology.idlab.rdfc.processor.Processor
 
-class HttpFetch(args: Arguments) : KotlinProcessor(args) {
+class HttpFetch(args: Arguments) : Processor(args) {
   /** Meta configuration. */
   private var engine: HttpClientEngine = CIO.create()
 
@@ -43,11 +42,7 @@ class HttpFetch(args: Arguments) : KotlinProcessor(args) {
     val res = client.request(builder)
 
     // Check validity of result.
-    if (!res.status.isSuccess()) {
-      throw object : RDFCException() {
-        override val message = "Status code ${res.status.value} received from $endpoint"
-      }
-    }
+    check(res.status.isSuccess()) { "Status code ${res.status.value} received from $endpoint" }
 
     // Push the result to the output.
     val bytes = res.readBytes()

@@ -8,7 +8,6 @@ group = "technology.idlab"
 
 version = "0.0.4"
 
-/** Set the Kotlin JVM version to 22. */
 kotlin { jvmToolchain(22) }
 
 /**

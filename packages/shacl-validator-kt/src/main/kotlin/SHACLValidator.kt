@@ -6,13 +6,11 @@ import kotlinx.coroutines.channels.SendChannel
 import org.apache.jena.graph.Graph
 import org.apache.jena.ontology.OntModelSpec
 import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.riot.RiotException
 import org.apache.jena.shacl.ShaclValidator
-import technology.idlab.RDFCException
-import technology.idlab.runner.jvm.Arguments
-import technology.idlab.runner.jvm.KotlinProcessor
+import technology.idlab.rdfc.processor.Arguments
+import technology.idlab.rdfc.processor.Processor
 
-class SHACLValidator(args: Arguments) : KotlinProcessor(args) {
+class SHACLValidator(args: Arguments) : Processor(args) {
   /** Default values. */
   private val errorIsFatalDefault = false
 
@@ -33,14 +31,7 @@ class SHACLValidator(args: Arguments) : KotlinProcessor(args) {
 
     // Create a new model with the SHACL shapesGraph.
     val model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
-    try {
-      model.read(shapes, "TURTLE")
-    } catch (e: RiotException) {
-      throw object : RDFCException() {
-        override val message = "Failed to read SHACL shapesGraph."
-        override val cause = e
-      }
-    }
+    model.read(shapes, "TURTLE")
 
     // Assign its graph to the shapesGraph field.
     this.shapesGraph = model.graph
@@ -51,15 +42,7 @@ class SHACLValidator(args: Arguments) : KotlinProcessor(args) {
     for (data in incoming) {
       // Parse as a model.
       val model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM)
-
-      try {
-        model.read(data.inputStream(), null, "TURTLE")
-      } catch (e: RiotException) {
-        throw object : RDFCException() {
-          override val message = "Failed to read incoming RDF data."
-          override val cause = e
-        }
-      }
+      model.read(data.inputStream(), null, "TURTLE")
 
       // Validate the model.
       val report = validator.validate(shapesGraph, model.graph)
@@ -75,11 +58,7 @@ class SHACLValidator(args: Arguments) : KotlinProcessor(args) {
         this.report?.send(out.toByteArray())
 
         // Throw a fatal error if needed.
-        if (fatal ?: errorIsFatalDefault) {
-          throw object : RDFCException() {
-            override val message = "Validation error is fatal."
-          }
-        }
+        check(!(fatal ?: errorIsFatalDefault)) { "Validation error is fatal." }
       }
     }
 

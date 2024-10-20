@@ -1,34 +1,30 @@
-plugins {
-  `java-library`
-  kotlin("jvm") version "2.0.0"
-}
+plugins { kotlin("jvm") version "2.0.21" }
 
-group = "technology.idlab.fileutils"
+group = "technology.idlab"
 
 version = "1.0-SNAPSHOT"
 
-/** Set the Kotlin JVM version to 22. */
 kotlin { jvmToolchain(22) }
 
 repositories { mavenCentral() }
 
 dependencies {
-  implementation("org.reflections:reflections:0.10.2")
+  // RDFC SDK
+  implementation(files("rdfc-processor.jar"))
 
-  // Processor class and other utilities.
-  implementation(files("orchestrator.jar"))
+  // Kotlin extensions.
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
-  // RDF dependencies.
+  // RDF dependencies
   implementation("org.apache.jena:apache-jena-libs:5.0.0")
   implementation("org.apache.jena:jena-arq:5.0.0")
   implementation("org.apache.jena:jena-shacl:5.0.0")
 
-  // Initialize testing.
-  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+  // KTest
   testImplementation("org.jetbrains.kotlin:kotlin-test")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 }
 
-/** Use JUnit for testing. */
 tasks.test {
   useJUnitPlatform()
 

@@ -4,6 +4,8 @@ group = "technology.idlab"
 
 version = "0.0.4"
 
+kotlin { jvmToolchain(22) }
+
 repositories { mavenCentral() }
 
 dependencies {
