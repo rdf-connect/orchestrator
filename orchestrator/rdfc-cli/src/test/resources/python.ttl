@@ -9,31 +9,20 @@
 test:report a rdfc:Channel .
 test:validated a rdfc:Channel .
 test:unvalidated a rdfc:Channel .
-test:web a rdfc:Channel .
 
-test:JVMTestingPipeline
+test:PythonPipeline
   a rdfc:Pipeline ;
-  rdfc:name "JVM Testing Pipeline" ;
-  rdfc:description "Pipeline for end-to-end testing of the JVM runner." ;
+  rdfc:name "Python Testing Pipeline" ;
+  rdfc:description "Pipeline for end-to-end testing of the Python runner." ;
   rdfc:stages
     test:FileReader ,
-    test:SHACLValidator ,
     test:FileWriter ,
     test:ReportWriter ,
-    test:HttpFetch ,
-    test:HttpWriter ;
+    test:PythonProcessor ;
   rdfc:dependency
-    <../../../../../../packages/http-utils-kt> ,
-    <../../../../../../packages/file-utils-kt> ,
-    <../../../../../../packages/shacl-validator-kt> .
-
-test:HttpFetch
-  a rdfc:HttpFetchKT ;
-  rdfc:arguments [
-    rdfc:endpoint "https://example.com" ;
-    rdfc:method "GET" ;
-    rdfc:outgoing test:web ;
-  ] .
+    <../../../../../packages/runner-py> ,
+    <../../../../../packages/file-utils-kt> ,
+    <../../../../../packages/shacl-validator-py> .
 
 test:FileReader
   a rdfc:FileReaderKT ;
@@ -44,34 +33,25 @@ test:FileReader
     rdfc:outgoing test:unvalidated ;
   ] .
 
-test:SHACLValidator
-  a rdfc:SHACLValidatorKT ;
+test:PythonProcessor
+  a rdfc:SHACLValidatorPY ;
   rdfc:arguments [
     rdfc:incoming test:unvalidated ;
     rdfc:outgoing test:validated ;
     rdfc:report test:report ;
     rdfc:shapes <./shacl/shapes.ttl> ;
-    rdfc:mime "text/turtle" ;
-    rdfc:fatal "false"^^xsd:boolean ;
-  ] .
-
-test:HttpWriter
-  a rdfc:FileWriterKT ;
-  rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing-jvm-web.html> ;
-    rdfc:incoming test:web ;
   ] .
 
 test:FileWriter
   a rdfc:FileWriterKT ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing-jvm-valid.ttl> ;
+    rdfc:path </tmp/rdfc-testing-python-valid.ttl> ;
     rdfc:incoming test:validated ;
   ] .
 
 test:ReportWriter
   a rdfc:FileWriterKT ;
   rdfc:arguments [
-    rdfc:path </tmp/rdfc-testing-jvm-report.ttl> ;
+    rdfc:path </tmp/rdfc-testing-python-report.ttl> ;
     rdfc:incoming test:report ;
   ] .

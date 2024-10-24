@@ -7,3 +7,5 @@ include("rdfc-core")
 include("rdfc-processor")
 
 include("rdfc-orchestrator")
+
+include("rdfc-cli")

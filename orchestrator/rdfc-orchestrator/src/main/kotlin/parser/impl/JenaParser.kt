@@ -36,8 +36,9 @@ class JenaParser(
 
     // Load the RDF-Connect ontology.
     val resource = this::class.java.getResource("/pipeline.ttl")
-    val config = resource!!.path!!
-    this.model.read(config, "TURTLE")
+    checkNotNull(resource) { "Could not find the embedded pipeline.ttl file." }
+    val resourceText = resource.readText().reader()
+    model.read(resourceText, null, "TURTLE")
 
     // Load the pipeline file into the parser.
     for (file in files) {

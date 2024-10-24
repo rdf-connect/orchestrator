@@ -1,11 +1,9 @@
-package e2e
-
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
-import technology.idlab.exec
-import technology.idlab.install
+import technology.idlab.rdfc.cli.exec
+import technology.idlab.rdfc.cli.install
 
 class E2ETest {
   data class Config(
@@ -59,7 +57,7 @@ class E2ETest {
   fun python() {
     val config =
         Config(
-            "/e2e/python.ttl",
+            "/python.ttl",
             "/tmp/rdfc-testing-python-valid.ttl",
             "/tmp/rdfc-testing-python-report.ttl")
 
@@ -69,10 +67,7 @@ class E2ETest {
   @Test
   fun node() {
     val config =
-        Config(
-            "/e2e/node.ttl",
-            "/tmp/rdfc-testing-node-valid.ttl",
-            "/tmp/rdfc-testing-node-report.ttl")
+        Config("/node.ttl", "/tmp/rdfc-testing-node-valid.ttl", "/tmp/rdfc-testing-node-report.ttl")
     run(config)
   }
 
@@ -80,7 +75,7 @@ class E2ETest {
   fun jvm() {
     val config =
         Config(
-            "/e2e/jvm.ttl",
+            "/jvm.ttl",
             "/tmp/rdfc-testing-jvm-valid.ttl",
             "/tmp/rdfc-testing-jvm-report.ttl",
             "/tmp/rdfc-testing-jvm-web.html",

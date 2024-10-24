@@ -20,9 +20,9 @@ test:NodePipeline
     test:FileWriter ,
     test:ReportWriter ;
   rdfc:dependency
-    <../../../../../../packages/runner-ts> ,
-    <../../../../../../packages/file-utils-ts> ,
-    <../../../../../../packages/shacl-validator-ts> .
+    <../../../../../packages/runner-ts> ,
+    <../../../../../packages/file-utils-ts> ,
+    <../../../../../packages/shacl-validator-ts> .
 
 test:FileReader
   a rdfc:FileReaderTS ;

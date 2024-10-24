@@ -2,7 +2,6 @@ plugins {
   application
   kotlin("jvm") version "2.0.21"
   id("com.google.protobuf") version "0.9.4"
-  id("com.gradleup.shadow") version "8.3.3"
 }
 
 group = "technology.idlab"
@@ -12,9 +11,6 @@ version = "0.0.1"
 kotlin { jvmToolchain(22) }
 
 repositories { mavenCentral() }
-
-/** Specify the entrypoint for the application. */
-application { mainClass.set("technology.idlab.MainKt") }
 
 dependencies {
   // Kotlin extensions.
