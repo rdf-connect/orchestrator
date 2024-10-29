@@ -1,4 +1,4 @@
-package technology.idlab.parser
+package technology.idlab.rdfc.parser
 
 import technology.idlab.rdfc.core.intermediate.IRDependency
 import technology.idlab.rdfc.core.intermediate.IRPackage

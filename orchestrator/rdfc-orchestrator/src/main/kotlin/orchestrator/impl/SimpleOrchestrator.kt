@@ -7,14 +7,14 @@ import kotlinx.coroutines.coroutineScope
 import technology.idlab.broker.Broker
 import technology.idlab.broker.simple.SimpleBroker
 import technology.idlab.orchestrator.Orchestrator
-import technology.idlab.parser.Parser
+import technology.idlab.rdfc.parser.Parser
 import technology.idlab.runner.Runner
 
 /**
  * A simple implementation of an orchestrator which only succeeds if all runners succeed without
  * intervention.
  *
- * @property parser The parser which is used to parse the configuration.
+ * @param parser The parser which is used to parse the configuration.
  */
 class SimpleOrchestrator(parser: Parser) : Orchestrator {
   /** Message broker. */

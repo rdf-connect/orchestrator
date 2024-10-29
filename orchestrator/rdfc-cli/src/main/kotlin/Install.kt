@@ -1,9 +1,9 @@
 package technology.idlab.rdfc.cli
 
 import java.io.File
-import technology.idlab.parser.impl.JenaParser
 import technology.idlab.rdfc.core.intermediate.IRPackage
 import technology.idlab.rdfc.core.process.ProcessManager
+import technology.idlab.rdfc.parser.impl.JenaParser
 import technology.idlab.resolver.impl.GenericResolver
 
 /**

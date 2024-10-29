@@ -9,3 +9,5 @@ include("rdfc-processor")
 include("rdfc-orchestrator")
 
 include("rdfc-cli")
+
+include("rdfc-parser")

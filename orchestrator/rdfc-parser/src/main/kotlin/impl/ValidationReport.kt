@@ -1,4 +1,4 @@
-package technology.idlab.parser.impl
+package technology.idlab.rdfc.parser.impl
 
 import java.io.ByteArrayOutputStream
 import org.apache.jena.shacl.ValidationReport

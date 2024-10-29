@@ -1,4 +1,4 @@
-package technology.idlab
+package technology.idlab.rdfc.core
 
 /**
  * All exceptions which are explicitly thrown in RDFC should inherit from this interface. The only

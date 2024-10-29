@@ -1,4 +1,4 @@
-package technology.idlab.parser.impl
+package technology.idlab.rdfc.parser.impl
 
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.rdf.model.ModelFactory

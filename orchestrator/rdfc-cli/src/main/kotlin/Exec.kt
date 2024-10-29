@@ -2,8 +2,8 @@ package technology.idlab.rdfc.cli
 
 import java.io.File
 import technology.idlab.orchestrator.impl.SimpleOrchestrator
-import technology.idlab.parser.impl.JenaParser
 import technology.idlab.rdfc.core.log.Log
+import technology.idlab.rdfc.parser.impl.JenaParser
 import technology.idlab.resolver.impl.GenericResolver
 
 /**

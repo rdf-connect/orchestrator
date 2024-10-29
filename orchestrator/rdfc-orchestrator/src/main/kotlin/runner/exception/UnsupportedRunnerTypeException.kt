@@ -1,6 +1,6 @@
 package technology.idlab.runner.exception
 
-import technology.idlab.RDFCException
+import technology.idlab.rdfc.core.RDFCException
 import technology.idlab.rdfc.core.intermediate.runner.RunnerType
 
 /**

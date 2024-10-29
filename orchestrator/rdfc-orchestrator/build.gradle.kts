@@ -20,6 +20,7 @@ dependencies {
   // Local dependencies
   implementation(project(":rdfc-core"))
   implementation(project(":rdfc-processor"))
+  implementation(project(":rdfc-parser"))
 
   // gRPC
   implementation("io.grpc:grpc-netty:1.64.0")

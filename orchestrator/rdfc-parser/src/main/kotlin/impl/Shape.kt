@@ -1,4 +1,4 @@
-package technology.idlab.parser.impl
+package technology.idlab.rdfc.parser.impl
 
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.parser.PropertyShape

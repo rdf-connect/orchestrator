@@ -1,14 +1,14 @@
-package technology.idlab.parser.impl
+package technology.idlab.rdfc.parser.impl
 
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.shacl.Shapes
 import org.apache.jena.shacl.parser.PropertyShape
 import org.apache.jena.shacl.parser.Shape
 import org.apache.jena.shacl.vocabulary.SHACLM
-import technology.idlab.parser.exception.MissingShaclPathException
-import technology.idlab.parser.exception.UnknownDataTypeException
 import technology.idlab.rdfc.core.RDFC
 import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
+import technology.idlab.rdfc.parser.exception.MissingShaclPathException
+import technology.idlab.rdfc.parser.exception.UnknownDataTypeException
 
 /**
  * Get the maxCount constraint of a property shape.

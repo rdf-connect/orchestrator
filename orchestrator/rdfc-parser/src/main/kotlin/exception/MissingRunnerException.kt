@@ -1,6 +1,6 @@
-package technology.idlab.parser.exception
+package technology.idlab.rdfc.parser.exception
 
-import technology.idlab.parser.ParserException
+import technology.idlab.rdfc.parser.ParserException
 
 /**
  * The processor did not list a target runner.

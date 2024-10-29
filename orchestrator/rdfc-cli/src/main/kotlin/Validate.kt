@@ -1,7 +1,7 @@
 package technology.idlab.rdfc.cli
 
 import java.io.File
-import technology.idlab.parser.impl.JenaParser
+import technology.idlab.rdfc.parser.impl.JenaParser
 
 /**
  * Check if the configuration is valid.

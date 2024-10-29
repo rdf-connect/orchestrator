@@ -1,4 +1,4 @@
-package technology.idlab.parser
+package technology.idlab.rdfc.parser
 
 import java.io.File
 import kotlin.test.Test
@@ -7,12 +7,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import technology.idlab.parser.impl.JenaParser
 import technology.idlab.rdfc.core.intermediate.argument.LiteralArgument
 import technology.idlab.rdfc.core.intermediate.argument.NestedArgument
 import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameter
 import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
 import technology.idlab.rdfc.core.intermediate.parameter.NestedParameter
+import technology.idlab.rdfc.parser.impl.JenaParser
 
 class ParserTest {
   private fun parse(resource: String): Parser {

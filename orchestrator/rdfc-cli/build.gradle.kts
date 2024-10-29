@@ -17,6 +17,7 @@ dependencies {
   // Local dependencies
   implementation(project(":rdfc-core"))
   implementation(project(":rdfc-orchestrator"))
+  implementation(project(":rdfc-parser"))
 
   // Kotlin extensions.
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")

@@ -1,4 +1,4 @@
-package technology.idlab.parser.impl
+package technology.idlab.rdfc.parser.impl
 
 import java.io.File
 import javax.naming.ConfigurationException
@@ -8,8 +8,6 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.Shapes
 import org.apache.jena.vocabulary.RDF
-import technology.idlab.parser.Parser
-import technology.idlab.parser.exception.*
 import technology.idlab.rdfc.core.RDFC
 import technology.idlab.rdfc.core.intermediate.*
 import technology.idlab.rdfc.core.intermediate.argument.Argument
@@ -20,6 +18,8 @@ import technology.idlab.rdfc.core.intermediate.parameter.NestedParameter
 import technology.idlab.rdfc.core.intermediate.parameter.Parameter
 import technology.idlab.rdfc.core.intermediate.runner.RunnerType
 import technology.idlab.rdfc.core.log.Log
+import technology.idlab.rdfc.parser.Parser
+import technology.idlab.rdfc.parser.exception.*
 
 class JenaParser(
     /** A file pointer to the pipeline configuration entrypoint. */
