@@ -1,19 +1,19 @@
-package technology.idlab.runner
+package technology.idlab.rdfc.orchestrator.runner
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import technology.idlab.broker.Broker
-import technology.idlab.broker.BrokerClient
 import technology.idlab.rdfc.core.intermediate.IRRunner
 import technology.idlab.rdfc.core.intermediate.IRStage
 import technology.idlab.rdfc.core.intermediate.runner.RunnerType
-import technology.idlab.runner.exception.NoSuchRunnerException
-import technology.idlab.runner.exception.UnsupportedRunnerTypeException
-import technology.idlab.runner.grpc.GRPCRunner
-import technology.idlab.runner.jvm.JVMRunner
+import technology.idlab.rdfc.orchestrator.broker.Broker
+import technology.idlab.rdfc.orchestrator.broker.BrokerClient
+import technology.idlab.rdfc.orchestrator.runner.exception.NoSuchRunnerException
+import technology.idlab.rdfc.orchestrator.runner.exception.UnsupportedRunnerTypeException
+import technology.idlab.rdfc.orchestrator.runner.grpc.GRPCRunner
+import technology.idlab.rdfc.orchestrator.runner.jvm.JVMRunner
 
 /**
  * A runner is responsible for executing a set of stages concurrently. A concrete implementation

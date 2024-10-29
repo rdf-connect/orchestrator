@@ -1,4 +1,4 @@
-package technology.idlab.resolver
+package technology.idlab.rdfc.orchestrator.resolver
 
 import java.io.File
 import technology.idlab.rdfc.core.intermediate.IRDependency

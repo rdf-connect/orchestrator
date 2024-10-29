@@ -1,4 +1,4 @@
-package technology.idlab.runner.jvm
+package technology.idlab.rdfc.orchestrator.runner.jvm
 
 import java.net.URI
 import java.net.URLClassLoader
@@ -12,9 +12,9 @@ import technology.idlab.rdfc.core.intermediate.argument.LiteralArgument
 import technology.idlab.rdfc.core.intermediate.argument.NestedArgument
 import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
 import technology.idlab.rdfc.core.log.Log
+import technology.idlab.rdfc.orchestrator.runner.Runner
 import technology.idlab.rdfc.processor.Arguments
 import technology.idlab.rdfc.processor.Processor
-import technology.idlab.runner.Runner
 
 /**
  * Return a class loader. If a path is given, return a URLClassLoader which loads the JAR file at

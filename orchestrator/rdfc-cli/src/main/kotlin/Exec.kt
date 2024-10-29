@@ -1,10 +1,10 @@
 package technology.idlab.rdfc.cli
 
 import java.io.File
-import technology.idlab.orchestrator.impl.SimpleOrchestrator
 import technology.idlab.rdfc.core.log.Log
+import technology.idlab.rdfc.orchestrator.orchestrator.impl.SimpleOrchestrator
+import technology.idlab.rdfc.orchestrator.resolver.impl.GenericResolver
 import technology.idlab.rdfc.parser.impl.JenaParser
-import technology.idlab.resolver.impl.GenericResolver
 
 /**
  * Execute a pipeline at a given path.

@@ -1,9 +1,8 @@
-package broker.simple
+package technology.idlab.rdfc.orchestrator.broker.simple
 
-import broker.BrokerTest
-import technology.idlab.broker.Broker
-import technology.idlab.broker.BrokerClient
-import technology.idlab.broker.simple.SimpleBroker
+import technology.idlab.rdfc.orchestrator.broker.Broker
+import technology.idlab.rdfc.orchestrator.broker.BrokerClient
+import technology.idlab.rdfc.orchestrator.broker.BrokerTest
 
 class SimpleBrokerTest : BrokerTest() {
   override fun setup(clients: Collection<BrokerClient<Int>>): Broker<Int> {

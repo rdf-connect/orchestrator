@@ -1,7 +1,4 @@
-package broker
-
-import technology.idlab.broker.Broker
-import technology.idlab.broker.BrokerClient
+package technology.idlab.rdfc.orchestrator.broker
 
 /**
  * A broker client which registers all collects all calls in collections for testing purposes only.

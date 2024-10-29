@@ -1,6 +1,6 @@
-package technology.idlab.runner.exception
+package technology.idlab.rdfc.orchestrator.runner.exception
 
-import technology.idlab.runner.RunnerException
+import technology.idlab.rdfc.orchestrator.runner.RunnerException
 
 /**
  * A runner was referenced by a stage, but no such runner was found.

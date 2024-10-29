@@ -1,4 +1,4 @@
-package technology.idlab.runner.grpc
+package technology.idlab.rdfc.orchestrator.runner.grpc
 
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder

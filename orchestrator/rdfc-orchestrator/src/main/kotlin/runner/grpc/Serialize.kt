@@ -1,4 +1,4 @@
-package technology.idlab.runner.grpc
+package technology.idlab.rdfc.orchestrator.runner.grpc
 
 import com.google.protobuf.Timestamp
 import com.google.protobuf.kotlin.toByteStringUtf8

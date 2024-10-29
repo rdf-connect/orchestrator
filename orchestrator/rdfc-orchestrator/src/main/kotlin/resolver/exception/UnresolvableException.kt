@@ -1,6 +1,6 @@
-package technology.idlab.resolver.exception
+package technology.idlab.rdfc.orchestrator.resolver.exception
 
-import technology.idlab.resolver.ResolverException
+import technology.idlab.rdfc.orchestrator.resolver.ResolverException
 
 /**
  * The dependency type is not recognized.

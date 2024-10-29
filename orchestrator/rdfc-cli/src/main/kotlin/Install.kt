@@ -3,8 +3,8 @@ package technology.idlab.rdfc.cli
 import java.io.File
 import technology.idlab.rdfc.core.intermediate.IRPackage
 import technology.idlab.rdfc.core.process.ProcessManager
+import technology.idlab.rdfc.orchestrator.resolver.impl.GenericResolver
 import technology.idlab.rdfc.parser.impl.JenaParser
-import technology.idlab.resolver.impl.GenericResolver
 
 /**
  * Resolve, prepare and install all dependencies in the configuration file.

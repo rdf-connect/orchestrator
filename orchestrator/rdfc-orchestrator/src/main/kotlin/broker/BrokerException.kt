@@ -1,4 +1,4 @@
-package technology.idlab.broker
+package technology.idlab.rdfc.orchestrator.broker
 
 import technology.idlab.rdfc.core.RDFCException
 

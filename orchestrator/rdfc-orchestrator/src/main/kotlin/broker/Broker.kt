@@ -1,4 +1,4 @@
-package technology.idlab.broker
+package technology.idlab.rdfc.orchestrator.broker
 
 /**
  * A broker is a simple class which takes in messages targeting a specific URI, and routes them to

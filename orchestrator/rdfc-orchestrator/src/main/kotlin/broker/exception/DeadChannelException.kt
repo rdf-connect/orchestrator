@@ -1,6 +1,6 @@
-package technology.idlab.broker.exception
+package technology.idlab.rdfc.orchestrator.broker.exception
 
-import technology.idlab.broker.BrokerException
+import technology.idlab.rdfc.orchestrator.broker.BrokerException
 
 /**
  * An interaction with a dead channel was requested.

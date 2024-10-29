@@ -1,4 +1,4 @@
-package technology.idlab.runner.grpc
+package technology.idlab.rdfc.orchestrator.runner.grpc
 
 import com.google.protobuf.ByteString
 import io.grpc.ConnectivityState
@@ -21,8 +21,8 @@ import technology.idlab.rdfc.core.intermediate.IRStage
 import technology.idlab.rdfc.core.intermediate.runner.RunnerType
 import technology.idlab.rdfc.core.process.ProcessManager
 import technology.idlab.rdfc.core.util.retries
-import technology.idlab.runner.Runner
-import technology.idlab.runner.exception.UnrecognizedRequestException
+import technology.idlab.rdfc.orchestrator.runner.Runner
+import technology.idlab.rdfc.orchestrator.runner.exception.UnrecognizedRequestException
 
 /**
  * Attempt to connect to a gRPC server. `attempts` indicates the number of retries before throwing

@@ -1,4 +1,4 @@
-package technology.idlab.broker
+package technology.idlab.rdfc.orchestrator.broker
 
 /**
  * In order to interact with a broker, an object must implement this interface. It must list all the

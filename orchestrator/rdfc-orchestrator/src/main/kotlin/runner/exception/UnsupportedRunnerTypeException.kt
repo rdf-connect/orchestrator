@@ -1,4 +1,4 @@
-package technology.idlab.runner.exception
+package technology.idlab.rdfc.orchestrator.runner.exception
 
 import technology.idlab.rdfc.core.RDFCException
 import technology.idlab.rdfc.core.intermediate.runner.RunnerType

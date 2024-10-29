@@ -1,6 +1,6 @@
-package technology.idlab.runner.exception
+package technology.idlab.rdfc.orchestrator.runner.exception
 
-import technology.idlab.runner.RunnerException
+import technology.idlab.rdfc.orchestrator.runner.RunnerException
 
 /**
  * Attempted to access an argument which does not exist.

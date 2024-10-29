@@ -1,14 +1,14 @@
-package technology.idlab.orchestrator.impl
+package technology.idlab.rdfc.orchestrator.orchestrator.impl
 
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import technology.idlab.broker.Broker
-import technology.idlab.broker.simple.SimpleBroker
-import technology.idlab.orchestrator.Orchestrator
+import technology.idlab.rdfc.orchestrator.broker.Broker
+import technology.idlab.rdfc.orchestrator.broker.simple.SimpleBroker
+import technology.idlab.rdfc.orchestrator.orchestrator.Orchestrator
+import technology.idlab.rdfc.orchestrator.runner.Runner
 import technology.idlab.rdfc.parser.Parser
-import technology.idlab.runner.Runner
 
 /**
  * A simple implementation of an orchestrator which only succeeds if all runners succeed without

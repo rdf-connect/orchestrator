@@ -1,9 +1,8 @@
-package resolver
+package technology.idlab.rdfc.orchestrator.resolver
 
 import java.nio.file.Files
 import kotlin.test.Test
 import technology.idlab.rdfc.core.intermediate.IRDependency
-import technology.idlab.resolver.Resolver
 
 abstract class ResolverTest {
   /** The URI of a dependency which must be handled successfully. */

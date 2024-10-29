@@ -1,14 +1,12 @@
-package broker
+package technology.idlab.rdfc.orchestrator.broker
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.assertThrows
-import technology.idlab.broker.Broker
-import technology.idlab.broker.BrokerClient
-import technology.idlab.broker.exception.DeadChannelException
-import technology.idlab.broker.exception.NoRegisteredSenderException
-import technology.idlab.broker.exception.UnknownChannelException
-import technology.idlab.broker.simple.SimpleBroker
+import technology.idlab.rdfc.orchestrator.broker.exception.DeadChannelException
+import technology.idlab.rdfc.orchestrator.broker.exception.NoRegisteredSenderException
+import technology.idlab.rdfc.orchestrator.broker.exception.UnknownChannelException
+import technology.idlab.rdfc.orchestrator.broker.simple.SimpleBroker
 
 /** This abstract class provides some simple tests for concrete broker implementations. */
 abstract class BrokerTest {

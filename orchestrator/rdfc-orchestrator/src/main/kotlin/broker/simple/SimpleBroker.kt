@@ -1,10 +1,10 @@
-package technology.idlab.broker.simple
+package technology.idlab.rdfc.orchestrator.broker.simple
 
-import technology.idlab.broker.Broker
-import technology.idlab.broker.BrokerClient
-import technology.idlab.broker.exception.DeadChannelException
-import technology.idlab.broker.exception.NoRegisteredSenderException
-import technology.idlab.broker.exception.UnknownChannelException
+import technology.idlab.rdfc.orchestrator.broker.Broker
+import technology.idlab.rdfc.orchestrator.broker.BrokerClient
+import technology.idlab.rdfc.orchestrator.broker.exception.DeadChannelException
+import technology.idlab.rdfc.orchestrator.broker.exception.NoRegisteredSenderException
+import technology.idlab.rdfc.orchestrator.broker.exception.UnknownChannelException
 
 /**
  * A simple data class which keeps track of the senders and receivers of a given channel. Note that
