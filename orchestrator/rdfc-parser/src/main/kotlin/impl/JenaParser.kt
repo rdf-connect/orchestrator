@@ -302,7 +302,13 @@ class JenaParser(
     return IRRunner(runner.toString(), wd, entrypoint.toString(), type)
   }
 
-  override fun stages(runner: IRRunner): List<IRStage> {
-    return pipelines().flatMap { it.stages }.filter { it.processor.target == runner.uri }
+  override fun stages(runner: IRRunner?): List<IRStage> {
+    val result = pipelines().flatMap { it.stages }
+
+    return if (runner != null) {
+      return result.filter { it.processor.target == runner.uri }
+    } else {
+      result
+    }
   }
 }

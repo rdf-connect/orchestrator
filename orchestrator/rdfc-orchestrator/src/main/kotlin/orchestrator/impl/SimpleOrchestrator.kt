@@ -4,40 +4,42 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import technology.idlab.rdfc.core.intermediate.IRRunner
+import technology.idlab.rdfc.core.intermediate.IRStage
 import technology.idlab.rdfc.orchestrator.broker.Broker
 import technology.idlab.rdfc.orchestrator.broker.simple.SimpleBroker
 import technology.idlab.rdfc.orchestrator.orchestrator.Orchestrator
 import technology.idlab.rdfc.orchestrator.runner.Runner
-import technology.idlab.rdfc.parser.Parser
 
 /**
  * A simple implementation of an orchestrator which only succeeds if all runners succeed without
  * intervention.
  *
- * @param parser The parser which is used to parse the configuration.
+ * @param runners All the runners which should be instantiated before loading the stages.
+ * @param stages A collection of stages which should be run. Note that all the corresponding runners
+ *   should be included in the `runner` declaration.
  */
-class SimpleOrchestrator(parser: Parser) : Orchestrator {
+class SimpleOrchestrator(runners: Collection<IRRunner>, stages: Collection<IRStage>) :
+    Orchestrator {
   /** Message broker. */
   private val broker: Broker<ByteArray>
 
   /** All the runners used in the pipeline. */
   private val runners: List<Runner>
 
-  /** Load all stages into their respective runners. */
   init {
-    val runners = mutableListOf<Runner>()
+    // Initialize all runners with their corresponding stages.
+    val instances = mutableListOf<Runner>()
 
-    for (runner in parser.runners()) {
-      val stages = parser.stages(runner)
-      runners.add(Runner.from(runner, stages))
+    for (runner in runners) {
+      val targets = stages.filter { it.processor.target == runner.uri }
+      val instance = Runner.from(runner, targets)
+      instances.add(instance)
     }
 
-    this.runners = runners
-  }
-
-  /** Initialize a broker. */
-  init {
-    this.broker = SimpleBroker(this.runners)
+    // Initialize a broker.
+    this.broker = SimpleBroker(instances)
+    this.runners = instances
   }
 
   /** Execute all stages in all the runtimes. */

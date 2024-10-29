@@ -45,8 +45,8 @@ interface Parser {
   /**
    * Get all stages for a given runner.
    *
-   * @param runner The runner to get stages for.
+   * @param runner The runner to get stages for. If none is provided, all stages will be returned.
    * @return The stages for the given runner.
    */
-  fun stages(runner: IRRunner): List<IRStage>
+  fun stages(runner: IRRunner? = null): List<IRStage>
 }

@@ -29,7 +29,7 @@ internal suspend fun exec(path: String) {
   val parser = JenaParser(listOf(listOf(config), indexFiles).flatten())
 
   // Start the orchestrator.
-  val orchestrator = SimpleOrchestrator(parser)
+  val orchestrator = SimpleOrchestrator(parser.runners(), parser.stages())
   orchestrator.exec()
 
   Log.shared.info("Pipeline execution succeeded.")
