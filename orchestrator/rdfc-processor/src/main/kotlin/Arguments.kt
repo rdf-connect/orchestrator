@@ -49,19 +49,27 @@ data class Arguments(
      * values which are maps as well.
      */
     fun from(args: Map<String, List<Any>>): Arguments {
-      return Arguments(
-          args.mapValues { (_, list) ->
-            list.map { arg ->
-              if (arg::class.isSubclassOf(Map::class)) {
-                require(safeCast(typeOf<Map<String, List<Any>>>(), arg)) {
-                  "Cannot parse nested map."
-                }
-                @Suppress("UNCHECKED_CAST") (from(arg as Map<String, List<Any>>))
-              } else {
-                arg
-              }
-            }
-          })
+      val result = mutableMapOf<String, List<Any>>()
+
+      // Loop over all values in the argument map and map them individually.
+      for ((name, arg) in args) {
+        val parsed = mutableListOf<Any>()
+
+        // Go over each value and check if it conforms to the cast.
+        for (value in arg) {
+          if (value::class.isSubclassOf(Map::class)) {
+            val target = typeOf<Map<String, List<Any>>>()
+            require(safeCast(target, value)) { "Cannot parse nested map $name." }
+            parsed.add(@Suppress("UNCHECKED_CAST") (from(value as Map<String, List<Any>>)))
+          } else {
+            parsed.add(value)
+          }
+        }
+
+        result[name] = parsed
+      }
+
+      return Arguments(result)
     }
   }
 }
