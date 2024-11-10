@@ -6,7 +6,7 @@ plugins {
 
 group = "technology.idlab"
 
-version = "0.0.1"
+version = "0.0.2"
 
 /** Specify the entrypoint for the application. */
 application { mainClass.set("technology.idlab.rdfc.cli.MainKt") }
