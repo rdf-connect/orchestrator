@@ -1,4 +1,4 @@
-package technology.idlab.rdfc.core.intermediate
+package technology.idlab.rdfc.intermediate
 
 /**
  * A representation of a processor in IR. A processor is a piece of code which can be executed by a
@@ -10,7 +10,7 @@ package technology.idlab.rdfc.core.intermediate
  * @property parameters The parameters which should be passed to the processor.
  * @property metadata Additional parameters which may be used by the runner.
  */
-class IRProcessor(
+data class IRProcessor(
     val uri: String,
     val target: String,
     val entrypoint: String,

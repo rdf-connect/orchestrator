@@ -1,4 +1,4 @@
-package technology.idlab.rdfc.core.intermediate.parameter
+package technology.idlab.rdfc.intermediate.parameter
 
 /**
  * Representation of a (list of) literal parameter(s) in IR.

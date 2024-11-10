@@ -4,8 +4,8 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import technology.idlab.rdfc.core.intermediate.IRRunner
-import technology.idlab.rdfc.core.intermediate.IRStage
+import technology.idlab.rdfc.intermediate.IRRunner
+import technology.idlab.rdfc.intermediate.IRStage
 import technology.idlab.rdfc.orchestrator.broker.Broker
 import technology.idlab.rdfc.orchestrator.broker.simple.SimpleBroker
 import technology.idlab.rdfc.orchestrator.orchestrator.Orchestrator

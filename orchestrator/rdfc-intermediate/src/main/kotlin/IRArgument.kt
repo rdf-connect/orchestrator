@@ -1,14 +1,14 @@
-package technology.idlab.rdfc.core.intermediate
+package technology.idlab.rdfc.intermediate
 
-import technology.idlab.rdfc.core.intermediate.argument.Argument
-import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
+import technology.idlab.rdfc.intermediate.argument.Argument
+import technology.idlab.rdfc.intermediate.parameter.LiteralParameterType
 
 /**
  * Representation of the arguments of a given stage in IR.
  *
  * @param root A map of strings to arguments.
  */
-class IRArgument(
+data class IRArgument(
     val root: Map<String, Argument> = mutableMapOf(),
 ) {
   /**

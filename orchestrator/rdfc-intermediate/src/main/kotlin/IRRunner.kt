@@ -1,7 +1,7 @@
-package technology.idlab.rdfc.core.intermediate
+package technology.idlab.rdfc.intermediate
 
 import java.io.File
-import technology.idlab.rdfc.core.intermediate.runner.RunnerType
+import technology.idlab.rdfc.intermediate.runner.RunnerType
 
 /**
  * Representation of a runner in IR.

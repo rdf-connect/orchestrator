@@ -4,9 +4,9 @@ import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.parser.PropertyShape
 import org.apache.jena.shacl.parser.Shape
 import org.apache.jena.shacl.vocabulary.SHACLM
-import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameter
-import technology.idlab.rdfc.core.intermediate.parameter.NestedParameter
-import technology.idlab.rdfc.core.intermediate.parameter.Parameter
+import technology.idlab.rdfc.intermediate.parameter.LiteralParameter
+import technology.idlab.rdfc.intermediate.parameter.NestedParameter
+import technology.idlab.rdfc.intermediate.parameter.Parameter
 
 /** @return true if the shape is closed, false otherwise. */
 fun Shape.closed(): Boolean {

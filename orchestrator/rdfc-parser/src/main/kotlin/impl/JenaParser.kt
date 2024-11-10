@@ -9,15 +9,15 @@ import org.apache.jena.rdf.model.Resource
 import org.apache.jena.shacl.Shapes
 import org.apache.jena.vocabulary.RDF
 import technology.idlab.rdfc.core.RDFC
-import technology.idlab.rdfc.core.intermediate.*
-import technology.idlab.rdfc.core.intermediate.argument.Argument
-import technology.idlab.rdfc.core.intermediate.argument.LiteralArgument
-import technology.idlab.rdfc.core.intermediate.argument.NestedArgument
-import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameter
-import technology.idlab.rdfc.core.intermediate.parameter.NestedParameter
-import technology.idlab.rdfc.core.intermediate.parameter.Parameter
-import technology.idlab.rdfc.core.intermediate.runner.RunnerType
 import technology.idlab.rdfc.core.log.Log
+import technology.idlab.rdfc.intermediate.*
+import technology.idlab.rdfc.intermediate.argument.Argument
+import technology.idlab.rdfc.intermediate.argument.LiteralArgument
+import technology.idlab.rdfc.intermediate.argument.NestedArgument
+import technology.idlab.rdfc.intermediate.parameter.LiteralParameter
+import technology.idlab.rdfc.intermediate.parameter.NestedParameter
+import technology.idlab.rdfc.intermediate.parameter.Parameter
+import technology.idlab.rdfc.intermediate.runner.RunnerType
 import technology.idlab.rdfc.parser.Parser
 import technology.idlab.rdfc.parser.exception.*
 

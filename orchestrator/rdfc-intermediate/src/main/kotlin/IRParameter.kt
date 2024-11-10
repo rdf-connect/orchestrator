@@ -1,13 +1,13 @@
-package technology.idlab.rdfc.core.intermediate
+package technology.idlab.rdfc.intermediate
 
-import technology.idlab.rdfc.core.intermediate.parameter.Parameter
+import technology.idlab.rdfc.intermediate.parameter.Parameter
 
 /**
  * A representation of a parameter in IR.
  *
  * @property type The type of the parameter.
  */
-class IRParameter(val type: Map<String, Parameter>) {
+data class IRParameter(val type: Map<String, Parameter>) {
   /**
    * Get the parameter with the given key.
    *

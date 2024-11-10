@@ -1,7 +1,7 @@
 package technology.idlab.rdfc.orchestrator.resolver.impl
 
 import java.io.File
-import technology.idlab.rdfc.core.intermediate.IRDependency
+import technology.idlab.rdfc.intermediate.IRDependency
 import technology.idlab.rdfc.orchestrator.resolver.Resolver
 import technology.idlab.rdfc.orchestrator.resolver.exception.UnresolvableException
 

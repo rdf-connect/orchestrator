@@ -1,4 +1,4 @@
-package technology.idlab.rdfc.core.intermediate.runner
+package technology.idlab.rdfc.intermediate.runner
 
 /** The types of runner supported by the Orchestrator. */
 enum class RunnerType {

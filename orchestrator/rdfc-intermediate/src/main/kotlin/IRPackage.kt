@@ -1,4 +1,4 @@
-package technology.idlab.rdfc.core.intermediate
+package technology.idlab.rdfc.intermediate
 
 /**
  * A resolved dependency, with all of its configuration parameters.
@@ -19,6 +19,6 @@ data class IRPackage(
     val repo: String? = null,
     val license: String? = null,
     val prepare: List<String> = emptyList(),
-    val processors: List<technology.idlab.rdfc.core.intermediate.IRProcessor> = emptyList(),
-    val runners: List<technology.idlab.rdfc.core.intermediate.IRRunner> = emptyList(),
+    val processors: List<IRProcessor> = emptyList(),
+    val runners: List<IRRunner> = emptyList(),
 )

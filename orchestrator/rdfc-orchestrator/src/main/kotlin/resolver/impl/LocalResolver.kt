@@ -5,7 +5,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.readSymbolicLink
-import technology.idlab.rdfc.core.intermediate.IRDependency
+import technology.idlab.rdfc.intermediate.IRDependency
 import technology.idlab.rdfc.orchestrator.resolver.Resolver
 
 /** Resolve a file on the local file system. */

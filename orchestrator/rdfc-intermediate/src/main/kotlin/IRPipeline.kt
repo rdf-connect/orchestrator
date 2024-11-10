@@ -1,4 +1,4 @@
-package technology.idlab.rdfc.core.intermediate
+package technology.idlab.rdfc.intermediate
 
 /**
  * A representation of a pipeline in IR.
@@ -11,6 +11,6 @@ package technology.idlab.rdfc.core.intermediate
  */
 data class IRPipeline(
     val uri: String,
-    val dependencies: List<technology.idlab.rdfc.core.intermediate.IRDependency>,
-    val stages: List<technology.idlab.rdfc.core.intermediate.IRStage>,
+    val dependencies: List<IRDependency>,
+    val stages: List<IRStage>,
 )

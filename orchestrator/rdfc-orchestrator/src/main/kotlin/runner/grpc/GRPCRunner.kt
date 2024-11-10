@@ -16,11 +16,11 @@ import rdfc.channel
 import rdfc.channelData
 import rdfc.channelMessage
 import technology.idlab.rdfc.core.extensions.rawPath
-import technology.idlab.rdfc.core.intermediate.IRRunner
-import technology.idlab.rdfc.core.intermediate.IRStage
-import technology.idlab.rdfc.core.intermediate.runner.RunnerType
 import technology.idlab.rdfc.core.process.ProcessManager
 import technology.idlab.rdfc.core.util.retries
+import technology.idlab.rdfc.intermediate.IRRunner
+import technology.idlab.rdfc.intermediate.IRStage
+import technology.idlab.rdfc.intermediate.runner.RunnerType
 import technology.idlab.rdfc.orchestrator.runner.Runner
 import technology.idlab.rdfc.orchestrator.runner.exception.UnrecognizedRequestException
 

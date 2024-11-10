@@ -1,14 +1,14 @@
-package technology.idlab.rdfc.core.intermediate.argument
+package technology.idlab.rdfc.intermediate.argument
 
-import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
-import technology.idlab.rdfc.core.intermediate.parameter.NestedParameter
+import technology.idlab.rdfc.intermediate.parameter.LiteralParameterType
+import technology.idlab.rdfc.intermediate.parameter.NestedParameter
 
 /**
  * Representation of a single nested argument in IR as a list of key-value pairs.
  *
  * @param values The list of key-value pairs for this argument.
  */
-class NestedArgument(
+data class NestedArgument(
     override val parameter: NestedParameter,
     val values: MutableList<Map<String, Argument>> = mutableListOf(),
 ) : Argument {

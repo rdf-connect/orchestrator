@@ -1,6 +1,6 @@
-package technology.idlab.rdfc.core.intermediate
+package technology.idlab.rdfc.intermediate
 
-import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
+import technology.idlab.rdfc.intermediate.parameter.LiteralParameterType
 
 /**
  * Representation of a stage in the IR. A stage is an execution of a processor with concrete
@@ -12,8 +12,8 @@ import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
  */
 data class IRStage(
     val uri: String,
-    val processor: technology.idlab.rdfc.core.intermediate.IRProcessor,
-    val arguments: technology.idlab.rdfc.core.intermediate.IRArgument,
+    val processor: IRProcessor,
+    val arguments: IRArgument,
 ) {
   /**
    * Get all the readers for this stage.

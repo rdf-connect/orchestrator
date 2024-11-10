@@ -1,11 +1,11 @@
 package technology.idlab.rdfc.parser
 
-import technology.idlab.rdfc.core.intermediate.IRDependency
-import technology.idlab.rdfc.core.intermediate.IRPackage
-import technology.idlab.rdfc.core.intermediate.IRPipeline
-import technology.idlab.rdfc.core.intermediate.IRProcessor
-import technology.idlab.rdfc.core.intermediate.IRRunner
-import technology.idlab.rdfc.core.intermediate.IRStage
+import technology.idlab.rdfc.intermediate.IRDependency
+import technology.idlab.rdfc.intermediate.IRPackage
+import technology.idlab.rdfc.intermediate.IRPipeline
+import technology.idlab.rdfc.intermediate.IRProcessor
+import technology.idlab.rdfc.intermediate.IRRunner
+import technology.idlab.rdfc.intermediate.IRStage
 
 /**
  * Parse an RDF file into an intermediate representation, and validate it against the ontology and

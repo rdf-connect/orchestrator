@@ -1,4 +1,4 @@
-package technology.idlab.rdfc.core.intermediate
+package technology.idlab.rdfc.intermediate
 
 import io.ktor.http.*
 

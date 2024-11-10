@@ -6,7 +6,7 @@ import org.apache.jena.shacl.parser.PropertyShape
 import org.apache.jena.shacl.parser.Shape
 import org.apache.jena.shacl.vocabulary.SHACLM
 import technology.idlab.rdfc.core.RDFC
-import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
+import technology.idlab.rdfc.intermediate.parameter.LiteralParameterType
 import technology.idlab.rdfc.parser.exception.MissingShaclPathException
 import technology.idlab.rdfc.parser.exception.UnknownDataTypeException
 

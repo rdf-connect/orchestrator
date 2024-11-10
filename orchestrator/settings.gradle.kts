@@ -11,3 +11,5 @@ include("rdfc-orchestrator")
 include("rdfc-cli")
 
 include("rdfc-parser")
+
+include("rdfc-intermediate")

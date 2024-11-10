@@ -1,7 +1,7 @@
 package technology.idlab.rdfc.orchestrator.resolver
 
 import java.io.File
-import technology.idlab.rdfc.core.intermediate.IRDependency
+import technology.idlab.rdfc.intermediate.IRDependency
 
 /** The name of the directory where the packages should be saved locally. */
 private const val PACKAGES_DIR = "rdfc_packages"

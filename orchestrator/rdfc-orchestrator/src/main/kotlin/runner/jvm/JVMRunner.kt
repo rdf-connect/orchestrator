@@ -6,12 +6,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import technology.idlab.rdfc.core.intermediate.IRArgument
-import technology.idlab.rdfc.core.intermediate.IRStage
-import technology.idlab.rdfc.core.intermediate.argument.LiteralArgument
-import technology.idlab.rdfc.core.intermediate.argument.NestedArgument
-import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
 import technology.idlab.rdfc.core.log.Log
+import technology.idlab.rdfc.intermediate.IRArgument
+import technology.idlab.rdfc.intermediate.IRStage
+import technology.idlab.rdfc.intermediate.argument.LiteralArgument
+import technology.idlab.rdfc.intermediate.argument.NestedArgument
+import technology.idlab.rdfc.intermediate.parameter.LiteralParameterType
 import technology.idlab.rdfc.orchestrator.runner.Runner
 import technology.idlab.rdfc.processor.Arguments
 import technology.idlab.rdfc.processor.Processor

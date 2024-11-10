@@ -2,7 +2,7 @@ package technology.idlab.rdfc.orchestrator.resolver.impl
 
 import java.io.File
 import org.eclipse.jgit.api.Git
-import technology.idlab.rdfc.core.intermediate.IRDependency
+import technology.idlab.rdfc.intermediate.IRDependency
 import technology.idlab.rdfc.orchestrator.resolver.Resolver
 
 /** Resolve a Git repository by cloning it locally and reading its configuration file. */

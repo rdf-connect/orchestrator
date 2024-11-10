@@ -11,6 +11,8 @@ version = "0.0.1"
 /** Specify the entrypoint for the application. */
 application { mainClass.set("technology.idlab.rdfc.cli.MainKt") }
 
+kotlin { jvmToolchain(22) }
+
 repositories { mavenCentral() }
 
 dependencies {
@@ -18,6 +20,7 @@ dependencies {
   implementation(project(":rdfc-core"))
   implementation(project(":rdfc-orchestrator"))
   implementation(project(":rdfc-parser"))
+  implementation(project(":rdfc-intermediate"))
 
   // Kotlin extensions.
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")

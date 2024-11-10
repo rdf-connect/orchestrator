@@ -1,7 +1,7 @@
-package technology.idlab.rdfc.core.intermediate.argument
+package technology.idlab.rdfc.intermediate.argument
 
-import technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType
-import technology.idlab.rdfc.core.intermediate.parameter.Parameter
+import technology.idlab.rdfc.intermediate.parameter.LiteralParameterType
+import technology.idlab.rdfc.intermediate.parameter.Parameter
 
 /**
  * A concrete argument and it's corresponding parameter.

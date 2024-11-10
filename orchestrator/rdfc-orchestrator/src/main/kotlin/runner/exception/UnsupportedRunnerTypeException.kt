@@ -1,7 +1,7 @@
 package technology.idlab.rdfc.orchestrator.runner.exception
 
 import technology.idlab.rdfc.core.RDFCException
-import technology.idlab.rdfc.core.intermediate.runner.RunnerType
+import technology.idlab.rdfc.intermediate.runner.RunnerType
 
 /**
  * A known type was used, but it has no corresponding implementation.

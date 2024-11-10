@@ -1,4 +1,4 @@
-package technology.idlab.rdfc.core.intermediate.parameter
+package technology.idlab.rdfc.intermediate.parameter
 
 /**
  * Representation of a (list of) literal parameter(s) in IR.
@@ -7,7 +7,7 @@ package technology.idlab.rdfc.core.intermediate.parameter
  */
 data class LiteralParameter(
     override val path: String,
-    val type: technology.idlab.rdfc.core.intermediate.parameter.LiteralParameterType,
+    val type: LiteralParameterType,
     override val single: Boolean = false,
     override val optional: Boolean = false,
-) : technology.idlab.rdfc.core.intermediate.parameter.Parameter
+) : Parameter
