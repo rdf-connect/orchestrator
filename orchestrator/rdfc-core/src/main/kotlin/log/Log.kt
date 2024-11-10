@@ -75,6 +75,6 @@ abstract class Log(private val level: LogLevel) {
      * A globally available instance of the logger. Note that at its creation, the logger will
      * output the header to the console, which is why we only allow a single instance.
      */
-    val shared = PrettyLog(LogLevel.INFO)
+    val shared = PrettyLog(LogLevel.DEBUG)
   }
 }

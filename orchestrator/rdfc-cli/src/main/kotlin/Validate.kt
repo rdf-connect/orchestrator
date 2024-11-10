@@ -1,5 +1,6 @@
 package technology.idlab.rdfc.cli
 
+import technology.idlab.rdfc.core.log.Log
 import java.io.File
 import technology.idlab.rdfc.parser.impl.JenaParser
 
@@ -9,6 +10,8 @@ import technology.idlab.rdfc.parser.impl.JenaParser
  * @param path The path to the configuration file.
  */
 internal fun validate(path: String) {
+  Log.shared.debug { "Validating configuration at $path" }
+
   val file = File(path)
 
   // The file must exist and contain data.

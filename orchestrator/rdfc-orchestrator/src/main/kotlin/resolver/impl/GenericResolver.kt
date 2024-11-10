@@ -9,7 +9,7 @@ class GenericResolver : Resolver {
   override fun resolve(dependency: IRDependency): File {
     return if (dependency.uri.startsWith("file://")) {
       LocalResolver().resolve(dependency)
-    } else if (dependency.uri.startsWith("git://")) {
+    } else if (dependency.uri.endsWith(".git")) {
       GitResolver().resolve(dependency)
     } else {
       throw UnresolvableException(dependency.uri)

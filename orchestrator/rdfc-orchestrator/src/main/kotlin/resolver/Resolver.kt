@@ -1,5 +1,6 @@
 package technology.idlab.rdfc.orchestrator.resolver
 
+import technology.idlab.rdfc.core.log.Log
 import java.io.File
 import technology.idlab.rdfc.intermediate.IRDependency
 
@@ -24,6 +25,7 @@ interface Resolver {
 
     // If the directory doesn't exist, create it.
     if (!packagesDir.exists()) {
+      Log.shared.debug { "Directory $PACKAGES_DIR does not exist, creating new directory." }
       check(packagesDir.mkdir()) { "Failed to create the packages directory." }
 
       // Create a `.gitignore` file in the directory which ignores all packages.

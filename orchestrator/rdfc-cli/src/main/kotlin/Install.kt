@@ -1,5 +1,6 @@
 package technology.idlab.rdfc.cli
 
+import technology.idlab.rdfc.core.log.Log
 import java.io.File
 import technology.idlab.rdfc.core.process.ProcessManager
 import technology.idlab.rdfc.intermediate.IRPackage
@@ -12,6 +13,8 @@ import technology.idlab.rdfc.parser.impl.JenaParser
  * @param path The path to the configuration file.
  */
 internal fun install(path: String) {
+  Log.shared.debug { "Installing dependencies of $path" }
+
   // Load the list of dependencies from the configuration file.
   val rootParser = JenaParser(listOf(File(path)))
   val dependencies = rootParser.dependencies()

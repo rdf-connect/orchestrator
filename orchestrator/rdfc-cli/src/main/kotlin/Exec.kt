@@ -12,6 +12,8 @@ import technology.idlab.rdfc.parser.impl.JenaParser
  * @param path The path to the pipeline configuration file.
  */
 internal suspend fun exec(path: String) {
+  Log.shared.debug { "Executing pipeline at $path" }
+
   // Parse the configuration file.
   val config = File(path)
   val rootParser = JenaParser(listOf(config))

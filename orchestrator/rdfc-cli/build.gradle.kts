@@ -30,3 +30,14 @@ dependencies {
 }
 
 tasks.test { useJUnitPlatform() }
+
+tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+  // Name of the resulting archive.
+  archiveFileName.set("rdfc.jar")
+
+  // Make sure to include dependencies from other modules.
+  configurations = listOf(project.configurations.runtimeClasspath.get())
+
+  // Specify merge strategies if needed to handle duplicate files.
+  mergeServiceFiles()
+}
