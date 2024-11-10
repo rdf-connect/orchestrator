@@ -1,52 +1,50 @@
-# Orchestrator
+# RDF-Connect Orchestrator
 
-This directory contains the source code of the RDF-Connect Orchestrator, an application to manage an RDF-Connect pipeline and which brokers messages between the individual runners.
+## Contributors
 
-## Modules
+The following section aims to give you an initial understanding of the project structure as well as provide motivation for certain design decisions. Note however that this project makes use of [KDoc](https://kotlinlang.org/docs/kotlin-doc.html), so API and implementation details are available separately. This document only covers the project conceptually.
 
-A key objective of the project is the separation of concern with respect to the individual modules. The parsing logic in [`parser`](rdfc-orchestrator/src/main/kotlin/parser), for example, is completely separated from all other modules. Of course, it relies on the data classes defined in the [`intermediate`](rdfc-orchestrator/src/main/kotlin/intermediate) module, but dependencies are minimized.
+### Command line interface - [`rdfc-cli`](./rdfc-cli)
 
-Most (and ideally all) modules contain interfaces at their root, such as the [`Runner`](rdfc-orchestrator/src/main/kotlin/runner/Runner.kt) class in the [`runner`](rdfc-orchestrator/src/main/kotlin/runner) package, with all implementations kept into their separate [`impl`](rdfc-orchestrator/src/main/kotlin/runner/impl) directory.
+This is the only module which contains an executable, and it's scope is extremely limited. All different execution modes (such as `install`, `validate`, `exec`) are mapped to a respective function, which in turn calls into the other `rdfc` libraries. If at one point a function in this package provides a large amount of functionality, moving it into a different module should be considered.
 
-> \[!WARNING\]
-> Inter-module dependencies may only import root-level interfaces such as mentioned above, and never concrete implementations. At the time of writing, this repository might not completely reflect this guideline.
+The `rdfc-cli` module can also be seen as a [facade](https://en.wikipedia.org/wiki/Facade_pattern), since it wraps many aspects of the orchestrator into convenient and simple function calls.
 
-### [`Broker`](rdfc-orchestrator/src/main/kotlin/broker)
+### Utility code - [`rdfc-core`](./rdfc-core)
 
-The broker exposes two interfaces, namely the [`Broker`](rdfc-orchestrator/src/main/kotlin/broker/Broker.kt) and the [`BrokerClient`](rdfc-orchestrator/src/main/kotlin/broker/BrokerClient.kt). The former acts as a central messaging hub to which messages can be written and send to by the latter.
+This module is a collection of wrapper classes, extensions, and utility code.
 
-A soft requirement of the message broker is that the messages must be delivered on a FIFO basis.
+### Intermediate Representation - [`rdfc-intermediate`](./rdfc-intermediate)
 
-### [`Exception`](rdfc-orchestrator/src/main/kotlin/exception)
+A collection of data classes which together model an RDF-Connect configuration.
 
-Exposes the [`RunnerException`](rdfc-orchestrator/src/main/kotlin/exception/RunnerException.kt) class. At the time of writing, this class is underutilized and should be implemented more widely.
+The classes in this module are prefixed with `IR`, which stands for [intermediate representation](https://en.wikipedia.org/wiki/Intermediate_representation). We're taking some liberties with the definition here, but essentially we refer to the fact that (aside from parsing) we never execute queries against the RDF model itself. Rather, we extract the values as soon as possible into these data classes to achieve better separation of concern.
 
-### [`Extensions`](rdfc-orchestrator/src/main/kotlin/extensions)
+### Orchestrator - [`rdfc-orchestrator`](./rdfc-orchestrator)
 
-Provides Kotlin class extensions for a variety of classes, such as [`File`](rdfc-orchestrator/src/main/kotlin/extensions/File.kt). The name of the file indicates the class which is extended.
+`rdfc-orchestrator` is the heart of the project. It takes responsibility of the following tasks.
 
-### [`Intermediate`](rdfc-orchestrator/src/main/kotlin/intermediate)
+1. Accept tbe intermediate representation of a pipeline as parameter.
+2. Instantiate the runners listed in that pipeline.
+3. Forward pipeline stage declarations to the respective runners.
+4. Facilitate message brokering during the execution of the pipeline, including control messages such as `Close Channel`.
 
-An "orchestrator-native" representation of the pipeline using Kotlin data classes. We parse the RDF-based pipeline definition as soon as possible into this intermediate representation to maximize separation of concern and developer convenience.
+Communication typically passes four distinct components. A message is a tuple of raw bytes, and it's target URI.
 
-We deliberately choose to **not** use [IDL](https://en.wikipedia.org/wiki/Interface_description_language) generated code in order to minimize external dependencies and maximize flexibility. This does however mean that the intermediate representation must be parsed into yet another representation, such as when using gRPC. However, the overhead here is minimal, since this must only happen once during initialisation.
+1. **Processor #1**: a processor can use a writer to submit a message to the system. It will forward the message to the runner.
+2. **Runner #1**: receives the message from a processor and forwards it to the orchestrator stub. Any protocol can be used here, but at the time of writing the project provides support for gRPC only.
+3. **Orchestrator Stub #1**: receives the message from the runner and forwards it to the central broker.
+4. **Central Broker**: receives the message , attempts to match the destination URI to a stub, and forwards it.
+5. **Orchestrator Stub #2**: receives the message from the broker and forwards it to it's corresponding runner.
+6. **Runner #2**: receives the message from the stub and attempts to match the URI against a specific processor to forward to.
+7. **Processor #2**: receives the message from the runner and buffers it in the corresponding reader.
 
-### [`Parser`](rdfc-orchestrator/src/main/kotlin/parser)
+Note that in the Kotlin runner, the stub and runner are implemented side-by-side in a single class.
 
-Implementing parsers comes with a great degree of freedom. The interface only requires an implementation to expose lists with the intermediate representation of the declared pipelines, processors, etc. Note, however, that parsing must happen lazily or during the constructor invocation.
+### Parser - [`rdfc-parser`](./rdfc-parser)
 
-In theory, there is no need to declare the configuration in an RDF-based manner. The orchestrator does expect URIs in its intermediate representation, however, but these can be arbitrary **unique** strings. This opens up possibilities for other file formats, such as JSON, but these are not officially supported.
+Responsible for parsing a configuration to intermediate representation. The interface does not specify what type of configuration language that must be used, and instead only exposes methods which take in a file path as parameter. By default, only RDF in the Turtle syntax is supported.
 
-### [`Resolver`](rdfc-orchestrator/src/main/kotlin/resolver)
+### Processor - [`rdfc-processor`](./rdfc-processor)
 
-Pipelines can declare dependencies, the source files of which may reside in an arbitrary location such as local directory or a remote Git repository. Of course, at one point we must retrieve those files and save them locally. The [`Resolver`](rdfc-orchestrator/src/main/kotlin/resolver/Resolver.kt) class does just that, exposing a function which takes in a dependency declaration and must return a `File` object pointing to the root of the retrieved package on disk.
-
-It is **not** the resolvers job to prepare this package, however. It must merely retrieve it and save it locally.
-
-### [`Runner`](rdfc-orchestrator/src/main/kotlin/runner)
-
-TBA
-
-### [`Utilities`](rdfc-orchestrator/src/main/kotlin/util)
-
-This directory contains a variety of utility files and classes which are accessed throughout the project. They do not provide orchestrator-specific functionality.
+This module exposes an abstract class which Kotlin-based processors must extend for the default runner implementation.
