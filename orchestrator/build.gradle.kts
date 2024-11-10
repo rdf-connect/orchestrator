@@ -2,6 +2,12 @@ plugins {
   kotlin("jvm") version "2.0.21"
   id("maven-publish")
   id("co.uzzu.dotenv.gradle") version "4.0.0"
+  id("org.jetbrains.dokka") version "1.9.20"
+}
+
+/** Generating KDoc requires all subprojects to use Dokka as well. */
+subprojects {
+    apply(plugin = "org.jetbrains.dokka")
 }
 
 group = "technology.idlab"
