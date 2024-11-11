@@ -1,0 +1,41 @@
+name: Publish Release
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - gradle.properties
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Get version from gradle.properties
+        id: get_version
+        run: |
+          # Extract the version from gradle.properties
+          VERSION=$(grep '^projectVersion=' gradle.properties | cut -d'=' -f2)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+
+      - name: Build JAR Executable.
+        run: gradle :rdfc-cli:shadowJar --console=plain --warning-mode all --no-daemon
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./rdfc-cli/build/libs/rdfc.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NAME: "v${{ env.VERSION }}"
+          TAG_NAME: "v${{ env.VERSION }}"
