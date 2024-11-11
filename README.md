@@ -22,6 +22,10 @@ brew install rdf-connect/orchestrator https://github.com/rdf-connect/orchestrato
 
 ## Contributors
 
+### Publishing
+
+This project automatically publishes Maven packages and a Docker image whenever the `projectVersion` field in [`gradle.properties`](./gradle.properties) is updated.
+
 ### Git Hooks
 
 This repository uses [`pre-commit`](https://pre-commit.com) for automatic linting and formatting. To get started, run the following command.
