@@ -5,8 +5,7 @@ WORKDIR /app
 COPY . .
 
 # Add the Protobuf declarations.
-# TODO: for now, the build system expects these to be in the parent directory.
-RUN git clone https://github.com/jenspots/orchestrator-protobuf.git /proto
+RUN git clone https://github.com/jenspots/orchestrator-protobuf.git ./proto
 
 # Create a fat jar for execution.
 RUN gradle :rdfc-cli:shadowJar --console=plain --warning-mode all --no-daemon
