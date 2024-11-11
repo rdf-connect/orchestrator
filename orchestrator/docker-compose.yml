@@ -1,0 +1,5 @@
+services:
+  rdfc:
+    build:
+      dockerfile: Dockerfile
+      target: production
