@@ -7,6 +7,7 @@ plugins {
 
 /** The target JDK. */
 val jdkVersion: String by project
+
 kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 allprojects {
@@ -47,6 +48,18 @@ subprojects {
     testLogging {
       events("passed", "skipped", "failed")
       showStandardStreams = true
+    }
+  }
+
+  publishing {
+    repositories {
+      maven {
+        url = uri("https://maven.pkg.github.com/rdf-connect/orchestrator")
+        credentials {
+          username = env.fetchOrNull("GITHUB_ACTOR") ?: System.getenv("GITHUB_ACTOR")
+          password = env.fetchOrNull("GITHUB_TOKEN") ?: System.getenv("GITHUB_TOKEN")
+        }
+      }
     }
   }
 }

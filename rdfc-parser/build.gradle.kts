@@ -1,5 +1,6 @@
 /** The target JDK. */
 val jdkVersion: String by project
+
 kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 dependencies {
@@ -17,4 +18,15 @@ dependencies {
 
   // KTest
   testImplementation(kotlin("test"))
+}
+
+publishing {
+  publications {
+    create<MavenPublication>("gpr") {
+      from(components["java"])
+      groupId = "technology.idlab"
+      artifactId = "rdfc-parser"
+      version = project.ext["projectVersion"] as String
+    }
+  }
 }

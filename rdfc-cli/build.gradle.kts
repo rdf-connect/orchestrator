@@ -8,6 +8,7 @@ application { mainClass.set("technology.idlab.rdfc.cli.MainKt") }
 
 /** The target JDK. */
 val jdkVersion: String by project
+
 kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 dependencies {
@@ -33,4 +34,15 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
 
   // Specify merge strategies if needed to handle duplicate files.
   mergeServiceFiles()
+}
+
+publishing {
+  publications {
+    create<MavenPublication>("gpr") {
+      from(components["java"])
+      groupId = "technology.idlab"
+      artifactId = "rdfc-cli"
+      version = project.ext["projectVersion"] as String
+    }
+  }
 }

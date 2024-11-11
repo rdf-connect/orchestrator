@@ -1,5 +1,6 @@
 /** The target JDK. */
 val jdkVersion: String by project
+
 kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 dependencies {
@@ -24,7 +25,7 @@ publishing {
       from(components["java"])
       groupId = "technology.idlab"
       artifactId = "rdfc-core"
-      version = "0.0.1"
+      version = project.ext["projectVersion"] as String
     }
   }
 }

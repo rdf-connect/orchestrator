@@ -2,6 +2,7 @@ plugins { id("com.google.protobuf") }
 
 /** The target JDK. */
 val jdkVersion: String by project
+
 kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 dependencies {
@@ -63,6 +64,17 @@ protobuf {
         create("grpckt")
       }
       it.builtins { create("kotlin") }
+    }
+  }
+}
+
+publishing {
+  publications {
+    create<MavenPublication>("gpr") {
+      from(components["java"])
+      groupId = "technology.idlab"
+      artifactId = "rdfc-orchestrator"
+      version = project.ext["projectVersion"] as String
     }
   }
 }
