@@ -20,9 +20,9 @@ test:PythonPipeline
     test:ReportWriter ,
     test:PythonProcessor ;
   rdfc:dependency
-    <../../../../../packages/runner-py> ,
-    <../../../../../packages/file-utils-kt> ,
-    <../../../../../packages/shacl-validator-py> .
+    <../../../../packages/runner-py> ,
+    <https://github.com/rdf-connect/file-utils-kt.git> ,
+    <../../../../packages/shacl-validator-py> .
 
 test:FileReader
   a rdfc:FileReaderKT ;

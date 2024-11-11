@@ -62,7 +62,7 @@ tasks.test {
 }
 
 /** We define these explicitly due to the reliance on Protobuf and gRPC. */
-sourceSets { main { proto { srcDir("../../proto") } } }
+sourceSets { main { proto { srcDir("../proto") } } }
 
 /*
  * Check this document for more info on the section below:

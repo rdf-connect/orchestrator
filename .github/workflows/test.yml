@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       # Instantiate JVM v22.
-      - name: Set up JDK 17
+      - name: Set up JDK 22
         uses: actions/setup-java@v4
         with:
           java-version: '22'
@@ -32,19 +32,19 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '20'
-      # Generate the `rdfc-runner` JAR for processor packages.
-      - name: Create JAR
-        run: gradle jar --console=plain --warning-mode all
-        working-directory: ./orchestrator/rdfc-processor
       # Run tests for the `rdfc-core` package.
       - name: Run tests `rdfc-core`
         run: gradle test --console=plain --warning-mode all
-        working-directory: ./orchestrator/rdfc-core
-      # Run tests for the `rdfc-processor` package.
-      - name: Run tests `rdfc-core`
-        run: gradle test --console=plain --warning-mode all
-        working-directory: ./orchestrator/rdfc-processor
+        working-directory: ./rdfc-core
       # Run tests for the `rdfc-orchestrator` package.
       - name: Run tests `rdfc-orchestrator`
         run: gradle test --console=plain --warning-mode all
-        working-directory: ./orchestrator/rdfc-orchestrator
+        working-directory: ./rdfc-orchestrator
+      # Run tests for the `rdfc-parser` package.
+      - name: Run tests `rdfc-parser`
+        run: gradle test --console=plain --warning-mode all
+        working-directory: ./rdfc-parser
+      # Run tests for the `rdfc-processor` package.
+      - name: Run tests `rdfc-core`
+        run: gradle test --console=plain --warning-mode all
+        working-directory: ./rdfc-processor
