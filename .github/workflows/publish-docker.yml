@@ -28,9 +28,8 @@ jobs:
 
       - name: Build the Docker image
         run: |
-          docker build -t ghcr.io/rdf-connect/orchestrator:latest ./orchestrator
+          docker build -t ghcr.io/rdf-connect/orchestrator:latest .
 
       - name: Push the Docker image
         run: |
           docker push ghcr.io/rdf-connect/orchestrator:latest
-

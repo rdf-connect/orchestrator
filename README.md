@@ -1,130 +1,50 @@
-# RDF Connect Orchestrator
+# RDF-Connect Orchestrator
 
-[![Test Suite](https://github.com/rdf-connect/jvm-runner/actions/workflows/test.yml/badge.svg)](https://github.com/rdf-connect/jvm-runner/actions/workflows/test.yml)
+## Contributors
 
-The RDF Connect Orchestrator implements and bridges processor runners across environments and runtimes.
+The following section aims to give you an initial understanding of the project structure as well as provide motivation for certain design decisions. Note however that this project makes use of [KDoc](https://kotlinlang.org/docs/kotlin-doc.html), so API and implementation details are available separately. This document only covers the project conceptually.
 
-| Runtime | Status            | Notes                                                      |
-| ------- | ----------------- | ---------------------------------------------------------- |
-| Kotlin  | Ready for testing | Reference implementation, directly executed on own thread. |
-| Java    | Unstable          | Requires a thread per processor.                           |
-| Node.js | Unstable          | Reference gRPC implementation.                             |
-| Python  | Planned           | None.                                                      |
-| Rust    | Planned           | None.                                                      |
+### Command line interface - [`rdfc-cli`](rdfc-cli)
 
-## Overview
+This is the only module which contains an executable, and it's scope is extremely limited. All different execution modes (such as `install`, `validate`, `exec`) are mapped to a respective function, which in turn calls into the other `rdfc` libraries. If at one point a function in this package provides a large amount of functionality, moving it into a different module should be considered.
 
-### Parser
+The `rdfc-cli` module can also be seen as a [facade](https://en.wikipedia.org/wiki/Facade_pattern), since it wraps many aspects of the orchestrator into convenient and simple function calls.
 
-> \[!NOTE\]
-> RDF Connect pipelines are typically written in RDF. At the time of writing, only the Turtle file format is supported, but other formats will be supported soon.
+### Utility code - [`rdfc-core`](rdfc-core)
 
-The first stage of the orchestrator is responsible for parsing the plain text configuration file into an intuitive and easy-to-use format. We call this the _intermediate representation_, as defined in our [Protobuf schema](./proto/intermediate.proto). This phase is strictly separated from any and all actual setup of the orchestrator and individual runners, and can therefore be customized easily by enforcing the [`Parser` interface](src/main/kotlin/parser/Parser.kt).
+This module is a collection of wrapper classes, extensions, and utility code.
 
-> \[!WARNING\]
-> An extended explanation of the Protobuf schema is required.
+### Intermediate Representation - [`rdfc-intermediate`](rdfc-intermediate)
 
-### Initialisation
+A collection of data classes which together model an RDF-Connect configuration.
 
-As part of the [gRPC interface](./proto/index.proto), any and all runners are required to implement the `load` function of the gRPC server. This takes in a single `IRStage`, which contains both the processor definition, as well as the untouched `String` representation of the stage's arguments.
+The classes in this module are prefixed with `IR`, which stands for [intermediate representation](https://en.wikipedia.org/wiki/Intermediate_representation). We're taking some liberties with the definition here, but essentially we refer to the fact that (aside from parsing) we never execute queries against the RDF model itself. Rather, we extract the values as soon as possible into these data classes to achieve better separation of concern.
 
-It is the runners responsibility to bring the processor into the runtime, deserialize the arguments based on the parameter configuration, and call the processor's constructor.
+### Orchestrator - [`rdfc-orchestrator`](rdfc-orchestrator)
 
-> \[!NOTE\]
-> Processors should not do any heavy lifting inside of their constructor. All actual computations should be done inside the `exec` function as defined in the interface of the corresponding runtime.
+`rdfc-orchestrator` is the heart of the project. It takes responsibility of the following tasks.
 
-### Communication
+1. Accept tbe intermediate representation of a pipeline as parameter.
+2. Instantiate the runners listed in that pipeline.
+3. Forward pipeline stage declarations to the respective runners.
+4. Facilitate message brokering during the execution of the pipeline, including control messages such as `Close Channel`.
 
-Communication between two processors must pass the orchestrator, at least for the time being. It acts as a central hub and message broker, which means that the runners themselves are not responsible for most of the message routing.
+Communication typically passes four distinct components. A message is a tuple of raw bytes, and it's target URI.
 
-Specifically, this means that a runner must pass an incoming message from the gRPC bidirectional `channel` stream to the correct reader, as well as send any outgoing message from any writer back into the `channel` function.
+1. **Processor #1**: a processor can use a writer to submit a message to the system. It will forward the message to the runner.
+2. **Runner #1**: receives the message from a processor and forwards it to the orchestrator stub. Any protocol can be used here, but at the time of writing the project provides support for gRPC only.
+3. **Orchestrator Stub #1**: receives the message from the runner and forwards it to the central broker.
+4. **Central Broker**: receives the message , attempts to match the destination URI to a stub, and forwards it.
+5. **Orchestrator Stub #2**: receives the message from the broker and forwards it to it's corresponding runner.
+6. **Runner #2**: receives the message from the stub and attempts to match the URI against a specific processor to forward to.
+7. **Processor #2**: receives the message from the runner and buffers it in the corresponding reader.
 
-### Standard Processor Library
+Note that in the Kotlin runner, the stub and runner are implemented side-by-side in a single class.
 
-Anyone may create and publish their own processors. However, to get started quickly, we provide some helpful processors as part of the Standard Processor Library. These are included by default, and may serve as a reference to implement your own processors.
+### Parser - [`rdfc-parser`](rdfc-parser)
 
-#### RDF Utilities
+Responsible for parsing a configuration to intermediate representation. The interface does not specify what type of configuration language that must be used, and instead only exposes methods which take in a file path as parameter. By default, only RDF in the Turtle syntax is supported.
 
-Interact with RDF data.
+### Processor - [`rdfc-processor`](rdfc-processor)
 
-| Processor                                                    | Description                    |
-| ------------------------------------------------------------ | ------------------------------ |
-| [`conn:RDFValidator`](./src/main/kotlin/std/RDFValidator.kt) | Validate RDF data using SHACL. |
-
-#### Network Utilities
-
-These processors interact with the network.
-
-| Processor                                              | Description                       |
-| ------------------------------------------------------ | --------------------------------- |
-| [`conn:HttpFetch`](./src/main/kotlin/std/HttpFetch.kt) | Reads data from an HTTP endpoint. |
-
-#### File Utilities
-
-Fetch and write data from and to the local file system.
-
-| Processor                                                | Description                                                            |
-| -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`conn:FileReader`](./src/main/kotlin/std/FileReader.kt) | Reads a file with a given `path` from the local file system.           |
-| [`conn:FileWriter`](./src/main/kotlin/std/FileWriter.kt) | Overwrites/appends a file with a given `path` using the incoming data. |
-
-### Datatypes
-
-At the time of writing, we support a limited set of literal types. You may also use complex data structures, which will be represented as a map.
-
-| URI            | Kotlin             | Node.js   |
-| -------------- | ------------------ | --------- |
-| `xsd:boolean`  | `boolean`          | `Boolean` |
-| `xsd:byte`     | `byte`             |           |
-| `xsd:dateTime` | `java.util.Date`   | `Date`    |
-| `xsd:double`   | `double`           |           |
-| `xsd:float`    | `float`            |           |
-| `xsd:int`      | `int`              | `Number`  |
-| `xsd:long`     | `long`             | `Number`  |
-| `xsd:string`   | `java.lang.String` | `String`  |
-
-Note that SHACL will validate your configuration, so out-of-range or invalid values will be caught.
-
-### Contributor Guide
-
-#### Language Versions
-
-The only Kotlin version supported is `v1.9.22` for the time being, due to dependencies on the embedded compiler.
-
-#### Pre-Commit Hooks
-
-This repository supports `pre-commit` hooks. To install the hooks, run the following command.
-
-```shell
-pre-commit install
-```
-
-#### Formatting
-
-##### Kotlin
-
-The Kotlin code in this repository is formatted using Meta's `ktfmt` tool, mainly due to the following feature.
-
-> `ktfmt` ignores most existing formatting. It respects existing newlines in some places, but in general, its output is deterministic and is independent of the input code.
-
-No feature flags are used. Invoke using the following command.
-
-```shell
-$ ktfmt ./**/*.kt
-```
-
-##### Java
-
-Due to `ktfmt`'s relation with `google-java-format`, we use the later for Java code formatting. Invoke using the following command.
-
-```shell
-$ google-java-format -r ./**/*.java
-```
-
-##### TypeScript
-
-The Node.js runner provides a `npm` script to format and lint all code.
-
-```shell
-$ npm run format --prefix ./runners/nodejs
-```
+This module exposes an abstract class which Kotlin-based processors must extend for the default runner implementation.
