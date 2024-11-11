@@ -34,6 +34,12 @@ This repository uses [`pre-commit`](https://pre-commit.com) for automatic lintin
 pre-commit install
 ```
 
+Conventional commits are enforced, but require an additional command to register the hook.
+
+```shell
+pre-commit install --hook-type commit-msg
+```
+
 ### Code Style and Formatting
 
 Due to the high amount of languages in this repository, we provide [a simple shell script](./format.sh) which formats most (if not all) files in this project. Please make sure your contributions conform to these formatters at all times.
