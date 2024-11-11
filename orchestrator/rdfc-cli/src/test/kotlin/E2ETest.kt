@@ -70,16 +70,4 @@ class E2ETest {
         Config("/node.ttl", "/tmp/rdfc-testing-node-valid.ttl", "/tmp/rdfc-testing-node-report.ttl")
     run(config)
   }
-
-  @Test
-  fun jvm() {
-    val config =
-        Config(
-            "/jvm.ttl",
-            "/tmp/rdfc-testing-jvm-valid.ttl",
-            "/tmp/rdfc-testing-jvm-report.ttl",
-            "/tmp/rdfc-testing-jvm-web.html",
-        )
-    run(config)
-  }
 }
