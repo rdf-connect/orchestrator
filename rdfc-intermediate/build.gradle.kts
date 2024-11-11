@@ -1,12 +1,6 @@
-plugins { kotlin("jvm") version "2.0.21" }
-
-group = "technology.idlab"
-
-version = "0.0.2"
-
-kotlin { jvmToolchain(22) }
-
-repositories { mavenCentral() }
+/** The target JDK. */
+val jdkVersion: String by project
+kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 dependencies {
   // Local dependencies
@@ -18,5 +12,3 @@ dependencies {
   // KTest
   testImplementation(kotlin("test"))
 }
-
-tasks.test { useJUnitPlatform() }

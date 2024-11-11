@@ -1,15 +1,8 @@
-plugins {
-  kotlin("jvm") version "2.0.21"
-  id("com.google.protobuf") version "0.9.4"
-}
+plugins { id("com.google.protobuf") }
 
-group = "technology.idlab"
-
-version = "0.0.2"
-
-kotlin { jvmToolchain(22) }
-
-repositories { mavenCentral() }
+/** The target JDK. */
+val jdkVersion: String by project
+kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 dependencies {
   // Kotlin extensions.
@@ -48,17 +41,6 @@ dependencies {
 
   // KTest
   testImplementation("org.jetbrains.kotlin:kotlin-test")
-}
-
-tasks.test {
-  useJUnitPlatform()
-
-  maxParallelForks = 1
-
-  testLogging {
-    events("passed", "skipped", "failed")
-    showStandardStreams = true
-  }
 }
 
 /** We define these explicitly due to the reliance on Protobuf and gRPC. */

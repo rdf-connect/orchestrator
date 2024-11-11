@@ -1,19 +1,14 @@
 plugins {
   application
-  kotlin("jvm") version "2.0.21"
-  id("com.gradleup.shadow") version "8.3.3"
+  id("com.gradleup.shadow")
 }
-
-group = "technology.idlab"
-
-version = "0.0.2"
 
 /** Specify the entrypoint for the application. */
 application { mainClass.set("technology.idlab.rdfc.cli.MainKt") }
 
-kotlin { jvmToolchain(22) }
-
-repositories { mavenCentral() }
+/** The target JDK. */
+val jdkVersion: String by project
+kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 dependencies {
   // Local dependencies
@@ -28,8 +23,6 @@ dependencies {
   // KTest.
   testImplementation(kotlin("test"))
 }
-
-tasks.test { useJUnitPlatform() }
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
   // Name of the resulting archive.
