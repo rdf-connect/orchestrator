@@ -1,5 +1,6 @@
 package technology.idlab.rdfc.parser.impl
 
+import io.ktor.http.*
 import java.io.File
 import javax.naming.ConfigurationException
 import org.apache.jena.ontology.OntModelSpec
@@ -20,6 +21,7 @@ import technology.idlab.rdfc.intermediate.parameter.Parameter
 import technology.idlab.rdfc.intermediate.runner.RunnerType
 import technology.idlab.rdfc.parser.Parser
 import technology.idlab.rdfc.parser.exception.*
+import io.ktor.util.*
 
 class JenaParser(
     /** A file pointer to the pipeline configuration entrypoint. */
@@ -195,7 +197,10 @@ class JenaParser(
     }
 
     // Get entrypoint.
-    val entrypoint = model.objectOfProperty(processor, RDFC.entrypoint)!!.toString()
+    val entrypoint = model
+        .objectOfProperty(processor, RDFC.entrypoint)!!
+        .toString()
+        .decodeURLPart();
 
     return IRProcessor(
         processor.toString(), target.toString(), entrypoint, IRParameter(parameters), metadata)

@@ -1,6 +1,6 @@
 package technology.idlab.rdfc.intermediate
 
-import io.ktor.http.*
+import io.ktor.util.*
 
 /**
  * Dependency of a pipeline.
@@ -14,7 +14,7 @@ data class IRDependency(val uri: String) {
    * @return The encoded URI.
    */
   fun directory(): String {
-    return uri.encodeURLParameter()
+    return uri.encodeBase64()
   }
 
   /**
