@@ -1,7 +1,7 @@
 package technology.idlab.rdfc.orchestrator.resolver
 
-import technology.idlab.rdfc.core.log.Log
 import java.io.File
+import technology.idlab.rdfc.core.log.Log
 import technology.idlab.rdfc.intermediate.IRDependency
 
 /** The name of the directory where the packages should be saved locally. */

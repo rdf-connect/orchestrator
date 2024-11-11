@@ -6,9 +6,7 @@ plugins {
 }
 
 /** Generating KDoc requires all subprojects to use Dokka as well. */
-subprojects {
-    apply(plugin = "org.jetbrains.dokka")
-}
+subprojects { apply(plugin = "org.jetbrains.dokka") }
 
 group = "technology.idlab"
 

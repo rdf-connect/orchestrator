@@ -1,7 +1,7 @@
 package technology.idlab.rdfc.cli
 
-import technology.idlab.rdfc.core.log.Log
 import java.io.File
+import technology.idlab.rdfc.core.log.Log
 import technology.idlab.rdfc.parser.impl.JenaParser
 
 /**
