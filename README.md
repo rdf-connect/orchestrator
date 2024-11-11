@@ -22,6 +22,14 @@ brew install rdf-connect/orchestrator https://github.com/rdf-connect/orchestrato
 
 ## Contributors
 
+### Git Hooks
+
+This repository uses [`pre-commit`](https://pre-commit.com) for automatic linting and formatting. To get started, run the following command.
+
+```shell
+pre-commit install
+```
+
 ### Code Style and Formatting
 
 Due to the high amount of languages in this repository, we provide [a simple shell script](./format.sh) which formats most (if not all) files in this project. Please make sure your contributions conform to these formatters at all times.
