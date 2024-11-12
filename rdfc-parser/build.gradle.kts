@@ -14,7 +14,7 @@ dependencies {
   implementation("org.apache.jena:jena-shacl:5.0.0")
 
   // URL encoding
-  implementation("io.ktor:ktor-client-core:2.3.10")
+  implementation("io.ktor:ktor-client-core:3.0.1")
 
   // KTest
   testImplementation(kotlin("test"))
