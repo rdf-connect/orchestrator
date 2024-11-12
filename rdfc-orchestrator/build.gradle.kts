@@ -35,7 +35,7 @@ dependencies {
   implementation("org.apache.jena:jena-shacl:5.0.0")
 
   // Hide SLF4J warnings
-  implementation("org.slf4j:slf4j-nop:2.0.7")
+  implementation("org.slf4j:slf4j-nop:2.0.16")
 
   // Git resolver
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.0.0.202409031743-r")
