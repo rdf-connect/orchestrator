@@ -7,4 +7,6 @@ import technology.idlab.rdfc.parser.ParserException
  *
  * @param uri The URI of the processor.
  */
-class MissingRunnerException(private val uri: String) : ParserException()
+class MissingRunnerException(private val uri: String) : ParserException() {
+  override val message: String = "Could not find a target runner for processor: $uri"
+}
