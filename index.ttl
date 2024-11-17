@@ -1,0 +1,156 @@
+@prefix core: <http://www.rdf-connect.com/core#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://www.rdf-connect.com/#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+core:Core
+  a rdfc:Package ;
+  rdfc:version "0.0.1" ;
+  rdfc:author "Jens Pots" ;
+  rdfc:description "A library of core runners and processors." ;
+  rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
+  rdfc:license "MIT" ;
+  rdfc:prepare (
+    # TypeScript runner.
+    "npm --prefix packages/runner-ts install"
+    "npm --prefix packages/runner-ts run build"
+    # TypeScript file utilities.
+    "npm --prefix packages/file-utils-ts install"
+    "npm --prefix packages/file-utils-ts run build"
+    # TypeScript SHACL validator.
+    "npm --prefix packages/shacl-validator-ts install"
+    "npm --prefix packages/shacl-validator-ts run build"
+  ) ;
+  rdfc:runners
+    core:NodeRunner ;
+  rdfc:processors
+    # TypeScript file utilities
+    core:FileReaderTS ,
+    core:FileWriterTS ,
+    # Typ4Script SHACL validator.
+    core:SHACLValidatorTS.
+
+core:NodeRunner
+  a rdfc:GRPCRunner ;
+  rdfc:wd <packages/runner-ts> ;
+  rdfc:entrypoint "node build/runtime" .
+
+core:FileReaderTS
+  a rdfc:Processor ;
+  rdfc:target core:NodeRunner ;
+  rdfc:entrypoint <./packages/file-utils-ts/build/FileReader.js> .
+
+core:FileWriterTS
+  a rdfc:Processor ;
+  rdfc:target core:NodeRunner ;
+  rdfc:entrypoint <./packages/file-utils-ts/build/FileWriter.js> .
+
+core:SHACLValidatorTS
+  a rdfc:Processor ;
+  rdfc:target core:NodeRunner ;
+  rdfc:entrypoint <./packages/shacl-validator-ts/build/index.js> .
+
+[]
+  a sh:NodeShape ;
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  sh:targetClass core:FileReaderTS ;
+  sh:property [
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "arguments" ;
+    sh:path rdfc:arguments ;
+    sh:node [
+      sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "outgoing" ;
+        sh:path rdfc:outgoing ;
+        sh:class rdfc:Writer;
+      ], [
+        sh:minCount 1 ;
+        sh:name "paths" ;
+        sh:path rdfc:paths ;
+        sh:nodeKind sh:IRIOrLiteral ;
+      ] ;
+    ] ;
+  ].
+
+[]
+  a sh:NodeShape ;
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  sh:targetClass core:FileWriterTS ;
+  sh:property [
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "arguments" ;
+    sh:path rdfc:arguments ;
+    sh:node [
+      sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "incoming" ;
+        sh:path rdfc:incoming ;
+        sh:class rdfc:Reader;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "path" ;
+        sh:path rdfc:path ;
+        sh:nodeKind sh:IRIOrLiteral ;
+      ] ;
+    ] ;
+  ].
+
+[]
+  a sh:NodeShape ;
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  sh:targetClass core:SHACLValidatorTS ;
+  sh:property [
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "arguments" ;
+    sh:path rdfc:arguments ;
+    sh:node [
+      sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "shapes" ;
+        sh:path rdfc:shapes ;
+        sh:nodeKind sh:IRIOrLiteral ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "incoming" ;
+        sh:path rdfc:incoming ;
+        sh:class rdfc:Reader ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "outgoing" ;
+        sh:path rdfc:outgoing ;
+        sh:class rdfc:Writer ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "report" ;
+        sh:path rdfc:report ;
+        sh:class rdfc:Writer ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "mime" ;
+        sh:path rdfc:mime ;
+        sh:datatype xsd:string ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "validation_is_fatal" ;
+        sh:path rdfc:fatal ;
+        sh:datatype xsd:boolean ;
+      ] ;
+    ] ;
+  ].
