@@ -12,6 +12,15 @@ core:Core
   rdfc:repo "https://github.com/rdf-connect/orchestrator.git" ;
   rdfc:license "MIT" ;
   rdfc:prepare (
+    # Python runner.
+    "./cwd.sh ./packages/runner-py 'hatch env create'"
+    "./cwd.sh ./packages/runner-py 'hatch run proto'"
+    "./cwd.sh ./packages/runner-py 'hatch run test -h'"
+    "./cwd.sh ./packages/runner-py 'hatch build'"
+    # Python SHACL validator.
+    "./cwd.sh ./packages/shacl-validator-py 'hatch env create'"
+    "./cwd.sh ./packages/shacl-validator-py 'hatch run test -h'"
+    "./cwd.sh ./packages/shacl-validator-py 'hatch build'"
     # TypeScript runner.
     "npm --prefix packages/runner-ts install"
     "npm --prefix packages/runner-ts run build"
@@ -23,18 +32,26 @@ core:Core
     "npm --prefix packages/shacl-validator-ts run build"
   ) ;
   rdfc:runners
-    core:NodeRunner ;
+    core:NodeRunner ,
+    core:PythonRunner ;
   rdfc:processors
     # TypeScript file utilities
     core:FileReaderTS ,
     core:FileWriterTS ,
-    # Typ4Script SHACL validator.
-    core:SHACLValidatorTS.
+    # TypeScript SHACL validator.
+    core:SHACLValidatorTS,
+    # Python SHACL validator.
+    core:SHACLValidatorPY .
 
 core:NodeRunner
   a rdfc:GRPCRunner ;
-  rdfc:wd <packages/runner-ts> ;
+  rdfc:wd <./packages/runner-ts> ;
   rdfc:entrypoint "node build/runtime" .
+
+core:PythonRunner
+  a rdfc:GRPCRunner ;
+  rdfc:wd <./packages/runner-py> ;
+  rdfc:entrypoint "hatch run rdfc" .
 
 core:FileReaderTS
   a rdfc:Processor ;
@@ -50,6 +67,14 @@ core:SHACLValidatorTS
   a rdfc:Processor ;
   rdfc:target core:NodeRunner ;
   rdfc:entrypoint <./packages/shacl-validator-ts/build/index.js> .
+
+core:SHACLValidatorPY
+  a rdfc:Processor ;
+  rdfc:target rdfc:PythonRunner ;
+  rdfc:entrypoint <./packages/shacl-validator-py> ;
+  rdfc:metadata
+    "module_name: rdfc_shacl" ,
+    "class_name: SHACLValidator" .
 
 []
   a sh:NodeShape ;
@@ -151,6 +176,45 @@ core:SHACLValidatorTS
         sh:name "validation_is_fatal" ;
         sh:path rdfc:fatal ;
         sh:datatype xsd:boolean ;
+      ] ;
+    ] ;
+  ].
+
+[]
+  a sh:NodeShape ;
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  sh:targetClass core:SHACLValidatorPY ;
+  sh:property [
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "arguments" ;
+    sh:path rdfc:arguments ;
+    sh:node [
+      sh:property [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "shapes" ;
+        sh:path rdfc:shapes ;
+        sh:nodeKind sh:IRIOrLiteral ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "incoming" ;
+        sh:path rdfc:incoming ;
+        sh:class rdfc:Reader ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:name "outgoing" ;
+        sh:path rdfc:outgoing ;
+        sh:class rdfc:Writer ;
+      ], [
+        sh:maxCount 1 ;
+        sh:minCount 0 ;
+        sh:name "report" ;
+        sh:path rdfc:report ;
+        sh:class rdfc:Writer ;
       ] ;
     ] ;
   ].

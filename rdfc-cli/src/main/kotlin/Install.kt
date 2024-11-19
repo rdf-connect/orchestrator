@@ -8,6 +8,36 @@ import technology.idlab.rdfc.orchestrator.resolver.impl.GenericResolver
 import technology.idlab.rdfc.parser.impl.JenaParser
 
 /**
+ * Splits a string into parts based on spaces, but leaves substrings between apostrophes whole.
+ *
+ * For example: `"command arg1 arg2 'multipart argument'".splitToCommand()` is equivalent
+ * to `listOf("command", "arg1", "arg2", "multipart argument")`.
+ */
+private fun String.splitToCommand(): List<String> {
+  val input = this.trim()
+  val parts = input.split("'").filter { it.isNotEmpty() }
+  val result = mutableListOf<String>()
+
+  var quoted = input.startsWith("'")
+  for (part in parts) {
+    // Add the part as a single string to the result if quoted, otherwise add
+    // all substrings returned from a split on a space.
+    if (quoted) {
+      result.add(part)
+    } else {
+      val subParts = part.split(" ").filter { it.isNotEmpty() }
+      result.addAll(subParts)
+    }
+
+    // Since we split on the apostrophe, this means that we continuously split
+    // between quoted and non-quoted mode.
+    quoted = !quoted
+  }
+
+  return result
+}
+
+/**
  * Resolve, prepare and install all dependencies in the configuration file.
  *
  * @param path The path to the configuration file.
@@ -36,7 +66,7 @@ internal fun install(path: String) {
   for ((pkg, indexFile) in packages) {
     for (stmt in pkg.prepare) {
       // Create processor builder.
-      val builder = ProcessBuilder(stmt.split(" "))
+      val builder = ProcessBuilder(stmt.splitToCommand())
       builder.directory(indexFile.parentFile)
       builder.environment()["PATH"] = System.getenv("PATH")
 
