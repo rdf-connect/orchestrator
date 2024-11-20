@@ -22,6 +22,20 @@ brew install rdf-connect/orchestrator https://github.com/rdf-connect/orchestrato
 
 ## Contributors
 
+### Submodules
+
+The Protobuf declarations are available in a separate repository. Make sure to initialize its respective submodule, since otherwise your Gradle build will fail.
+
+```shell
+git submodule update --init --recursive
+```
+
+You can of course also use the `--recurse-submodules` switch with `git clone`.
+
+### Github Authentication
+
+Some of the pipelines found in this repository depend on repositories hosted on GitHub, requiring an authentication token. These can be configured using the environment variables listed in `.env.example`. It suffices to copy this file to `.env` and fill in the variables.
+
 ### Publishing
 
 This project automatically publishes Maven packages and a Docker image whenever the `projectVersion` field in [`gradle.properties`](./gradle.properties) is updated.
