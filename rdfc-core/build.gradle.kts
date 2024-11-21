@@ -11,7 +11,7 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
   // RDF dependencies
-  implementation("org.apache.jena:apache-jena-libs:5.0.0")
+  implementation("org.apache.jena:apache-jena-libs:5.2.0")
   implementation("org.apache.jena:jena-arq:5.0.0")
   implementation("org.apache.jena:jena-shacl:5.0.0")
 
