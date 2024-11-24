@@ -10,8 +10,8 @@ import technology.idlab.rdfc.parser.impl.JenaParser
 /**
  * Splits a string into parts based on spaces, but leaves substrings between apostrophes whole.
  *
- * For example: `"command arg1 arg2 'multipart argument'".splitToCommand()` is equivalent
- * to `listOf("command", "arg1", "arg2", "multipart argument")`.
+ * For example: `"command arg1 arg2 'multipart argument'".splitToCommand()` is equivalent to
+ * `listOf("command", "arg1", "arg2", "multipart argument")`.
  */
 private fun String.splitToCommand(): List<String> {
   val input = this.trim()

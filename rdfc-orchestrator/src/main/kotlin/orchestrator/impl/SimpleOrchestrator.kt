@@ -4,6 +4,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import technology.idlab.rdfc.core.log.Log
 import technology.idlab.rdfc.intermediate.IRRunner
 import technology.idlab.rdfc.intermediate.IRStage
 import technology.idlab.rdfc.orchestrator.broker.Broker
@@ -30,11 +31,27 @@ class SimpleOrchestrator(runners: Collection<IRRunner>, stages: Collection<IRSta
   init {
     // Initialize all runners with their corresponding stages.
     val instances = mutableListOf<Runner>()
+    val remainingStages = stages.toMutableList()
 
     for (runner in runners) {
-      val targets = stages.filter { it.processor.target == runner.uri }
+      val targets = remainingStages.filter { it.processor.target == runner.uri }
+      remainingStages.removeAll(targets)
+
+      // Check if the runner actually has a target.
+      if (targets.isEmpty()) {
+        Log.shared.debug { "Runner has no targets, will not be instantiated: $runner" }
+        continue
+      }
+
+      // Create the runner.
       val instance = Runner.from(runner, targets)
       instances.add(instance)
+    }
+
+    // Assert that all stages have been instantiated.
+    check(remainingStages.isEmpty()) {
+      val uris = remainingStages.joinToString(", ")
+      "Could not find a runner for the following processors: $uris"
     }
 
     // Initialize a broker.

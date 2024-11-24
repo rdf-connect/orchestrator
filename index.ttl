@@ -70,7 +70,7 @@ core:SHACLValidatorTS
 
 core:SHACLValidatorPY
   a rdfc:Processor ;
-  rdfc:target rdfc:PythonRunner ;
+  rdfc:target core:PythonRunner ;
   rdfc:entrypoint <./packages/shacl-validator-py> ;
   rdfc:metadata
     "module_name: rdfc_shacl" ,
