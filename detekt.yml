@@ -1,0 +1,12 @@
+config:
+  validation: true
+  warningsAsErrors: true
+  excludes: ''
+
+naming:
+  InvalidPackageDeclaration:
+    active: false
+
+style:
+  ReturnCount:
+    active: false

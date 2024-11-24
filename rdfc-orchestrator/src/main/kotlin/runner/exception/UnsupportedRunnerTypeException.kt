@@ -8,4 +8,6 @@ import technology.idlab.rdfc.intermediate.runner.RunnerType
  *
  * @param type The type which was used, but not implemented.
  */
-class UnsupportedRunnerTypeException(private val type: RunnerType) : RDFCException()
+class UnsupportedRunnerTypeException(private val type: RunnerType) : RDFCException() {
+  override val message = "The runner type could not be found: ${type.name}"
+}

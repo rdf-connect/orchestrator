@@ -6,7 +6,7 @@ object RDFC {
   private const val NS = "https://www.rdf-connect.com/#"
   val NAMESPACE = ResourceFactory.createResource(NS)!!
   val processor = ResourceFactory.createProperty("${NS}Processor")!!
-  val `package` = ResourceFactory.createProperty("${NS}Package")!!
+  val pkg = ResourceFactory.createProperty("${NS}Package")!!
   val stage = ResourceFactory.createProperty("${NS}stage")!!
   val channel = ResourceFactory.createProperty("${NS}Channel")!!
   val target = ResourceFactory.createProperty("${NS}target")!!

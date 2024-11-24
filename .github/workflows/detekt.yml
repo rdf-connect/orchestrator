@@ -1,0 +1,45 @@
+name: Static Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  detekt:
+    name: Detekt
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - rdfc-cli
+          - rdfc-core
+          - rdfc-intermediate
+          - rdfc-orchestrator
+          # TODO: rdfc-parser
+          - rdfc-processor
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'openjdk'
+          java-version: '22'
+
+      # Download Detekt binary
+      - name: Download Detekt
+        run: |
+          curl -sSLO https://github.com/detekt/detekt/releases/download/v1.23.7/detekt-cli-1.23.7.zip
+          unzip detekt-cli-1.23.7.zip
+
+      # Run Detekt
+      - name: Run Detekt
+        run: |
+          ./detekt-cli-1.23.7/bin/detekt-cli --config detekt.yml --build-upon-default-config --max-issues 0 --input ${{ matrix.package }}/src/main

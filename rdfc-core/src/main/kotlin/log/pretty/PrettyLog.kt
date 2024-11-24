@@ -38,7 +38,7 @@ class PrettyLog(level: LogLevel) : Log(level) {
     synchronized(System.out) { print(builder) }
   }
 
-  override fun log(message: String, level: LogLevel, location: String?) {
+  override fun output(message: String, level: LogLevel, location: String?) {
     // Get the current time.
     val instant = Date().toInstant()
     val tz = instant.atZone(TimeZone.getDefault().toZoneId())
@@ -50,6 +50,7 @@ class PrettyLog(level: LogLevel) : Log(level) {
     val file =
         location
             ?: run {
+              @Suppress("ThrowingExceptionsWithoutMessageOrCause")
               val stack = Throwable().stackTrace[STACK_TRACE_DEPTH]
               "${stack.fileName ?: "Unknown"}:${stack.lineNumber}"
             }

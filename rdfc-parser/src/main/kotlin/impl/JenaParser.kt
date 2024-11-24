@@ -1,7 +1,6 @@
 package technology.idlab.rdfc.parser.impl
 
-import io.ktor.http.*
-import io.ktor.util.*
+import io.ktor.http.decodeURLPart
 import java.io.File
 import javax.naming.ConfigurationException
 import org.apache.jena.ontology.OntModelSpec
@@ -76,11 +75,8 @@ class JenaParser(
       // If the value is null, we may either skip it if it's not required or throw an exception if
       // it is.
       if (arguments.isEmpty()) {
-        if (!parameter.optional) {
-          throw Exception()
-        } else {
-          continue
-        }
+        check(parameter.optional) { "A non-nullable parameter was null: $parameter." }
+        continue
       }
 
       // If the parameter is simple, just add it to the list as a literal or resource.
@@ -204,8 +200,8 @@ class JenaParser(
   }
 
   override fun packages(): List<IRPackage> {
-    val packages = model.listSubjectsWithProperty(RDF.type, RDFC.`package`).toList()
-    return packages.map { `package`(it) }
+    val packages = model.listSubjectsWithProperty(RDF.type, RDFC.pkg).toList()
+    return packages.map { pkg(it) }
   }
 
   override fun processors(): List<IRProcessor> {
@@ -241,7 +237,7 @@ class JenaParser(
     return uris.map { IRDependency(it.toString()) }
   }
 
-  private fun `package`(pkg: Resource): IRPackage {
+  private fun pkg(pkg: Resource): IRPackage {
     // Get all of its properties.
     val version = model.objectOfProperty(pkg, RDFC.version)
     val author = model.objectOfProperty(pkg, RDFC.author)

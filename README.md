@@ -85,6 +85,14 @@ pre-commit install --hook-type commit-msg
 
 Due to the high amount of languages in this repository, we provide [a simple shell script](./format.sh) which formats most (if not all) files in this project. Please make sure your contributions conform to these formatters at all times.
 
+### Static Analysis
+
+We use [Detekt](https://detekt.dev) for static analysis. The configuration file can be found at [`detekt.yml`](./detekt.yml), but note that we build upon the base config and therefore require the `--build-upon-default-config` switch along with ` --config detekt.yml`. For example:
+
+```shell
+detekt --config detekt.yml --build-upon-default-config --input rdfc-core/src/main
+```
+
 ### Project Structure
 
 The following section aims to give you an initial understanding of the project structure as well as provide motivation for certain design decisions. Note however that this project makes use of [KDoc](https://kotlinlang.org/docs/kotlin-doc.html), so API and implementation details are available separately. This document only covers the project conceptually.

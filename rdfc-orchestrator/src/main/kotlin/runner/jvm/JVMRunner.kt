@@ -12,6 +12,7 @@ import technology.idlab.rdfc.intermediate.IRStage
 import technology.idlab.rdfc.intermediate.argument.LiteralArgument
 import technology.idlab.rdfc.intermediate.argument.NestedArgument
 import technology.idlab.rdfc.intermediate.parameter.LiteralParameterType
+import technology.idlab.rdfc.orchestrator.broker.exception.UnknownChannelException
 import technology.idlab.rdfc.orchestrator.runner.Runner
 import technology.idlab.rdfc.processor.Arguments
 import technology.idlab.rdfc.processor.Processor
@@ -65,7 +66,7 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
    * @throws Exception If the reader is not found.
    */
   override fun receiveBrokerMessage(uri: String, data: ByteArray) {
-    val reader = readers[uri] ?: throw Exception("Channel not found: '$uri'")
+    val reader = readers[uri] ?: throw UnknownChannelException(uri)
     scheduleTask { reader.send(data) }
   }
 
@@ -73,7 +74,7 @@ class JVMRunner(stages: Collection<IRStage>) : Runner(stages) {
    * Close a reader by removing it from the `readers` map and close the channel.
    */
   override fun closingBrokerChannel(uri: String) {
-    val reader = this.readers[uri] ?: throw Exception("Channel not found: '$uri'")
+    val reader = this.readers[uri] ?: throw UnknownChannelException(uri)
     scheduleTask { reader.close() }
   }
 

@@ -9,11 +9,12 @@ import kotlinx.coroutines.delay
  * block of code does not succeed after the given number of retries, the function will throw a fatal
  * error.
  */
+@Suppress("TooGenericExceptionCaught")
 suspend fun <T> retries(times: Int, milliseconds: Long = 1000, block: suspend () -> T): T =
     coroutineScope {
       var exception: Exception? = null
 
-      for (unused in 0 until times) {
+      for (ignored in 0 until times) {
         try {
           return@coroutineScope block()
         } catch (e: Exception) {

@@ -26,6 +26,7 @@ fun Model.validate(): ValidationReport {
  * @param property The predicate of the query.
  * @return The first result of the query, or null if not found.
  */
+@Suppress("SwallowedException")
 fun Model.objectOfProperty(resource: Resource, property: Property): RDFNode? {
   return try {
     this.listObjectsOfProperty(resource, property).next()
@@ -41,6 +42,7 @@ fun Model.objectOfProperty(resource: Resource, property: Property): RDFNode? {
  * @param obj The object of the query.
  * @return The first result of the query, or null if not found.
  */
+@Suppress("SwallowedException")
 fun Model.subjectWithProperty(property: Property, obj: RDFNode): Resource? {
   return try {
     this.listSubjectsWithProperty(property, obj).next()

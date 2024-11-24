@@ -17,7 +17,7 @@ abstract class Log(private val level: LogLevel) {
    * @param message The message to print.
    * @param level The level of the message.
    */
-  abstract fun log(message: String, level: LogLevel, location: String? = null)
+  abstract fun output(message: String, level: LogLevel, location: String? = null)
 
   /**
    * Print a message if and only if the debug flag is set. Note that the message will not be
@@ -26,7 +26,7 @@ abstract class Log(private val level: LogLevel) {
    * @param message The message to print.
    */
   fun debug(message: String) {
-    log(message, LogLevel.DEBUG)
+    output(message, LogLevel.DEBUG)
   }
 
   /**
@@ -38,7 +38,7 @@ abstract class Log(private val level: LogLevel) {
   fun debug(message: () -> String) {
     if (level == LogLevel.DEBUG) {
       val computedMessage = message()
-      log(computedMessage, LogLevel.DEBUG)
+      output(computedMessage, LogLevel.DEBUG)
     }
   }
 
@@ -48,7 +48,7 @@ abstract class Log(private val level: LogLevel) {
    * @param message The message to print.
    */
   fun info(message: String) {
-    log(message, LogLevel.INFO)
+    output(message, LogLevel.INFO)
   }
 
   /**
@@ -58,7 +58,7 @@ abstract class Log(private val level: LogLevel) {
    * @param message The message to print.
    */
   fun command(location: String, message: String) {
-    log(message, LogLevel.CMD, location)
+    output(message, LogLevel.CMD, location)
   }
 
   /**
@@ -67,7 +67,7 @@ abstract class Log(private val level: LogLevel) {
    * @param message The message to print.
    */
   fun severe(message: String) {
-    log(message, LogLevel.SEVERE)
+    output(message, LogLevel.SEVERE)
   }
 
   companion object {

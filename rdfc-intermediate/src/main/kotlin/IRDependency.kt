@@ -1,6 +1,6 @@
 package technology.idlab.rdfc.intermediate
 
-import io.ktor.util.*
+import io.ktor.util.encodeBase64
 
 /**
  * Dependency of a pipeline.
