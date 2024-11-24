@@ -10,6 +10,7 @@ on:
       - develop
 jobs:
   build:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
       GITHUB_ACTOR: ${{ github.actor }}
