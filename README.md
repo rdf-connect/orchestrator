@@ -2,9 +2,28 @@
 
 Welcome to the main repository of the RDF-Connect Orchestrator. This project attempts to facilitate RDF-Connect pipelines between any combination of programming languages and runtimes. Extensibility is at the core of this project, allowing you to bring RDF-Connect to new languages using existing or new methods of interprocess communication.
 
-## Installation
+## Getting Started
 
-### Docker
+### Vocabulary
+
+RDF-Connect introduces a fair amount of new concepts, each with their own terms and names. Below is a brief overview of the most important things to know before heading in.
+
+- **Orchestrator**: the main control pane of an RDF-Connect pipeline, responsible for starting runners and processors as well as message brokering between different pipeline stages.
+- **Runner**: a process which interprets the received control commands from the orchestrator and executes those to load processors, instantiate them into pipeline stages, and handles incoming and outgoing messages. Typically, a runner specializes in a specific programming language or runtime. For example, our standard Python runner can import and instantiate any kind of Python processor as long as it conforms to the expected abstract class.
+- **Processor**: an implementation of some logic. These can be arbitrarily simple or complex, ranging from reading a file from disk to inference of a machine learning model. Processors can accept type-safe arguments, including destination-agnostic readers and writers.
+- **Readers and Writers**: simple wrapper objects (or similar) which provide simple APIs to interact with the messaging system, such as asynchronous `send` and `receive` methods.
+- **Stage**: a processor which has been instantiated with concrete arguments and reader/writer targets.
+
+Some lingo specific to the packaging and distributing is the following.
+
+- **Package**: a collection of runners and processors, published locally or online.
+- **Dependency**: a package required to load and execute a pipeline.
+- **Target**: the runner which should execute a given processor.
+- **Prepare statements**: commands which must be executed to build the runners and processors in a package and create the runtime environment if required. For example, executing a compilation step using the build system.
+
+### Installation
+
+#### Docker
 
 We provide a convenient and lean Docker image to get started quickly. Kotlin processors are supported out-of-the-box, but you may need to extend this image to host certain targets, such as `node` and `npm` for the TypeScript runner.
 
@@ -12,7 +31,7 @@ We provide a convenient and lean Docker image to get started quickly. Kotlin pro
 docker pull ghcr.io/rdf-connect/orchestrator:latest
 ```
 
-### macOS Homebrew
+#### macOS Homebrew
 
 This repository contains a [homebrew formula](./rdfc.rb).
 
