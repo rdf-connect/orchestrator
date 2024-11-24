@@ -39,6 +39,14 @@ This repository contains a [homebrew formula](./rdfc.rb).
 brew install rdf-connect/orchestrator https://github.com/rdf-connect/orchestrator
 ```
 
+### Standard Package Library
+
+We provide a number of runners and processors to fast-track the development of pipelines, as well as to provide a reference on how to implement your own. All of these are exported by our [`index.ttl`](./index.ttl) file, and can be loaded using a single dependency. Learn more [here](./packages).
+
+```turtle
+<MyPipeline> rdfc:dependency <https://github.com/rdf-connect/orchestrator.git> .
+```
+
 ## Contributors
 
 ### Submodules
