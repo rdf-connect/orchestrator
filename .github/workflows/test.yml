@@ -26,6 +26,7 @@ jobs:
         with:
           java-version: '22'
           distribution: 'adopt'
+          cache: gradle
       # Include a Protobuf and gRPC code generator.
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -37,6 +38,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '20'
+          cache: npm
       # Run tests for the `rdfc-cli` package.
       - name: Run tests `rdfc-cli`
         run: gradle test --console=plain --warning-mode all
