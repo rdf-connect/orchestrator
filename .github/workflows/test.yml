@@ -51,6 +51,6 @@ jobs:
         run: gradle test --console=plain --warning-mode all
         working-directory: ./rdfc-parser
       # Run tests for the `rdfc-processor` package.
-      - name: Run tests `rdfc-core`
+      - name: Run tests `rdfc-processor`
         run: gradle test --console=plain --warning-mode all
         working-directory: ./rdfc-processor
