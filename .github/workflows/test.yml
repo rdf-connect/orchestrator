@@ -34,6 +34,10 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '20'
+      # Run tests for the `rdfc-cli` package.
+      - name: Run tests `rdfc-cli`
+        run: gradle test --console=plain --warning-mode all
+        working-directory: ./rdfc-cli
       # Run tests for the `rdfc-core` package.
       - name: Run tests `rdfc-core`
         run: gradle test --console=plain --warning-mode all
