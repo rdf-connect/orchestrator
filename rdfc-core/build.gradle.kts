@@ -5,7 +5,7 @@ kotlin { jvmToolchain(jdkVersion.toInt()) }
 
 dependencies {
   // HTTP dependency
-  implementation("io.ktor:ktor-client-core:2.3.10")
+  implementation("io.ktor:ktor-client-core:3.0.2")
 
   // Kotlin extensions
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")

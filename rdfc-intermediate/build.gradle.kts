@@ -8,7 +8,7 @@ dependencies {
   implementation(project(":rdfc-core"))
 
   // URL encoding
-  implementation("io.ktor:ktor-client-core:2.3.10")
+  implementation("io.ktor:ktor-client-core:3.0.2")
 
   // KTest
   testImplementation(kotlin("test"))
