@@ -141,3 +141,31 @@ Responsible for parsing a configuration to intermediate representation. The inte
 #### Processor - [`rdfc-processor`](rdfc-processor)
 
 This module exposes an abstract class which Kotlin-based processors must extend for the default runner implementation.
+
+
+## Quick development setup
+
+Clone the repository
+```bash
+git clone git@github.com:rdf-connect/orchestrator.git
+cd orchestrator
+git submodule update --init --recursive
+```
+
+Build the jar
+```bash
+gradle assemble
+```
+
+The main jar is called in `rdfc-cli/build/libs/rdfc.jar`.
+
+Run the example node pipeline.
+```bash
+java -jar rdfc-cli/build/libs/rdfc.jar install ./rdfc-cli/src/test/resources/node.ttl
+java -jar rdfc-cli/build/libs/rdfc.jar exec ./rdfc-cli/src/test/resources/node.ttl
+```
+
+This pipeline reads some data from `./rdfc-cli/src/test/resources/data/{valid,invalid}.ttl`.
+Passed it through the SHACL Validator processor and stored valid data in `/tmp/rdfc-testing-node-valid.ttl`, and the report in `/tmp/rdfc-testing-node-report.ttl`.
+
+
