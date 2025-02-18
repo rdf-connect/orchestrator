@@ -169,3 +169,20 @@ This pipeline reads some data from `./rdfc-cli/src/test/resources/data/{valid,in
 Passed it through the SHACL Validator processor and stored valid data in `/tmp/rdfc-testing-node-valid.ttl`, and the report in `/tmp/rdfc-testing-node-report.ttl`.
 
 
+
+To fix the python() test, some env variables need to be set, including a GH token.
+To get the token
+- Go to [settings token](https://github.com/settings/tokens)
+- Click on `Generate new token` -> `Generate new token (classic)`
+- The required scopes are repo:public_repo and read:packages
+
+Next insert the token in an env file and load the file
+```env
+GITHUB_ACTOR=GH_USERNAME
+GITHUB_TOKEN=GENERATED_TOKEN
+```
+and load the file
+```bash
+export $(cat .env | xargs)
+```
+
