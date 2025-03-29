@@ -23,7 +23,7 @@ dependencies {
   implementation("com.google.protobuf:protobuf-kotlin:4.27.1")
 
   // HTTP dependencies
-  implementation("io.ktor:ktor-client-core:2.3.10")
+  implementation("io.ktor:ktor-client-core:3.0.3")
   implementation("io.ktor:ktor-client-cio:2.3.10")
   implementation("io.ktor:ktor-server-core:2.3.10")
   implementation("io.ktor:ktor-server-netty:2.3.10")
